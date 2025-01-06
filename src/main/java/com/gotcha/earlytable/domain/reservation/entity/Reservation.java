@@ -17,8 +17,10 @@ public class Reservation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
 
+    @Column(nullable = false)
     private LocalDate reservationDate;
 
+    @Column(nullable = false)
     private int personnelCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,7 +30,7 @@ public class Reservation extends BaseEntity {
     /*
     예약 초대 아이디 부분 추가
     */
-
+    @Column(nullable = false)
     private ReservationStatus reservationStatus;
 
     public Reservation() {}
