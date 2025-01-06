@@ -1,12 +1,15 @@
 package com.gotcha.earlytable.domain.user.entity;
 
+import com.gotcha.earlytable.domain.store.entity.InterestStore;
 import com.gotcha.earlytable.domain.user.dto.UserRegisterRequestDto;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.enums.Status;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -16,25 +19,28 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private String email; // 이메일
 
-    @NotNull
+    @Column(nullable = false)
     private String nickName; // 닉네임
 
-    @NotNull
+    @Column(nullable = false)
     private String password; //비밀번호
 
-    @NotNull
+    @Column(nullable = false)
     private String phone;
 
-    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Auth auth; // 유저 권한
 
-    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status; //유저 상태
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<InterestStore> interestStoreList = new ArrayList<>();
 
     public User(String email, String nickName, String password, String phone, Auth auth, Status status) {
         this.email = email;

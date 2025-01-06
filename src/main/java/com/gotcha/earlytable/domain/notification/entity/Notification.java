@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.notification.entity;
 
 
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "notification")
-public class Notification {
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

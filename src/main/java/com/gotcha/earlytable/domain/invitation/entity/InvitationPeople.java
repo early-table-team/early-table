@@ -1,6 +1,7 @@
-package com.gotcha.earlytable.domain.Invitation.entity;
+package com.gotcha.earlytable.domain.invitation.entity;
 
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.InvitationRole;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "invitation_people")
-public class InvitationPeople {
+public class InvitationPeople extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,11 +17,11 @@ public class InvitationPeople {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invitation_id", nullable = false)
-    private Invitation invitationId;
+    private Invitation invitation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userId;
+    private User user;
 
     private InvitationRole invitationRole;
 
