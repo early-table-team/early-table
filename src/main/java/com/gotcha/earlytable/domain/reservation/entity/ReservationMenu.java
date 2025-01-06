@@ -1,5 +1,7 @@
 package com.gotcha.earlytable.domain.reservation.entity;
 
+import com.gotcha.earlytable.domain.menu.entity.Menu;
+import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -8,7 +10,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "reservation_menu")
-public class ReservationMenu {
+public class ReservationMenu extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,11 +18,22 @@ public class ReservationMenu {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
-    private Menus menuId;  //Menu클래스가 없어서 Menu를 적으면 자동추가 임포트때문에 임의로 Menus로 지정
+    private Menu menu;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id", nullable = false)
-    private Reservation reservationId;
+    private Reservation reservation;
 
     public ReservationMenu() {}
+
+
+    public ReservationMenu(Menu menu, Reservation reservation) {
+        this.menu = menu;
+        addReservation(reservation);
+    }
+
+    private void addReservation(Reservation reservation) {
+        this.reservation = reservation;
+        reservation.getReservationMenuList().add(this);
+    }
 }

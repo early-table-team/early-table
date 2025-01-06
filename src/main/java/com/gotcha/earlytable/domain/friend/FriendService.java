@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.Friend;
+package com.gotcha.earlytable.domain.friend;
 
 import org.springframework.stereotype.Service;
 

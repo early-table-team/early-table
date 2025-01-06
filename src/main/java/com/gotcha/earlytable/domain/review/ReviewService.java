@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.Review;
+package com.gotcha.earlytable.domain.review;
 
 import org.springframework.stereotype.Service;
 
