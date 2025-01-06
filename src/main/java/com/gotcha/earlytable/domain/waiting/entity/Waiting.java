@@ -30,4 +30,6 @@ public class Waiting {
 
     @Column(nullable = false)
     private WaitingStatus waitingStatus;
+
+    public Waiting(){}
 }
