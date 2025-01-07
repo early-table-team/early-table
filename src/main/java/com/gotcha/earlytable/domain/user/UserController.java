@@ -89,7 +89,7 @@ public class UserController {
     }
 
     /**
-     *
+     *  유저 삭제
      * @param requestDto
      * @param userDetails
      * @return ResponseEntity<String>
