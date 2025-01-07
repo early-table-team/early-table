@@ -33,6 +33,7 @@ public class UserController {
      */
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> registerUser (@Valid @RequestBody UserRegisterRequestDto requestDto) {
+
         UserResponseDto registerUser = userService.registerUser(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
@@ -60,9 +61,8 @@ public class UserController {
      * @throws UsernameNotFoundException
      */
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request,
-                                         HttpServletResponse response, Authentication authentication)
-            throws UsernameNotFoundException {
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response,
+                                         Authentication authentication) throws UsernameNotFoundException {
 
         // 인증 정보가 있다면 로그아웃 처리.
         if (authentication != null && authentication.isAuthenticated()) {
