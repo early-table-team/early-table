@@ -1,15 +1,15 @@
-package com.gotcha.earlytable.domain.notification;
+package com.gotcha.earlytable.domain.store;
 
-import com.gotcha.earlytable.domain.notification.entity.Notification;
+import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface StoreRepository extends JpaRepository<Store, Long> {
 
-    default Notification findByIdOrElseThrow(Long id){
+    default Store findByIdOrElseThrow(Long id){
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 }
