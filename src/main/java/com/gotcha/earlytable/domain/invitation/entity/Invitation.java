@@ -8,7 +8,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "invitation")
-public class Invitation {
+public class Invitation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long invitationId;
