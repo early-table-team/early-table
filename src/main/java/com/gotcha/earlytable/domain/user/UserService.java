@@ -94,14 +94,13 @@ public class UserService {
 
 
     /**
-     *
+     * 유저 단건 조회(본인)
      * @param user
      * @return UserResponseDto
      */
-    public UserResponseDto getUser( User user){
+    public UserResponseDto getUser(User user){
 
         return UserResponseDto.toDto(user);
-
     }
 
 
