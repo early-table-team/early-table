@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store.entity;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
+import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
@@ -97,6 +98,35 @@ public class Store extends BaseEntity {
 
     public Store() {
 
+    }
+
+
+    public void updateStore(StoreRequestDto requestDto) {
+
+        if(requestDto.getStoreName() != null) {
+            this.storeName = requestDto.getStoreName();
+        }
+        if(requestDto.getStoreTel() != null) {
+            this.storeTel = requestDto.getStoreTel();
+        }
+        if(requestDto.getStoreContents() != null) {
+            this.storeContents = requestDto.getStoreContents();
+        }
+        if(requestDto.getStoreAddress() != null) {
+            this.storeAddress = requestDto.getStoreAddress();
+        }
+        if(requestDto.getStoreCategory() != null) {
+            this.storeCategory = requestDto.getStoreCategory();
+        }
+        if(requestDto.getRegionTop() != null) {
+            this.RegionTop = requestDto.getRegionTop();
+        }
+        if(requestDto.getRegionBottom() != null) {
+            this.RegionBottom = requestDto.getRegionBottom();
+        }
+        if(requestDto.getStoreImageList() != null) {
+            //TODO : 이미지 변경
+        }
     }
 
 }
