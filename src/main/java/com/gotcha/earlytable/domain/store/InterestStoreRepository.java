@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface InterestStoreRepository extends JpaRepository<InterestStore, Integer> {
+public interface InterestStoreRepository extends JpaRepository<InterestStore, Long> {
 }
