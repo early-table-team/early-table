@@ -12,15 +12,15 @@ public class InvitationDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long invitationDetailId;
+    private Long invitationDetail;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "send_user_id", nullable = false)
-    private User sendUserId;
+    private User sendUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receive_user_id", nullable = false)
-    private User receiveUserId;
+    private User receiveUser;
 
     private InvitationStatus invitationStatus;
 

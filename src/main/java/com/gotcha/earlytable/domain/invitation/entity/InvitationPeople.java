@@ -16,11 +16,11 @@ public class InvitationPeople {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invitation_id", nullable = false)
-    private Invitation invitationId;
+    private Invitation invitation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userId;
+    private User user;
 
     private InvitationRole invitationRole;
 
