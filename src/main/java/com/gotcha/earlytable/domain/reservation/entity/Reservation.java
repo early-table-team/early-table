@@ -1,7 +1,7 @@
 package com.gotcha.earlytable.domain.reservation.entity;
 
 
-import com.gotcha.earlytable.domain.invitation.entity.Invitation;
+import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
@@ -36,24 +36,25 @@ public class Reservation extends BaseEntity {
     private Store store;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "invitation_id", nullable = false)
-    private Invitation invitation;
+    @JoinColumn(name = "party_id", nullable = false)
+    private Party party;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReservationMenu> reservationMenuList = new ArrayList<>();
 
-    public Reservation() {}
+    public Reservation() {
+    }
 
-    public Reservation(LocalDate reservationDate, Integer personnelCount, Store store,Invitation invitation) {
+    public Reservation(LocalDate reservationDate, Integer personnelCount, Store store, Party party) {
         this.reservationDate = reservationDate;
         this.personnelCount = personnelCount;
         this.store = store;
-        addInvitation(invitation);
+        addParty(party);
         this.reservationStatus = ReservationStatus.PENDING;
     }
 
-    private void addInvitation(Invitation invitation) {
-        this.invitation = invitation;
-        invitation.addReservation(this);
+    private void addParty(Party party) {
+        this.party = party;
+        party.addReservation(this);
     }
 }
