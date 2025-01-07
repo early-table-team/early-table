@@ -4,14 +4,17 @@ import com.gotcha.earlytable.domain.user.dto.JwtAuthResponse;
 import com.gotcha.earlytable.domain.user.dto.UserLoginRequestDto;
 import com.gotcha.earlytable.domain.user.dto.UserRegisterRequestDto;
 import com.gotcha.earlytable.domain.user.dto.UserResponseDto;
+import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -77,5 +80,20 @@ public class UserController {
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
 
     }
+
+    /**
+     *
+     * @param userDetails
+     * @return ResponseEntity<UserResponseDto>
+     */
+    @GetMapping("/users")
+    public ResponseEntity<UserResponseDto> getUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
+
+        UserResponseDto userResponseDto = userService.getUser(userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+    }
+
+
 
 }

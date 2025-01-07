@@ -91,4 +91,18 @@ public class UserService {
 
         return new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), accessToken);
     }
+
+
+    /**
+     *
+     * @param user
+     * @return UserResponseDto
+     */
+    public UserResponseDto getUser( User user){
+
+        return UserResponseDto.toDto(user);
+
+    }
+
+
 }
