@@ -65,4 +65,8 @@ public class User extends BaseEntity {
                 Status.NORMAL
         );
     }
+
+    public void asDelete(){
+        this.status = Status.DELETE;
+    }
 }

@@ -1,12 +1,10 @@
 package com.gotcha.earlytable.domain.user;
 
-import com.gotcha.earlytable.domain.user.dto.JwtAuthResponse;
-import com.gotcha.earlytable.domain.user.dto.UserLoginRequestDto;
-import com.gotcha.earlytable.domain.user.dto.UserRegisterRequestDto;
-import com.gotcha.earlytable.domain.user.dto.UserResponseDto;
+import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
@@ -101,6 +99,26 @@ public class UserService {
     public UserResponseDto getUser(User user){
 
         return UserResponseDto.toDto(user);
+    }
+
+    /**
+     *
+     * @param requestDto
+     * @param user
+     */
+    public void deleteUser(UserDeleteRequestDto requestDto, User user){
+
+        // 로그인이 안된경우 Unauthorized발생
+        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED));
+
+        // 비밀번호 값이 일치하지 않는경우 BAD_REQUEST 발생
+        if(!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())){
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        //둘다 원만한 경우 유저 삭제 후 200 OK  발생
+        findUser.asDelete();
+        userRepository.save(findUser);
     }
 
 
