@@ -12,4 +12,6 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     default Store findByIdOrElseThrow(Long id){
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
+
+    int countStoreByUserId(Long userId);
 }
