@@ -26,4 +26,10 @@ public class InvitationDetail extends BaseEntity {
 
     public InvitationDetail() {}
 
+    public InvitationDetail(User sendUser, User receiveUser, InvitationStatus invitationStatus) {
+        this.sendUser = sendUser;
+        this.receiveUser = receiveUser;
+        this.invitationStatus = invitationStatus;
+    }
+
 }
