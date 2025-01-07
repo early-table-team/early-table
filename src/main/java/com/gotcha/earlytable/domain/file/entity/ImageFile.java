@@ -35,9 +35,11 @@ public class ImageFile extends BaseEntity {
     @JoinColumn(name = "file_id")
     private File file;
 
+    private Integer fileSeq;
+
 
     public ImageFile(String fileName, String fileUniqueName, String fileUrl,
-                     FileType fileType, FileStatus fileStatus, Double fileSize, File file) {
+                     FileType fileType, FileStatus fileStatus, Double fileSize, File file, Integer fileSeq) {
         this.fileName = fileName;
         this.fileUniqueName = fileUniqueName;
         this.fileUrl = fileUrl;
@@ -45,6 +47,7 @@ public class ImageFile extends BaseEntity {
         this.fileStatus = fileStatus;
         this.fileSize = fileSize;
         this.file = file;
+        this.fileSeq = fileSeq;
 
     }
 

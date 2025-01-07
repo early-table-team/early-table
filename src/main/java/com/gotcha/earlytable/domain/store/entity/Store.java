@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.store.entity;
 
+import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
@@ -49,6 +50,10 @@ public class Store extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id", nullable = false)
+    private File file;
+
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Menu> menuList = new ArrayList<>();
 
@@ -77,7 +82,7 @@ public class Store extends BaseEntity {
     private List<Reservation> reservationList = new ArrayList<>();
 
     public Store(String storeName, String storeTel, String storeContents, String storeAddress, StoreStatus storeStatus,
-                 StoreCategory storeCategory, String regionTop, String regionBottom, User user) {
+                 StoreCategory storeCategory, String regionTop, String regionBottom, User user, File file) {
         this.storeName = storeName;
         this.storeTel = storeTel;
         this.storeContents = storeContents;
@@ -87,6 +92,7 @@ public class Store extends BaseEntity {
         this.RegionTop = regionTop;
         this.RegionBottom = regionBottom;
         this.user = user;
+        this.file = file;
     }
 
     public Store() {

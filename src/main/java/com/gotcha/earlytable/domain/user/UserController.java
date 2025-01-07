@@ -1,9 +1,6 @@
 package com.gotcha.earlytable.domain.user;
 
-import com.gotcha.earlytable.domain.user.dto.JwtAuthResponse;
-import com.gotcha.earlytable.domain.user.dto.UserLoginRequestDto;
-import com.gotcha.earlytable.domain.user.dto.UserRegisterRequestDto;
-import com.gotcha.earlytable.domain.user.dto.UserResponseDto;
+import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,10 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UserController {
@@ -94,6 +88,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
     }
 
+    /**
+     *  유저 삭제
+     * @param requestDto
+     * @param userDetails
+     * @return ResponseEntity<String>
+     */
+    @DeleteMapping("/users")
+    public ResponseEntity<String> deleteUser(@RequestBody UserDeleteRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+
+        userService.deleteUser(requestDto, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body("회원 탈퇴가 완료되었습니다.");
+    }
 
 
 }
