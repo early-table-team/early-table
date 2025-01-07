@@ -26,10 +26,10 @@ public class WaitingController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("stores/{storeId}/waiting")
-    public ResponseEntity<WaitingResponseDto> creatWaiting(@Valid @RequestBody WaitingRequestDto requestDto,
+    public ResponseEntity<WaitingResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingRequestDto requestDto,
                                                            @PathVariable Long storeId) {
 
-        WaitingResponseDto responseDto = waitingService.creatWaiting(requestDto, storeId);
+        WaitingResponseDto responseDto = waitingService.creatWaitingOnline(requestDto, storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

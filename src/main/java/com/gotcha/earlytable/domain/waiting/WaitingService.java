@@ -32,7 +32,7 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingResponseDto creatWaiting(@Valid WaitingRequestDto requestDto, Long storeId) {
+    public WaitingResponseDto creatWaitingOnline(@Valid WaitingRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
