@@ -26,7 +26,7 @@ public class InterestStoreController {
      * @param userDetails
      * @return  ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/{storeId}")
     public ResponseEntity<String> registerStore(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails){
 
