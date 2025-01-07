@@ -106,10 +106,8 @@ public class UserService {
      * @param requestDto
      * @param user
      */
+    @Transactional
     public void deleteUser(UserDeleteRequestDto requestDto, User user){
-
-        // 로그인이 안된경우 Unauthorized발생
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UnauthorizedException(ErrorCode.UNAUTHORIZED));
 
         // 비밀번호 값이 일치하지 않는경우 BAD_REQUEST 발생
         if(!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())){
@@ -117,8 +115,8 @@ public class UserService {
         }
 
         //둘다 원만한 경우 유저 삭제 후 200 OK  발생
-        findUser.asDelete();
-        userRepository.save(findUser);
+        user.asDelete();
+        userRepository.save(user);
     }
 
 
