@@ -10,6 +10,7 @@ import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WaitingService {
@@ -30,6 +31,7 @@ public class WaitingService {
      * @param storeId
      * @return
      */
+    @Transactional
     public WaitingResponseDto creatWaiting(@Valid WaitingRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
