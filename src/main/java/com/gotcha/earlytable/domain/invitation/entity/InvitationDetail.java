@@ -1,7 +1,6 @@
 package com.gotcha.earlytable.domain.invitation.entity;
 
 import com.gotcha.earlytable.domain.user.entity.User;
-import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,7 +8,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "invitation_detail")
-public class InvitationDetail extends BaseEntity {
+public class InvitationDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,19 +16,14 @@ public class InvitationDetail extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "send_user_id", nullable = false)
-    private User sendUser;
+    private User sendUserId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receive_user_id", nullable = false)
-    private User receiveUser;
+    private User receiveUserId;
 
     private InvitationStatus invitationStatus;
 
     public InvitationDetail() {}
 
-    public InvitationDetail(User sendUser, User receiveUser, InvitationStatus invitationStatus) {
-        this.sendUser = sendUser;
-        this.receiveUser = receiveUser;
-        this.invitationStatus = invitationStatus;
-    }
 }

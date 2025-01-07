@@ -1,6 +1,5 @@
 package com.gotcha.earlytable.domain.reservation.entity;
 
-
 import com.gotcha.earlytable.domain.invitation.entity.Invitation;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.base.BaseEntity;
@@ -44,7 +43,7 @@ public class Reservation extends BaseEntity {
 
     public Reservation() {}
 
-    public Reservation(LocalDate reservationDate, Integer personnelCount, Store store,Invitation invitation) {
+    public Reservation(LocalDate reservationDate, Integer personnelCount, Store store, Invitation invitation) {
         this.reservationDate = reservationDate;
         this.personnelCount = personnelCount;
         this.store = store;
