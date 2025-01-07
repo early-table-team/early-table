@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.waiting;
 
+import com.gotcha.earlytable.domain.party.PartyRepository;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -15,9 +16,11 @@ public class WaitingService {
 
     private final WaitingRepository waitingRepository;
     StoreRepository storeRepository;
+    private final PartyRepository partyRepository;
 
-    public WaitingService(WaitingRepository waitingRepository) {
+    public WaitingService(WaitingRepository waitingRepository, PartyRepository partyRepository) {
         this.waitingRepository = waitingRepository;
+        this.partyRepository = partyRepository;
     }
 
     /**
@@ -31,7 +34,9 @@ public class WaitingService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        Waiting waiting = new Waiting(store, new Party(), requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
+        Party party = partyRepository.save(new Party());
+
+        Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
 
         Waiting savedWaiting = waitingRepository.save(waiting);
 
