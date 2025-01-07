@@ -82,7 +82,7 @@ public class UserController {
     }
 
     /**
-     *
+     * 유저 단건 조회
      * @param userDetails
      * @return ResponseEntity<UserResponseDto>
      */
