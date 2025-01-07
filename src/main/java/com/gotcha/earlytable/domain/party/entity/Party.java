@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.invitation.entity;
+package com.gotcha.earlytable.domain.party.entity;
 
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
@@ -6,24 +6,32 @@ import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.util.List;
+
 
 @Entity
 @Getter
-@Table(name = "invitation")
-public class Invitation extends BaseEntity {
+@Table(name = "party")
+public class Party extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long invitationId;
+    private Long partyId;
 
-    @OneToOne(mappedBy = "invitation")
+    @OneToOne(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(nullable = false)
     private Waiting waiting;
 
-    @OneToOne(mappedBy = "invitation")
+    @OneToOne(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(nullable = false)
     private Reservation reservation;
 
-    public Invitation() {}
+    @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(nullable = true)
+    private List<PartyPeople> partyPeople;
+
+
+    public Party() {
+    }
 
 
     public void addWaiting(Waiting waiting) {
