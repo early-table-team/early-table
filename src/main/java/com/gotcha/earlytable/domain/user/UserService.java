@@ -102,7 +102,7 @@ public class UserService {
     }
 
     /**
-     *
+     *  유저 삭제
      * @param requestDto
      * @param user
      */
