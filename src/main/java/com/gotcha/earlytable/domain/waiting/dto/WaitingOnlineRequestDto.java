@@ -4,11 +4,11 @@ import com.gotcha.earlytable.global.enums.WaitingType;
 import lombok.Getter;
 
 @Getter
-public class WaitingRequestDto {
+public class WaitingOnlineRequestDto {
     private final int personnelCount;
     private final WaitingType waitingType;
 
-    public WaitingRequestDto(int personnelCount, WaitingType waitingType) {
+    public WaitingOnlineRequestDto(int personnelCount, WaitingType waitingType) {
         this.personnelCount = personnelCount;
         this.waitingType = waitingType;
     }

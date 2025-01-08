@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
+import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -11,8 +12,11 @@ import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
+import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class StoreService {
@@ -134,6 +138,75 @@ public class StoreService {
         storeRepository.save(store);
     }
 
+    /**
+     * 가게 단건 조회 메서드
+     *
+     * @param storeId
+     * @return StoreResponseDto
+     */
+    public StoreResponseDto getStore(Long storeId) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        return StoreResponseDto.toDto(store);
+    }
+
+
+    /**
+     * 나의 가게 전체 조회 메서드
+     *
+     * @param userId
+     * @return List<StoreListResponseDto>
+     */
+    public List<StoreListResponseDto> getStores(Long userId) {
+
+        List<Store> storeList = storeRepository.findAllByUserId(userId);
+
+        return storeList.stream().map(StoreListResponseDto::toDto).toList();
+    }
+
+    /**
+     * 나의 가게 휴업 상태<-> 영업상태로 변경 메서드
+     *
+     * @param storeId
+     * @param userId
+     * @return String
+     */
+    @Transactional
+    public String updateStoreStatus(Long storeId, Long userId) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        // 나의 가게에 접근하는지 확인
+        if(!store.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        String message = "현 상태 유지되었습니다.";
+
+        // 영업 상태로 변경
+        if(store.getStoreStatus().equals(StoreStatus.RESTING)){
+            store.updateStoreStatus(StoreStatus.APPROVED);
+            message = "정상 영업 상태로 변경되었습니다.";
+        }
+
+        // 휴업 상태로 변경
+        if (store.getStoreStatus().equals(StoreStatus.APPROVED)){
+            store.updateStoreStatus(StoreStatus.RESTING);
+            message = "휴업 상태로 변경되었습니다.";
+        }
+
+        storeRepository.save(store);
+
+        return message;
+    }
+
+    /**
+     * 가게 상태 변경 메서드 (Admin)
+     *
+     * @param storeId
+     * @param storeStatus
+     */
     @Transactional
     public void updateStoreStatus(Long storeId, StoreStatus storeStatus) {
 
@@ -142,5 +215,6 @@ public class StoreService {
         store.updateStoreStatus(storeStatus);
 
         storeRepository.save(store);
+
     }
 }
