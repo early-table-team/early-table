@@ -48,10 +48,6 @@ public class InterestStoreController {
 
         InterestStoreListResponseDto responseDto = new InterestStoreListResponseDto(interestStoreService.getInterestStores(userDetails.getUser()));
 
-        //비어 있는 경우에는 NO_CONTENT를 반환
-        if(responseDto.getStores().isEmpty()){
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
-        }
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
