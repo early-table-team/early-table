@@ -59,5 +59,8 @@ public class Reservation extends BaseEntity {
         party.addReservation(this);
     }
 
+    public void modifyStatus(ReservationStatus newStatus) {
+        this.reservationStatus = newStatus;
+    }
 
 }

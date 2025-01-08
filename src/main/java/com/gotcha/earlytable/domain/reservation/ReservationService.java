@@ -15,8 +15,10 @@ import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -166,7 +168,7 @@ public class ReservationService {
     }
 
     /**
-     *
+     *  예약 단건 조회 메서드
      * @param reservationId
      * @param user
      * @return  ReservationGetOneResponseDto
@@ -231,6 +233,30 @@ public class ReservationService {
         return new ReservationGetOneResponseDto(reservation, user, requestDto.getMenuList());
     }
 
+    /**
+     *  예약 취소 메서드
+     * @param reservationId
+     */
+    @Transactional
+    public void cancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+
+        Integer personnelCount = reservation.getPersonnelCount();
+
+        ReservationMaster reservationMaster = reservationMasterRepository.findByTableMaxNumberAndReservationTime(personnelCount, reservation.getReservationDateTime().toLocalTime());
+        Integer maxNumber = reservationMaster.getTableMaxNumber();
+        reservation.modifyStatus(ReservationStatus.CANCELED);
+
+        AvailableTable availableTable = availableTableRepository.findByReservationMaster(reservationMaster);
+        availableTable.increaseRemainTable();
+        if(availableTable.getRemainTable() > maxNumber){
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        reservationRepository.save(reservation);
+        availableTableRepository.save(availableTable);
+
+    }
 
 
 }
