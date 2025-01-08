@@ -14,6 +14,7 @@ public enum ErrorCode {
     INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일 형식이 올바르지 않습니다."),
     NO_SEAT(HttpStatus.BAD_REQUEST,"해당 인원에 맞는 자리가 남아있지 않습니다."),
 
+
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     UNAUTHORIZED_PASSWORD(HttpStatus.UNAUTHORIZED, "패스워드가 틀렸습니다."),

@@ -9,6 +9,7 @@ import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationGetAllResponseDto;
+import com.gotcha.earlytable.domain.reservation.dto.ReservationGetOneResponseDto;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
 import com.gotcha.earlytable.domain.store.*;
@@ -22,9 +23,7 @@ import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ReservationService {
@@ -168,4 +167,33 @@ public class ReservationService {
 
         return resDto;
     }
+
+    /**
+     *
+     * @param reservationId
+     * @param user
+     * @return  ReservationGetOneResponseDto
+     */
+    public ReservationGetOneResponseDto getReservation(Long reservationId, User user) {
+
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        // 지정된 예약에 로그인된 유저가 포함되어 있는지 검사
+        reservation.getParty().getPartyPeople().stream()
+                .filter(partyPeople -> partyPeople.getUser().equals(user))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(ErrorCode.BAD_REQUEST));
+
+        List<HashMap<String, Long>> menuList = new ArrayList<>();
+        reservation.getReservationMenuList()
+                .forEach(ml -> {
+                    HashMap<String, Long> menu = new HashMap<>();
+                    menu.put(ml.getMenu().getMenuName(), ml.getMenuCount());
+                    menuList.add(menu);
+                });
+
+        return new ReservationGetOneResponseDto(reservation, user, menuList);
+    }
+
+
+
 }
