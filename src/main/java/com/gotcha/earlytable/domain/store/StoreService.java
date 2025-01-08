@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -40,7 +41,7 @@ public class StoreService {
         File file = fileRepository.findByIdOrElseThrow(requestDto.getFileId());
 
         // 가게 개수 제한 10개 이하 확인
-        if(storeRepository.countStoreByUserId(requestDto.getUserId()) >= 10){
+        if (storeRepository.countStoreByUserId(requestDto.getUserId()) >= 10) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
@@ -60,11 +61,39 @@ public class StoreService {
     }
 
     /**
+     * 가게 생성 메서드 from PendingStore
+     *
+     * @param pendingStore
+     */
+    @Transactional
+    public void createStoreFromPendingStore(PendingStore pendingStore) {
+
+        // 필요한 객체를 가져오기
+        File file = fileRepository.findByIdOrElseThrow(pendingStore.getFileId());
+
+        // 가게 개수 제한 10개 이하 확인
+        if (storeRepository.countStoreByUserId(pendingStore.getUser().getId()) >= 10) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        // 가게 객체 생성
+        Store store = new Store(pendingStore.getStoreName(), pendingStore.getStoreTel(),
+                pendingStore.getStoreContents(), pendingStore.getStoreAddress(),
+                StoreStatus.APPROVED, pendingStore.getStoreCategory(),
+                pendingStore.getRegionTop(), pendingStore.getRegionBottom(),
+                pendingStore.getUser(), file
+        );
+
+        // 가게 저장
+        storeRepository.save(store);
+    }
+
+    /**
      * 가게 수정 메서드 (Admin)
      *
      * @param storeId
      * @param requestDto
-     * @return
+     * @return StoreResponseDt
      */
     @Transactional
     public StoreResponseDto updateStore(Long storeId, StoreRequestDto requestDto) {
@@ -80,5 +109,36 @@ public class StoreService {
 
         return StoreResponseDto.toDto(store);
 
+    }
+
+    /**
+     * 가게 수정 메서드 from PendingStore
+     *
+     * @param pendingStore
+     */
+    @Transactional
+    public void updateStoreFromPendingStore(PendingStore pendingStore) {
+
+        // 가게 정보 가져오기
+        Store store = storeRepository.findByIdOrElseThrow(pendingStore.getStoreId());
+
+        // 파일 정보 가져오기
+        File file = fileRepository.findByIdOrElseThrow(pendingStore.getFileId());
+
+        // 가게 내용 변경
+        store.updateStoreFromPendingStore(pendingStore, file);
+
+        // 수정된 가게 정보 저장
+        storeRepository.save(store);
+    }
+
+    @Transactional
+    public void updateStoreStatus(Long storeId, StoreStatus storeStatus) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        store.updateStoreStatus(storeStatus);
+
+        storeRepository.save(store);
     }
 }
