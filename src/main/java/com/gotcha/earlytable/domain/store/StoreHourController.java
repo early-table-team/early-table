@@ -25,7 +25,7 @@ public class StoreHourController {
      *
      * @param storeId
      * @param requestDto
-     * @return ResponseEntity<StoreHourResponseDto>
+     * @return ResponseEntity<WaitingSettingResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping("/stores/{storeId}/hours")
@@ -45,7 +45,7 @@ public class StoreHourController {
      * @param storeHourId
      * @param requestDto
      * @param userDetails
-     * @return ResponseEntity<StoreHourResponseDto>
+     * @return ResponseEntity<WaitingSettingResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/hours/{storeHourId}")

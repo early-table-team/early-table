@@ -10,8 +10,10 @@ import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.dto.*;
 import com.gotcha.earlytable.domain.waiting.entity.OfflineUser;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
+import com.gotcha.earlytable.domain.waiting.entity.WaitingNumber;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import jakarta.validation.Valid;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +29,15 @@ public class WaitingService {
     private final PartyRepository partyRepository;
     private final OfflineUserRepository offlineUserRepository;
     private final PartyPeopleRepository partyPeopleRepository;
+    private final WaitingNumberRepository waitingNumberRepository;
 
-    public WaitingService(WaitingRepository waitingRepository, StoreRepository storeRepository, PartyRepository partyRepository, OfflineUserRepository offlineUserRepository, PartyPeopleRepository partyPeopleRepository) {
+    public WaitingService(WaitingRepository waitingRepository, StoreRepository storeRepository, PartyRepository partyRepository, OfflineUserRepository offlineUserRepository, PartyPeopleRepository partyPeopleRepository, WaitingNumberRepository waitingNumberRepository) {
         this.waitingRepository = waitingRepository;
         this.storeRepository = storeRepository;
         this.partyRepository = partyRepository;
         this.offlineUserRepository = offlineUserRepository;
         this.partyPeopleRepository = partyPeopleRepository;
+        this.waitingNumberRepository = waitingNumberRepository;
     }
 
     /**
@@ -50,8 +54,10 @@ public class WaitingService {
 
         Party party = partyRepository.save(new Party());
 
-        Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
+        WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
+        WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
 
+        Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING, savedwaitingNumber);
         Waiting savedWaiting = waitingRepository.save(waiting);
 
         return new WaitingOnlineResponseDto(savedWaiting);
@@ -65,19 +71,20 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingOfflineResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
+    public WaitingNumberResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         OfflineUser offlineUser = new OfflineUser(requestDto.getPhoneNumber());
-
         OfflineUser savedOfflineUser = offlineUserRepository.save(offlineUser);
 
-        Waiting waiting = new Waiting(store, savedOfflineUser, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
+        WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
+        WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
 
+        Waiting waiting = new Waiting(store, savedOfflineUser, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING, savedwaitingNumber);
         Waiting savedWaiting = waitingRepository.save(waiting);
 
-        return new WaitingOfflineResponseDto(savedWaiting);
+        return new WaitingNumberResponseDto(savedWaiting);
     }
 
     /**
@@ -101,5 +108,25 @@ public class WaitingService {
         return waitingList.stream()
                 .map(WaitingListResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public WaitingNumberResponseDto delayWaiting(Long waitingId) {
+
+        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        WaitingNumber waitingNumber = waiting.getWaitingNumber();
+        waitingNumber.updateWaitingNumber(waitingRepository.countByStoreAndWaitingType(waiting.getStore(), waiting.getWaitingType()));
+        waitingNumberRepository.save(waitingNumber);
+
+        return new WaitingNumberResponseDto(waiting);
+    }
+
+
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void resetWaitingNumber() {
+        waitingNumberRepository.deleteAll();
     }
 }

@@ -1,6 +1,5 @@
 package com.gotcha.earlytable.domain.waiting;
 
-import com.gotcha.earlytable.domain.review.dto.ReviewResponseDto;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.dto.*;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
@@ -17,7 +16,12 @@ import java.util.List;
 @RestController
 public class WaitingController {
 
+    private final WaitingRepository waitingRepository;
     WaitingService waitingService;
+
+    public WaitingController(WaitingRepository waitingRepository) {
+        this.waitingRepository = waitingRepository;
+    }
 
     /**
      * 원격 웨이팅 생성 API
@@ -28,7 +32,7 @@ public class WaitingController {
      */
 
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @PostMapping("stores/{storeId}/waiting/online")
+    @PostMapping("/stores/{storeId}/waiting/online")
     public ResponseEntity<WaitingOnlineResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
                                                                        @PathVariable Long storeId) {
 
@@ -45,11 +49,11 @@ public class WaitingController {
      * @return
      */
 
-    @PostMapping("stores/{storeId}/waiting/offline")
-    public ResponseEntity<WaitingOfflineResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
+    @PostMapping("/stores/{storeId}/waiting/offline")
+    public ResponseEntity<WaitingNumberResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
                                                                         @PathVariable Long storeId) {
 
-        WaitingOfflineResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
+        WaitingNumberResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -62,7 +66,7 @@ public class WaitingController {
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @GetMapping("waiting")
+    @GetMapping("/waiting")
     public ResponseEntity<List<WaitingListResponseDto>> getWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         // 로그인된 유저 정보 가져오기
@@ -72,6 +76,24 @@ public class WaitingController {
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtos);
     }
+
+    /**
+     * 웨이팅 미루기
+     *
+     * @param userDetails
+     * @param waitingId
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @PatchMapping("/waiting/{waitingId}")
+    public ResponseEntity<WaitingNumberResponseDto> delayWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                 @PathVariable Long waitingId) {
+
+        WaitingNumberResponseDto responseDto = waitingService.delayWaiting(waitingId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
 
 }
 

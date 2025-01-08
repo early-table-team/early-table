@@ -29,7 +29,7 @@ public class StoreHourService {
      * @param storeId
      * @param userId
      * @param requestDto
-     * @return StoreHourResponseDto
+     * @return WaitingSettingResponseDto
      */
     @Transactional
     public StoreHourResponseDto createStoreHour(Long storeId, Long userId, StoreHourRequestDto requestDto) {
@@ -65,14 +65,14 @@ public class StoreHourService {
      * @param storeHourId
      * @param userId
      * @param requestDto
-     * @return StoreHourResponseDto
+     * @return WaitingSettingResponseDto
      */
     public StoreHourResponseDto updateStoreHour(Long storeHourId, Long userId, StoreHourRequestDto requestDto) {
 
         StoreHour storeHour = storeHourRepository.findByIdOrElseThrow(storeHourId);
 
         // 자신의 가게인지 확인
-        if(storeHour.getStore().getUser().getId().equals(userId)) {
+        if(!storeHour.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
