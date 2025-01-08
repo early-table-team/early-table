@@ -167,7 +167,7 @@ public class ReservationService {
     }
 
     /**
-     *  예약 단건 조회 API
+     *  예약 단건 조회 메서드
      * @param reservationId
      * @param user
      * @return  ReservationGetOneResponseDto
