@@ -1,9 +1,12 @@
 package com.gotcha.earlytable.domain.menu;
 
 import com.gotcha.earlytable.domain.menu.entity.Menu;
+import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +19,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     }
 
     List<Menu> findAllByStoreStoreId(Long storeId);
+
+    Menu findByStoreStoreIdAndMenuStatus(Long storeId, MenuStatus menuStatus);
+
 }
