@@ -67,10 +67,18 @@ public class Menu extends BaseEntity {
         store.getMenuList().add(this);
     }
 
-    public void update(MenuRequestDto menuRequestDto) {
-        this.menuName = menuRequestDto.getMenuName();
-        this.menuContents = menuRequestDto.getMenuContents();
-        this.menuPrice = menuRequestDto.getMenuPrice();
-        this.menuStatus = menuRequestDto.getMenuStatus();
+    public void updateMenu(MenuRequestDto menuRequestDto) {
+        if(menuRequestDto.getMenuName() != null) {
+            this.menuName = menuRequestDto.getMenuName();
+        }
+        if(menuRequestDto.getMenuContents() != null) {
+            this.menuContents = menuRequestDto.getMenuContents();
+        }
+        if(menuRequestDto.getMenuPrice() != null) {
+            this.menuPrice = menuRequestDto.getMenuPrice();
+        }
+        if(menuRequestDto.getMenuStatus() != null) {
+            this.menuStatus = menuRequestDto.getMenuStatus();
+        }
     }
 }

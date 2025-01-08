@@ -72,7 +72,7 @@ public class MenuService {
         Menu menu = menuRepository.findByIdOrElseThrow(menuId);
 
         //메뉴 수정
-        menu.update(menuRequestDto);
+        menu.updateMenu(menuRequestDto);
 
         //메뉴 저장
         menuRepository.save(menu);
