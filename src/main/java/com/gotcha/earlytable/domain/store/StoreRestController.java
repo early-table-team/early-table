@@ -49,7 +49,7 @@ public class StoreRestController {
      * @return ResponseEntity<StoreRestResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER, Auth.USER})
-    @GetMapping("/rest/{restId}")
+    @GetMapping("/{restId}")
     public ResponseEntity<StoreRestResponseDto> getStoreRest(@PathVariable Long restId) {
 
         StoreRestResponseDto responseDto = storeRestService.getStoreRest(restId);
@@ -57,7 +57,7 @@ public class StoreRestController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @GetMapping("/stores/{storeId}/rest")
+    @GetMapping("/stores/{storeId}")
     public ResponseEntity<List<StoreRestResponseDto>> getStoreRests(@PathVariable Long storeId,
                                                                     @RequestBody StoreRestSearchRequestDto requestDto) {
 
@@ -74,7 +74,7 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<StoreRestResponseDto>
      */
-    @PutMapping("/rest/{restId}")
+    @PutMapping("/{restId}")
     public ResponseEntity<StoreRestResponseDto> updateStoreRest(@PathVariable Long restId,
                                                                 @RequestBody StoreRestRequestDto requestDto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -91,7 +91,7 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<Void>
      */
-    @DeleteMapping("/rest/{restId}")
+    @DeleteMapping("/{restId}")
     public ResponseEntity<Void> deleteStoreRest(@PathVariable Long restId,
                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
