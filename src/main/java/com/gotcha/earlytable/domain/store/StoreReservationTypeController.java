@@ -45,6 +45,8 @@ public class StoreReservationTypeController {
      * @param userDetails
      * @return
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+
     @DeleteMapping("/stores/{storeId}/reservation/type")
     public ResponseEntity<String> deleteStoreReservationType(@PathVariable Long storeId,
                                                              @RequestBody StoreReservationTypeRequestDto requestDto,
