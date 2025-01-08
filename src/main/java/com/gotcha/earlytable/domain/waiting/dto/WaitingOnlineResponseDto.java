@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class WaitingResponseDto {
+public class WaitingOnlineResponseDto {
     Long waitingNumber;
     String storeName;
     int personnelCount;
@@ -18,7 +18,7 @@ public class WaitingResponseDto {
     List<String> partyPeople;
     WaitingStatus waitingStatus;
 
-    public WaitingResponseDto(Waiting waiting) {
+    public WaitingOnlineResponseDto(Waiting waiting) {
         this.waitingNumber = waiting.getWaitingId();
         this.storeName = waiting.getStore().getStoreName();
         this.personnelCount = waiting.getPersonnelCount();
