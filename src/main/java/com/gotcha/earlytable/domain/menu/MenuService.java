@@ -71,10 +71,8 @@ public class MenuService {
     public MenuResponseDto updateMenu(Long storeId, Long menuId, MenuRequestDto menuRequestDto) {
         Menu menu = menuRepository.findByIdOrElseThrow(menuId);
 
-        File file = fileService.createFile();
-
         //메뉴 수정
-        menu.update(menuRequestDto, file);
+        menu.update(menuRequestDto);
 
         //메뉴 저장
         menuRepository.save(menu);

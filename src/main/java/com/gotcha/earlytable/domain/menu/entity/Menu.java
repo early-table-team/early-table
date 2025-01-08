@@ -67,11 +67,10 @@ public class Menu extends BaseEntity {
         store.getMenuList().add(this);
     }
 
-    public void update(MenuRequestDto menuRequestDto, File file) {
+    public void update(MenuRequestDto menuRequestDto) {
         this.menuName = menuRequestDto.getMenuName();
         this.menuContents = menuRequestDto.getMenuContents();
         this.menuPrice = menuRequestDto.getMenuPrice();
         this.menuStatus = menuRequestDto.getMenuStatus();
-        this.file = file;
     }
 }
