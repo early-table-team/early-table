@@ -30,8 +30,6 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final StoreRepository storeRepository;
-    private final StoreReservationTypeRepository storeReservationTypeRepository;
-    private final StoreHourRepository storeHourRepository;
     private final MenuRepository menuRepository;
     private final AvailableTableRepository availableTableRepository;
     private final ReservationMasterRepository reservationMasterRepository;
@@ -39,13 +37,11 @@ public class ReservationService {
     private final ReservationMenuRepository reservationMenuRepository;
     private final PartyPeopleRepository partyPeopleRepository;
 
-    public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository, StoreReservationTypeRepository storeReservationTypeRepository,
-                              StoreHourRepository storeHourRepository, MenuRepository menuRepository, AvailableTableRepository availableTableRepository, ReservationMasterRepository reservationMasterRepository,
+    public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository,
+                              MenuRepository menuRepository, AvailableTableRepository availableTableRepository, ReservationMasterRepository reservationMasterRepository,
                               PartyRepository partyRepository, ReservationMenuRepository reservationMenuRepository, PartyPeopleRepository partyPeopleRepository) {
         this.reservationRepository = reservationRepository;
         this.storeRepository = storeRepository;
-        this.storeReservationTypeRepository = storeReservationTypeRepository;
-        this.storeHourRepository = storeHourRepository;
         this.menuRepository = menuRepository;
         this.availableTableRepository = availableTableRepository;
         this.reservationMasterRepository = reservationMasterRepository;
@@ -66,24 +62,29 @@ public class ReservationService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // TODO : 가게 예약 타입이 예약이 맞는가? -> 예약이 가능한지
-        StoreReservationType storeType = storeReservationTypeRepository.findByStore(store);
-        if(!ReservationType.RESERVATION.equals(storeType.getReservationType())) { // 가게가 예약이 가능한 타입이 아닌경우
+        // TODO : 가게 예약 타입이 예약이 맞는가?
+        boolean isReservationPossible = store.getStoreReservationTypeList().stream()
+                .anyMatch(storeReservationType -> ReservationType.RESERVATION.equals(storeReservationType.getReservationType()));
+
+        if(!isReservationPossible) { // 가게가 예약이 가능한 타입이 아닌경우
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
+
         // TODO : 휴무날짜는 아닌가?
         LocalDate reservationDate = requestDto.getReservationDate().toLocalDate(); //휴무 날짜비교를 위해 LocalDate로 받아옴
         List<StoreDayOff> storeOffDay = store.getStoreDayOffList();
-        for(StoreDayOff storeDayOff : storeOffDay){
-            if(storeDayOff.getStoreOffDay() == reservationDate){ //휴무일에 예약을 하려는 경우
-                throw new BadRequestException(ErrorCode.BAD_REQUEST);
-            }
+        boolean isOffDay = storeOffDay.stream().anyMatch(storeDayOff -> storeDayOff.getStoreOffDay().equals(reservationDate));
+        if(isOffDay){ //휴무일에 예약을 하려는 경우
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
+
 
         // TODO : 해당 요일의 영업시간 내에 충족하는가?
         String dayOfWeek = reservationDate.getDayOfWeek().toString().toUpperCase();
         // 요일에 해당하는 가게 영업시간 받아오기
-        StoreHour storeHour = storeHourRepository.findByStoreAndDayOfWeek(store, DayOfWeek.valueOf(dayOfWeek));
+        StoreHour storeHour = store.getStoreHourList().stream().filter( sh -> sh.getDayOfWeek() == DayOfWeek.valueOf(dayOfWeek))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(ErrorCode.BAD_REQUEST));
         if(storeHour.getClosedTime().isBefore(requestDto.getReservationDate().toLocalTime()) || requestDto.getReservationDate().toLocalTime().isBefore(storeHour.getOpenTime())){
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
@@ -93,10 +94,10 @@ public class ReservationService {
         List<HashMap<String, Long>> menuList = requestDto.getMenuList();
         List<Menu> menus = new ArrayList<>();
         List<Long> menucounts = new ArrayList<>();
-        for(HashMap<String, Long> menu : menuList){
-
+        menuList.forEach(menu -> {
             Long menuId = menu.get("menuId"); // 예약한 메뉴의 아이디값을 가져옴
             Long menuCount = menu.get("menuCount");
+
             boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
 
             if(!isMenuExist){
@@ -105,8 +106,7 @@ public class ReservationService {
             Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
             menus.add(addMenu);
             menucounts.add(menuCount);
-
-        }
+        });
 
 
         // TODO : 인원수에 해당하는 자리가 남아 있는가?  -> 예약 불가 : 전화 문의하기
@@ -126,6 +126,7 @@ public class ReservationService {
         //파티 생성 후 예약 만들기 -> 예약 만들때 파티가 자동으로 동기화
         Party party = new Party();
         Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getPersonnelCount(), store, party );
+        partyRepository.save(party);
 
         //예약 인원 추가
         PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
