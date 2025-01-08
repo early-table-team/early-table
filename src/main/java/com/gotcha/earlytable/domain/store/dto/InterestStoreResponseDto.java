@@ -22,7 +22,8 @@ public class InterestStoreResponseDto {
 
     private final String storeImageUrl;
 
-    public InterestStoreResponseDto(Long storeId, String storeName, String storeContent, StoreCategory storeCategory, String presentMenu, Double averageRating, Long countReview, String storeImageUrl) {
+    public InterestStoreResponseDto(Long storeId, String storeName, String storeContent, StoreCategory storeCategory,
+                                    String presentMenu, Double averageRating, Long countReview, String storeImageUrl) {
         this.storeId = storeId;
         this.storeName = storeName;
         this.storeContent = storeContent;
