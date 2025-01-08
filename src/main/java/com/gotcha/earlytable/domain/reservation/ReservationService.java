@@ -2,6 +2,9 @@ package com.gotcha.earlytable.domain.reservation;
 
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
+import com.gotcha.earlytable.domain.store.StoreRepository;
+import com.gotcha.earlytable.domain.store.StoreService;
+import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,16 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final StoreRepository storeRepository;
 
-    public ReservationService(ReservationRepository reservationRepository) {
+    public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository) {
         this.reservationRepository = reservationRepository;
+        this.storeRepository = storeRepository;
     }
 
     @Transactional
     public ReservationCreateResponseDto createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
 
         // TODO : 해당 가게가 존재 하는가?
-
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
         // TODO : 가게 예약 타입이 예약이 맞는가? -> 예약이 가능한지
 
         // TODO : 휴무날짜는 아닌가?
