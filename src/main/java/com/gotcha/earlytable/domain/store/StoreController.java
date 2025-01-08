@@ -98,7 +98,7 @@ public class StoreController {
      * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
-    @PatchMapping("/{storeId}/rest")
+    @PatchMapping("/{storeId}/status/rest")
     public ResponseEntity<String> storeStatusRest( @PathVariable Long storeId,
                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
