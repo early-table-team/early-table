@@ -1,9 +1,12 @@
 package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.file.FileRepository;
+import com.gotcha.earlytable.domain.file.FileStatus;
+import com.gotcha.earlytable.domain.file.ImageFileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.file.entity.ImageFile;
 import com.gotcha.earlytable.domain.menu.MenuRepository;
+import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.review.ReviewRepository;
 import com.gotcha.earlytable.domain.store.dto.InterestStoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.InterestStoreResponseDto;
@@ -24,13 +27,15 @@ public class InterestStoreService {
     private final StoreRepository storeRepository;
     private final MenuRepository menuRepository;
     private final ReviewRepository reviewRepository;
+    private final ImageFileRepository imageFileRepository;
 
-    public InterestStoreService(InterestStoreRepository interestStoreRepository, StoreRepository storeRepository, MenuRepository menuRepository, ReviewRepository reviewRepository) {
+    public InterestStoreService(InterestStoreRepository interestStoreRepository, StoreRepository storeRepository, MenuRepository menuRepository, ReviewRepository reviewRepository, ImageFileRepository imageFileRepository) {
 
         this.interestStoreRepository = interestStoreRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
         this.reviewRepository = reviewRepository;
+        this.imageFileRepository = imageFileRepository;
     }
 
     /**
@@ -63,10 +68,10 @@ public class InterestStoreService {
             String storeName = store.getStoreName();
             String storeContent = store.getStoreContents();
             StoreCategory storeCategory = store.getStoreCategory();
-            String presentMenu = menuRepository.findByStore(store);
+            String presentMenu = menuRepository.findByStoreStoreIdAndMenuStatus(store.getStoreId(), MenuStatus.RECOMMENDED).getMenuName();
             Double averageRating = reviewRepository.findAverageRatingByStore(store);
             Long countReview = reviewRepository.countReviewsByStore(store);
-            String storeImage = storeRepository.findImageFilesByStoreId(store.getStoreId()).getFileUrl();
+            String storeImage = imageFileRepository.findByFileStoreStoreIdAndFileStatus(store.getStoreId(), FileStatus.REPRESENTATIVE).getFileUrl();
 
             InterestStoreResponseDto responseDto = new  InterestStoreResponseDto(storeId, storeName, storeContent, storeCategory, presentMenu, averageRating, countReview, storeImage);
 

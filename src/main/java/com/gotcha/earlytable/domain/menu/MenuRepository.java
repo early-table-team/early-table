@@ -16,7 +16,6 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
-    @Query("SELECT m FROM Menu m WHERE m.store = :store AND m.menuStatus = '추천'")
-    String findByStore(Store store);
+    Menu findByStoreStoreIdAndMenuStatus(Long storeId, MenuStatus menuStatus);
 
 }
