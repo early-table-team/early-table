@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.store.dto;
+package com.gotcha.earlytable.domain.pendingstore.dto;
 
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import jakarta.persistence.EnumType;
@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Getter
-public class StoreRequestDto {
+public class PendingStoreRequestDto {
 
     @NotNull
     private final Long userId;
@@ -44,9 +44,9 @@ public class StoreRequestDto {
     private final List<MultipartFile> storeImageList;
 
 
-    public StoreRequestDto(Long userId, Long fileId, String storeName, String storeTel, String storeAddress,
-                           String storeContents, String regionTop, String regionBottom,
-                           StoreCategory storeCategory, List<MultipartFile> storeImageList) {
+    public PendingStoreRequestDto(Long userId, Long fileId, String storeName, String storeTel, String storeAddress, String storeContents,
+                                  String regionTop, String regionBottom,
+                                  StoreCategory storeCategory, List<MultipartFile> storeImageList) {
 
         this.userId = userId;
         this.fileId = fileId;
@@ -59,5 +59,4 @@ public class StoreRequestDto {
         this.storeCategory = storeCategory;
         this.storeImageList = storeImageList;
     }
-  
 }

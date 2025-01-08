@@ -22,4 +22,15 @@ public class FileService {
 
         return fileRepository.save(file);
     }
+
+    /**
+     * 파일 조회 메서드
+     *
+     * @param fileId
+     * @return File
+     */
+    public File getFile(Long fileId) {
+
+        return fileRepository.findByIdOrElseThrow(fileId);
+    }
 }
