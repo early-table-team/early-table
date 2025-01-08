@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.store.entity;
 
+import com.gotcha.earlytable.domain.store.dto.StoreHourRequestDto;
 import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.global.base.BaseEntity;
@@ -32,7 +33,7 @@ public class StoreHour extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private DayStatus dayStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "store_id")
     private Store store;
 
@@ -51,6 +52,22 @@ public class StoreHour extends BaseEntity {
 
     private void addStore(Store store) {
         this.store = store;
-        store.getStoreHourOffList().add(this);
+        store.getStoreHourList().add(this);
+    }
+
+    public void updateStoreHour(StoreHourRequestDto requestDto) {
+
+        if (requestDto.getDayOfWeek() != null) {
+            this.dayOfWeek = requestDto.getDayOfWeek();
+        }
+        if (requestDto.getOpenTime() != null) {
+            this.openTime = requestDto.getOpenTime();
+        }
+        if (requestDto.getClosedTime() != null) {
+            this.closedTime = requestDto.getClosedTime();
+        }
+        if (requestDto.getDayStatus() != null) {
+            this.dayStatus = requestDto.getDayStatus();
+        }
     }
 }
