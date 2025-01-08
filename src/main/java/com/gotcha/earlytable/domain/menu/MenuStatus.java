@@ -9,6 +9,7 @@ public enum MenuStatus {
 
     private final String menuStatusName;
 
+
     MenuStatus(String menuStatusName) {
         this.menuStatusName = menuStatusName;
     }
