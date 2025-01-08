@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.reservation;
 
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
+import com.gotcha.earlytable.domain.reservation.dto.ReservationGetAllResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -9,10 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class ReservationController {
@@ -38,5 +38,20 @@ public class ReservationController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resDto);
     }
+
+    /**
+     *  예약 전체조회 API
+     * @param userDetails
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("reservations")
+    public ResponseEntity<List<ReservationGetAllResponseDto>> getAllReservations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body(resDto);
+    }
+
 
 }
