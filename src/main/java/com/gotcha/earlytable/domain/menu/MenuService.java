@@ -93,6 +93,10 @@ public class MenuService {
      * 메뉴 삭제 서비스 메서드
      */
     public void deleteMenu(Long menuId) {
+        if(!menuRepository.existsById(menuId)){
+            throw new NotFoundException(ErrorCode.NOT_FOUND);
+        }
+        
         menuRepository.deleteById(menuId);
     }
 }
