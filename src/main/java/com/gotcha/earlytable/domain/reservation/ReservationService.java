@@ -73,7 +73,7 @@ public class ReservationService {
 
         // TODO : 휴무날짜는 아닌가?
         LocalDate reservationDate = requestDto.getReservationDate().toLocalDate(); //휴무 날짜비교를 위해 LocalDate로 받아옴
-        List<StoreDayOff> storeOffDay = store.getStoreDayOffList();
+        List<StoreRest> storeOffDay = store.getStoreRestList();
         boolean isOffDay = storeOffDay.stream().anyMatch(storeDayOff -> storeDayOff.getStoreOffDay().equals(reservationDate));
         if(isOffDay){ //휴무일에 예약을 하려는 경우
             throw new BadRequestException(ErrorCode.BAD_REQUEST);

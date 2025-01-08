@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @Entity
-@Table(name = "store_day_off")
+@Table(name = "store_rest")
 public class StoreRest extends BaseEntity {
 
     @Id
