@@ -114,7 +114,6 @@ public class ReservationService {
             throw new BadRequestException(ErrorCode.NO_SEAT);
         }
 
-
         // TODO : OK 그럼 예약 생성해줄게
         //파티 생성 후 예약 만들기 -> 예약 만들때 파티가 자동으로 동기화
         Party party = new Party();
