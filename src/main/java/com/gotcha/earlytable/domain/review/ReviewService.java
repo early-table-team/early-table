@@ -6,6 +6,7 @@ import com.gotcha.earlytable.domain.review.dto.ReviewRequestDto;
 import com.gotcha.earlytable.domain.review.dto.ReviewResponseDto;
 import com.gotcha.earlytable.domain.review.dto.ReviewTotalResponseDto;
 import com.gotcha.earlytable.domain.review.entity.Review;
+import com.gotcha.earlytable.domain.review.enums.ReviewStatus;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
@@ -43,6 +44,7 @@ public class ReviewService {
         Review review = new Review(
                 reviewRequestDto.getRating(),
                 reviewRequestDto.getReviewContent(),
+                ReviewStatus.NORMAL,
                 store,
                 user,
                 file
@@ -99,11 +101,11 @@ public class ReviewService {
     /**
      * 리뷰 삭제 서비스 메서드
      */
+    @Transactional
     public void deleteReview(Long reviewId) {
-        if(!reviewRepository.existsById(reviewId)){
-            throw new NotFoundException(ErrorCode.NOT_FOUND);
-        }
+        Review review = reviewRepository.findByIdOrElseThrow(reviewId);
 
-        reviewRepository.deleteById(reviewId);
+        //탈퇴 상태로 업데이트
+        review.updateReviewStatusToDeleted();
     }
 }
