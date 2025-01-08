@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
+import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -13,6 +14,8 @@ import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class StoreService {
@@ -134,13 +137,30 @@ public class StoreService {
         storeRepository.save(store);
     }
 
-    @Transactional
-    public void updateStoreStatus(Long storeId, StoreStatus storeStatus) {
+    /**
+     * 가게 단건 조회 메서드
+     *
+     * @param storeId
+     * @return StoreResponseDto
+     */
+    public StoreResponseDto getStore(Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        store.updateStoreStatus(storeStatus);
+        return StoreResponseDto.toDto(store);
+    }
 
-        storeRepository.save(store);
+
+    /**
+     * 나의 가게 전체 조회 메서드
+     *
+     * @param userId
+     * @return List<StoreListResponseDto>
+     */
+    public List<StoreListResponseDto> getStores(Long userId) {
+
+        List<Store> storeList = storeRepository.findAllByUserId(userId);
+
+        return storeList.stream().map(StoreListResponseDto::toDto).toList();
     }
 }
