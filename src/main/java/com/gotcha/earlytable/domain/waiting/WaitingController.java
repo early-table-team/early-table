@@ -1,18 +1,18 @@
 package com.gotcha.earlytable.domain.waiting;
 
-import com.gotcha.earlytable.domain.waiting.dto.WaitingOfflineRequestDto;
-import com.gotcha.earlytable.domain.waiting.dto.WaitingOfflineResponseDto;
-import com.gotcha.earlytable.domain.waiting.dto.WaitingOnlineRequestDto;
-import com.gotcha.earlytable.domain.waiting.dto.WaitingOnlineResponseDto;
+import com.gotcha.earlytable.domain.review.dto.ReviewResponseDto;
+import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.domain.waiting.dto.*;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
+import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class WaitingController {
@@ -53,5 +53,25 @@ public class WaitingController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
+
+
+    /**
+     * 웨이팅 목록 조회 API
+     *
+     * @param userDetails
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("waiting")
+    public ResponseEntity<List<WaitingListResponseDto>> getWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        // 로그인된 유저 정보 가져오기
+        User user = userDetails.getUser();
+
+        List<WaitingListResponseDto> responseDtos = waitingService.getWaitingList(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDtos);
+    }
+
 }
 
