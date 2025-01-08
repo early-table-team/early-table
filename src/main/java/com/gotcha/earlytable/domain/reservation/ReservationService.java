@@ -54,6 +54,13 @@ public class ReservationService {
         this.partyPeopleRepository = partyPeopleRepository;
     }
 
+    /**
+     *
+     * @param storeId
+     * @param requestDto
+     * @param user
+     * @return  ReservationCreateResponseDto
+     */
     @Transactional
     public ReservationCreateResponseDto createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
 

@@ -23,7 +23,13 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-
+    /**
+     *
+     * @param storeId
+     * @param requestDto
+     * @param userDetails
+     * @return  ResponseEntity<ReservationCreateResponseDto>
+     */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/reservations")
     public ResponseEntity<ReservationCreateResponseDto> createReservation(@PathVariable Long storeId, @RequestBody ReservationCreateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
