@@ -1,5 +1,6 @@
-package com.gotcha.earlytable.domain.store.entity;
+package com.gotcha.earlytable.domain.keyword.entity;
 
+import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;

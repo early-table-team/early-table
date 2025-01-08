@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.store.entity;
 
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
