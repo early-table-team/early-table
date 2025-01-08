@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.reservation;
 
 import com.gotcha.earlytable.domain.menu.MenuRepository;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
+import com.gotcha.earlytable.domain.party.PartyPeopleRepository;
 import com.gotcha.earlytable.domain.party.PartyRepository;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
@@ -137,6 +138,9 @@ public class ReservationService {
         availableTable.decreaseRemainTable();
         availableTableRepository.save(availableTable);
 
+        ReservationCreateResponseDto responseDto = new ReservationCreateResponseDto(reservation.getReservationId(), requestDto);
+
+        return responseDto;
     }
 
 
