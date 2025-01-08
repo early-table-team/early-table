@@ -6,10 +6,7 @@ import com.gotcha.earlytable.domain.party.PartyPeopleRepository;
 import com.gotcha.earlytable.domain.party.PartyRepository;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationGetAllResponseDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationGetOneResponseDto;
+import com.gotcha.earlytable.domain.reservation.dto.*;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
 import com.gotcha.earlytable.domain.store.*;
@@ -192,6 +189,46 @@ public class ReservationService {
                 });
 
         return new ReservationGetOneResponseDto(reservation, user, menuList);
+    }
+
+    /**
+     *  예약 메뉴 변경 메서드
+     * @param reservationId
+     * @param user
+     * @param requestDto
+     * @return
+     */
+    @Transactional
+    public ReservationGetOneResponseDto updateReservation(Long reservationId, User user, ReservationUpdateRequestDto requestDto) {
+
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        Store store = reservation.getStore();
+        reservationMenuRepository.deleteById(reservationId);
+        List<HashMap<String, Long>> menuList = requestDto.getMenuList();
+
+        List<Menu> menus = new ArrayList<>();
+        List<Long> menuCounts = new ArrayList<>();
+
+        menuList.forEach(menu -> {
+            Long menuId = menu.get("menuId"); // 예약한 메뉴의 아이디값을 가져옴
+            Long menuCount = menu.get("menuCount");
+
+            boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
+
+            if(!isMenuExist){
+                throw new BadRequestException(ErrorCode.BAD_REQUEST);
+            }
+            Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
+            menus.add(addMenu);
+            menuCounts.add(menuCount);
+        });
+
+        for(int i = 0; i < menus.size(); i++){
+            ReservationMenu reservationMenu = new ReservationMenu(menus.get(i), reservation, menuCounts.get(i));
+            reservationMenuRepository.save(reservationMenu);
+        }
+
+        return new ReservationGetOneResponseDto(reservation, user, requestDto.getMenuList());
     }
 
 

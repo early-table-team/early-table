@@ -1,9 +1,6 @@
 package com.gotcha.earlytable.domain.reservation;
 
-import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationGetAllResponseDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationGetOneResponseDto;
+import com.gotcha.earlytable.domain.reservation.dto.*;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -68,6 +65,22 @@ public class ReservationController {
 
         return ResponseEntity.status(HttpStatus.OK).body(resDto);
     }
+
+    /**
+     *  예약 메뉴 변경 API
+     * @param reservationId
+     * @param userDetails
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @PatchMapping("/reseravtions/{reservationId}")
+    public ResponseEntity<ReservationGetOneResponseDto> updateReservation(@PathVariable Long reservationId, @RequestBody ReservationUpdateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        ReservationGetOneResponseDto resDto = reservationService.updateReservation(reservationId, userDetails.getUser(), requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(resDto);
+    }
+
 
 
 }
