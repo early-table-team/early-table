@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.review.entity;
 
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.review.dto.ReviewRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.base.BaseEntity;
@@ -40,4 +41,13 @@ public class Review extends BaseEntity {
     }
 
     public Review() {}
+
+    public void updateReview(ReviewRequestDto reviewRequestDto) {
+        if(reviewRequestDto.getRating() != null) {
+            this.rating = reviewRequestDto.getRating();
+        }
+        if(reviewRequestDto.getReviewContent() != null) {
+            this.reviewContent = reviewRequestDto.getReviewContent();
+        }
+    }
 }
