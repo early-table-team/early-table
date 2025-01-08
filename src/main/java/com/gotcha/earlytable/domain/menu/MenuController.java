@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/stores")
+@RequestMapping("/stores/{storeId}/menus")
 public class MenuController {
 
     private final MenuService menuService;
@@ -29,7 +29,7 @@ public class MenuController {
      * @param menuRequestDto
      * @return MenuResponseDto
      */
-    @PostMapping("/{storeId}/menus")
+    @PostMapping
     public ResponseEntity<MenuResponseDto> createMenu(@PathVariable Long storeId,
                                                       @ModelAttribute MenuRequestDto menuRequestDto) throws IOException {
 
@@ -45,7 +45,7 @@ public class MenuController {
      * @param menuRequestDto
      * @return MenuResponseDto
      */
-    @PutMapping("/{storeId}/menus/{menuId}")
+    @PutMapping("/{menuId}")
     public ResponseEntity<MenuResponseDto> updateMenu(@PathVariable Long storeId, @PathVariable Long menuId,
                                                       @ModelAttribute MenuRequestDto menuRequestDto) {
         MenuResponseDto updateMenuResponseDto = menuService.updateMenu(storeId, menuId, menuRequestDto);
@@ -58,7 +58,7 @@ public class MenuController {
      * @param storeId
      * @return MenuResponseDto
      */
-    @GetMapping("/{storeId}/menus")
+    @GetMapping
     public ResponseEntity<List<MenuResponseDto>> getMenus(@PathVariable Long storeId) {
         List<MenuResponseDto> menuResponseDtoList = menuService.getMenus(storeId);
 
@@ -70,7 +70,7 @@ public class MenuController {
      * @param menuId
      * @return String
      */
-    @DeleteMapping("{storeId}/menus/{menuId}")
+    @DeleteMapping("/{menuId}")
     public ResponseEntity<String> deleteMenu(@PathVariable Long menuId) {
 
         menuService.deleteMenu(menuId);
