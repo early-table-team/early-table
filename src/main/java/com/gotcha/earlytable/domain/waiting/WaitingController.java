@@ -61,6 +61,7 @@ public class WaitingController {
      * @param userDetails
      * @return
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("waiting")
     public ResponseEntity<List<WaitingListResponseDto>> getWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
