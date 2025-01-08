@@ -19,16 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class WaitingService {
 
     private final WaitingRepository waitingRepository;
-    StoreRepository storeRepository;
+    private final StoreRepository storeRepository;
     private final PartyRepository partyRepository;
+    private final OfflineUserRepository offlineUserRepository;
 
-    public WaitingService(WaitingRepository waitingRepository, PartyRepository partyRepository) {
+    public WaitingService(WaitingRepository waitingRepository, StoreRepository storeRepository, PartyRepository partyRepository, OfflineUserRepository offlineUserRepository) {
         this.waitingRepository = waitingRepository;
+        this.storeRepository = storeRepository;
         this.partyRepository = partyRepository;
+        this.offlineUserRepository = offlineUserRepository;
     }
 
     /**
-     * 웨이팅 생성 API
+     * 원격 웨이팅 생성 API
      *
      * @param requestDto
      * @param storeId
@@ -48,7 +51,13 @@ public class WaitingService {
         return new WaitingOnlineResponseDto(savedWaiting);
     }
 
-
+    /**
+     * 현장 웨이팅 생성 API
+     *
+     * @param requestDto
+     * @param storeId
+     * @return
+     */
     @Transactional
     public WaitingOfflineResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
 
@@ -56,7 +65,9 @@ public class WaitingService {
 
         OfflineUser offlineUser = new OfflineUser(requestDto.getPhoneNumber());
 
-        Waiting waiting = new Waiting(store, offlineUser, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
+        OfflineUser savedOfflineUser = offlineUserRepository.save(offlineUser);
+
+        Waiting waiting = new Waiting(store, savedOfflineUser, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
 
         Waiting savedWaiting = waitingRepository.save(waiting);
 

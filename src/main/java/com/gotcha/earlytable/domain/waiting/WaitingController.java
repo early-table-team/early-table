@@ -20,12 +20,13 @@ public class WaitingController {
     WaitingService waitingService;
 
     /**
-     * 웨이팅 생성 API
+     * 원격 웨이팅 생성 API
      *
      * @param requestDto
      * @param storeId
      * @return ResponseEntity
      */
+
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("stores/{storeId}/waiting/online")
     public ResponseEntity<WaitingOnlineResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
@@ -35,6 +36,14 @@ public class WaitingController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
+
+    /**
+     * 현장 웨이팅 생성 API
+     *
+     * @param requestDto
+     * @param storeId
+     * @return
+     */
 
     @PostMapping("stores/{storeId}/waiting/offline")
     public ResponseEntity<WaitingOfflineResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
