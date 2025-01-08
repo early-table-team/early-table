@@ -18,15 +18,12 @@ public class Party extends BaseEntity {
     private Long partyId;
 
     @OneToOne(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(nullable = false)
     private Waiting waiting;
 
     @OneToOne(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(nullable = false)
     private Reservation reservation;
 
     @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(nullable = true)
     private List<PartyPeople> partyPeople;
 
 
