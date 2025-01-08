@@ -1,10 +1,15 @@
 package com.gotcha.earlytable.domain.store;
 
+import com.gotcha.earlytable.domain.file.entity.ImageFile;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface StoreRepository extends JpaRepository<Store, Long> {
@@ -14,4 +19,9 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     }
 
     int countStoreByUserId(Long userId);
+
+
+    @Query("SELECT i FROM Store s JOIN s.file f JOIN f.imageFileList i WHERE s.storeId = :storeId AND i.fileStatus = com.gotcha.earlytable.domain.file.FileStatus.REPRESENTATIVE")
+    ImageFile findImageFilesByStoreId(@Param("storeId") Long storeId);
+
 }
