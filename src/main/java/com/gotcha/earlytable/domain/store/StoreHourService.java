@@ -72,7 +72,7 @@ public class StoreHourService {
         StoreHour storeHour = storeHourRepository.findByIdOrElseThrow(storeHourId);
 
         // 자신의 가게인지 확인
-        if(storeHour.getStore().getUser().getId().equals(userId)) {
+        if(!storeHour.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 

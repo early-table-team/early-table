@@ -63,7 +63,7 @@ public class Store extends BaseEntity {
     private List<StoreKeyword> storeKeywordList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreDayOff> storeDayOffList = new ArrayList<>();
+    private List<StoreRest> storeRestList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<StoreHour> storeHourList = new ArrayList<>();
