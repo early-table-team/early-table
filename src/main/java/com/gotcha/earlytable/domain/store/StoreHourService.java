@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.store.dto.StoreHourResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreHour;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,11 @@ public class StoreHourService {
         // 자신의 가게인지 확인
         if(storeHour.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 같은 요일인지 확인
+        if(requestDto.getDayOfWeek() != null && !storeHour.getDayOfWeek().equals(requestDto.getDayOfWeek())) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
         // 수정
