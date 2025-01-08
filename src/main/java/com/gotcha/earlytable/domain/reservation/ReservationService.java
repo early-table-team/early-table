@@ -145,7 +145,7 @@ public class ReservationService {
         availableTable.decreaseRemainTable();
         availableTableRepository.save(availableTable);
 
-        ReservationCreateResponseDto responseDto = new ReservationCreateResponseDto(reservation.getReservationId(), requestDto);
+        ReservationCreateResponseDto responseDto = new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate(),requestDto.getPersonnelCount(), requestDto.getMenuList());
 
         return responseDto;
     }
