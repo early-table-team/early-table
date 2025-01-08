@@ -55,7 +55,7 @@ public class ReservationService {
     }
 
     /**
-     *
+     *  예약잡기 메서드
      * @param storeId
      * @param requestDto
      * @param user

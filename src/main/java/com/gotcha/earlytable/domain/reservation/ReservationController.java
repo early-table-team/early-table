@@ -24,7 +24,7 @@ public class ReservationController {
     }
 
     /**
-     *
+     * 예약 잡기 API
      * @param storeId
      * @param requestDto
      * @param userDetails
