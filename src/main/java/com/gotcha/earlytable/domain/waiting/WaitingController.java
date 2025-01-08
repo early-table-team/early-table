@@ -1,6 +1,5 @@
 package com.gotcha.earlytable.domain.waiting;
 
-import com.gotcha.earlytable.domain.review.dto.ReviewResponseDto;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.dto.*;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
@@ -45,11 +44,11 @@ public class WaitingController {
      * @return
      */
 
-    @PostMapping("stores/{storeId}/waiting/offline")
-    public ResponseEntity<WaitingOfflineResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
+    @PostMapping("/stores/{storeId}/waiting/offline")
+    public ResponseEntity<WaitingNumberResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
                                                                         @PathVariable Long storeId) {
 
-        WaitingOfflineResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
+        WaitingNumberResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

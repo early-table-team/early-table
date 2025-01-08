@@ -65,7 +65,7 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingOfflineResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
+    public WaitingNumberResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
@@ -77,7 +77,7 @@ public class WaitingService {
 
         Waiting savedWaiting = waitingRepository.save(waiting);
 
-        return new WaitingOfflineResponseDto(savedWaiting);
+        return new WaitingNumberResponseDto(savedWaiting);
     }
 
     /**

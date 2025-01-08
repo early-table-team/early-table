@@ -4,10 +4,10 @@ import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import lombok.Getter;
 
 @Getter
-public class WaitingOfflineResponseDto {
+public class WaitingNumberResponseDto {
     private final Long waitingNumber;
 
-    public WaitingOfflineResponseDto(Waiting waiting) {
+    public WaitingNumberResponseDto(Waiting waiting) {
         this.waitingNumber = waiting.getWaitingId();
     }
 }
