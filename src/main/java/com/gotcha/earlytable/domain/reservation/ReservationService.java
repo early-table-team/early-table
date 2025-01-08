@@ -8,6 +8,7 @@ import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
+import com.gotcha.earlytable.domain.reservation.dto.ReservationGetAllResponseDto;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
 import com.gotcha.earlytable.domain.store.*;
@@ -125,7 +126,7 @@ public class ReservationService {
         // TODO : OK 그럼 예약 생성해줄게
         //파티 생성 후 예약 만들기 -> 예약 만들때 파티가 자동으로 동기화
         Party party = new Party();
-        Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getPersonnelCount(), store, party );
+        Reservation reservation = new Reservation(requestDto.getReservationDate(), requestDto.getPersonnelCount(), store, party );
         partyRepository.save(party);
 
         //예약 인원 추가
@@ -151,5 +152,20 @@ public class ReservationService {
         return responseDto;
     }
 
+    /**
+     *  예약 전체 조회 메서드
+     * @param user
+     * @return
+     */
+    public List<ReservationGetAllResponseDto> getAllReservations(User user) {
 
+        List<Reservation> reservations = reservationRepository.findByUser(user);
+        List<ReservationGetAllResponseDto> resDto = new ArrayList<>();
+        reservations.forEach(reservation -> {
+            ReservationGetAllResponseDto reservationGetAllResponseDto = new ReservationGetAllResponseDto(reservation);
+            resDto.add(reservationGetAllResponseDto);
+        });
+
+        return resDto;
+    }
 }
