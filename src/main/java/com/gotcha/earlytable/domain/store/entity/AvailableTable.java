@@ -1,6 +1,8 @@
 package com.gotcha.earlytable.domain.store.entity;
 
 import com.gotcha.earlytable.global.base.BaseEntity;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -19,7 +21,7 @@ public class AvailableTable extends BaseEntity {
     private LocalDate presentReservationDate;
 
     @Column(nullable = false)
-    private Integer RemainTable;
+    private Integer remainTable;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,7 +30,7 @@ public class AvailableTable extends BaseEntity {
 
     public AvailableTable(LocalDate presentReservationDate, Integer remainTable, ReservationMaster reservationMaster) {
         this.presentReservationDate = presentReservationDate;
-        this.RemainTable = remainTable;
+        this.remainTable = remainTable;
         addReservationMaster(reservationMaster);
     }
 
@@ -40,4 +42,13 @@ public class AvailableTable extends BaseEntity {
         this.reservationMaster = reservationMaster;
         reservationMaster.getAvailableTableList().add(this);
     }
+
+    public void decreaseRemainTable(){
+        if(this.remainTable > 0 ){
+            this.remainTable--;
+        }else{
+            throw new BadRequestException(ErrorCode.NO_SEAT);
+        }
+    }
+
 }
