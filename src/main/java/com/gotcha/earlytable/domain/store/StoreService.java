@@ -41,7 +41,9 @@ public class StoreService {
         File file = fileRepository.findByIdOrElseThrow(requestDto.getFileId());
 
         // 가게 개수 제한 10개 이하 확인
+
         if (storeRepository.countStoreByUserId(requestDto.getUserId()) >= 10) {
+
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 

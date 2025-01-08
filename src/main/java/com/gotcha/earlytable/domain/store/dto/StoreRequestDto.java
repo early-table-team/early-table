@@ -59,5 +59,5 @@ public class StoreRequestDto {
         this.storeCategory = storeCategory;
         this.storeImageList = storeImageList;
     }
-
+  
 }
