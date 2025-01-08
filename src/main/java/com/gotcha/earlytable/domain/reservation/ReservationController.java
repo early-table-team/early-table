@@ -82,5 +82,20 @@ public class ReservationController {
     }
 
 
+    /**
+     *  예약 취소 API
+     * @param reservationId
+     * @return  ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @DeleteMapping("/reservations/{reservationId}")
+    public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId) {
+
+        reservationService.cancelReservation(reservationId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("예약이 취소되었습니다.");
+    }
+
+
 
 }
