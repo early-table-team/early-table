@@ -9,12 +9,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     default Menu findByIdOrElseThrow(Long id){
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
+
+    List<Menu> findAllByStoreStoreId(Long storeId);
 
     Menu findByStoreStoreIdAndMenuStatus(Long storeId, MenuStatus menuStatus);
 
