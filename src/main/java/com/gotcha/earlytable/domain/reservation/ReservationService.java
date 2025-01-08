@@ -237,6 +237,7 @@ public class ReservationService {
      *  예약 취소 메서드
      * @param reservationId
      */
+    @Transactional
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
 
