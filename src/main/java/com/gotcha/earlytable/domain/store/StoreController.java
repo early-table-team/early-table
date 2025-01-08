@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
+import com.gotcha.earlytable.domain.store.dto.StoreStatusRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -86,5 +87,39 @@ public class StoreController {
         List<StoreListResponseDto> storeListResponseDtoList = storeService.getStores(userDetails.getUser().getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(storeListResponseDtoList);
+    }
+
+
+    /**
+     * 가게 휴업 상태 <-> 영업 상태 변경 API
+     *
+     * @param storeId
+     * @param userDetails
+     * @return ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @PatchMapping("/{storeId}/rest")
+    public ResponseEntity<String> storeStatusRest( @PathVariable Long storeId,
+                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        String message = storeService.updateStoreStatus(storeId, userDetails.getUser().getId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(message);
+    }
+
+    /**
+     * 가게 상태 변경 (Admin)
+     *
+     * @param storeId
+     * @return ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
+    @PatchMapping("/{storeId}/status")
+    public ResponseEntity<String> updateStoreStatus( @PathVariable Long storeId,
+                                                     @RequestBody StoreStatusRequestDto requestDto) {
+
+        storeService.updateStoreStatus(storeId, requestDto.getStoreStatus());
+
+        return ResponseEntity.status(HttpStatus.OK).body("가게 상태 변경이 완료되었습니다.");
     }
 }
