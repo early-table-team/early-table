@@ -52,4 +52,19 @@ public class InterestStoreController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
+
+    /**
+     *  관심가게 삭제 API
+     * @param storeId
+     * @param userDetails
+     * @return  ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @DeleteMapping("/{storeId}")
+    public ResponseEntity<String> deleteStore(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+
+        interestStoreService.deleteStore(storeId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body("관심가게에서 삭제가 완료되었습니다.");
+    }
 }
