@@ -11,4 +11,6 @@ import java.util.List;
 public interface InterestStoreRepository extends JpaRepository<InterestStore, Long> {
 
     List<Store> findByUserId(Long id);
+
+    InterestStore findByStoreAndUserId(Store store, Long userId);
 }
