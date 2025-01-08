@@ -1,5 +1,7 @@
 package com.gotcha.earlytable.domain.menu.entity;
 
+import com.gotcha.earlytable.domain.menu.dto.AllergyDetailRequestDto;
+import com.gotcha.earlytable.domain.menu.dto.MenuRequestDto;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -35,5 +37,17 @@ public class AllergyDetail extends BaseEntity {
 
     public AllergyDetail() {
 
+    }
+
+    public void updateAllergyDetail(AllergyDetailRequestDto allergyDetailRequestDto) {
+        if(allergyDetailRequestDto.getAllergyName() != null) {
+            this.allergyName = allergyDetailRequestDto.getAllergyName();
+        }
+        if(allergyDetailRequestDto.getAllergyStuff() != null) {
+            this.allergyStuff = allergyDetailRequestDto.getAllergyStuff();
+        }
+        if(allergyDetailRequestDto.getAllergyContents() != null) {
+            this.allergyContents = allergyDetailRequestDto.getAllergyContents();
+        }
     }
 }
