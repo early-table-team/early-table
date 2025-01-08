@@ -13,6 +13,7 @@ import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.domain.waiting.entity.WaitingNumber;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import jakarta.validation.Valid;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,5 +121,12 @@ public class WaitingService {
         waitingNumberRepository.save(waitingNumber);
 
         return new WaitingNumberResponseDto(waiting);
+    }
+
+
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void resetWaitingNumber() {
+        waitingNumberRepository.deleteAll();
     }
 }
