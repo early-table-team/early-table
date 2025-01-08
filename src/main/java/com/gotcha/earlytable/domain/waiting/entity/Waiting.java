@@ -29,6 +29,10 @@ public class Waiting extends BaseEntity {
     @JoinColumn(nullable = true)
     private OfflineUser offlineUser;
 
+    @OneToOne()
+    @JoinColumn(name = "waiting_number_id", nullable = false)
+    private WaitingNumber waitingNumber;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private WaitingType waitingType;
@@ -44,18 +48,20 @@ public class Waiting extends BaseEntity {
     }
 
     public Waiting(Store store, Party party, WaitingType waitingType,
-                   Integer personnelCount, WaitingStatus waitingStatus) {
+                   Integer personnelCount, WaitingStatus waitingStatus, WaitingNumber waitingNumber) {
         addStore(store);
         addParty(party);
+        addWaitingNumber(waitingNumber);
         this.waitingType = waitingType;
         this.personnelCount = personnelCount;
         this.waitingStatus = waitingStatus;
     }
 
     public Waiting(Store store, OfflineUser offlineUser, WaitingType waitingType,
-                   Integer personnelCount, WaitingStatus waitingStatus) {
+                   Integer personnelCount, WaitingStatus waitingStatus, WaitingNumber waitingNumber) {
         addStore(store);
         addOfflineUser(offlineUser);
+        addWaitingNumber(waitingNumber);
         this.waitingType = waitingType;
         this.personnelCount = personnelCount;
         this.waitingStatus = waitingStatus;
@@ -74,5 +80,10 @@ public class Waiting extends BaseEntity {
     private void addOfflineUser(OfflineUser offlineUser) {
         this.offlineUser = offlineUser;
         offlineUser.addWaiting(this);
+    }
+
+    private void addWaitingNumber(WaitingNumber waitingNumber) {
+        this.waitingNumber = waitingNumber;
+        waitingNumber.addWaiting(this);
     }
 }
