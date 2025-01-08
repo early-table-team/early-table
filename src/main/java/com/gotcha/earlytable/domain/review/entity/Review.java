@@ -31,5 +31,13 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "file_id", nullable = false)
     private File file;
 
+    public Review(int rating, String reviewContent, Store store, User user, File file) {
+        this.rating = rating;
+        this.reviewContent = reviewContent;
+        this.store = store;
+        this.user = user;
+        this.file = file;
+    }
+
     public Review() {}
 }
