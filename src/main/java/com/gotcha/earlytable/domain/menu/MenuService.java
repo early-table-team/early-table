@@ -2,15 +2,16 @@ package com.gotcha.earlytable.domain.menu;
 
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
-import com.gotcha.earlytable.domain.file.entity.ImageFile;
+
 import com.gotcha.earlytable.domain.menu.dto.MenuRequestDto;
 import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
