@@ -1,7 +1,9 @@
 package com.gotcha.earlytable.domain.waiting;
 
-import com.gotcha.earlytable.domain.waiting.dto.WaitingRequestDto;
-import com.gotcha.earlytable.domain.waiting.dto.WaitingResponseDto;
+import com.gotcha.earlytable.domain.waiting.dto.WaitingOfflineRequestDto;
+import com.gotcha.earlytable.domain.waiting.dto.WaitingOfflineResponseDto;
+import com.gotcha.earlytable.domain.waiting.dto.WaitingOnlineRequestDto;
+import com.gotcha.earlytable.domain.waiting.dto.WaitingOnlineResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
@@ -25,11 +27,20 @@ public class WaitingController {
      * @return ResponseEntity
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @PostMapping("stores/{storeId}/waiting")
-    public ResponseEntity<WaitingResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingRequestDto requestDto,
-                                                           @PathVariable Long storeId) {
+    @PostMapping("stores/{storeId}/waiting/online")
+    public ResponseEntity<WaitingOnlineResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
+                                                                       @PathVariable Long storeId) {
 
-        WaitingResponseDto responseDto = waitingService.creatWaitingOnline(requestDto, storeId);
+        WaitingOnlineResponseDto responseDto = waitingService.creatWaitingOnline(requestDto, storeId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    @PostMapping("stores/{storeId}/waiting/offline")
+    public ResponseEntity<WaitingOfflineResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
+                                                                        @PathVariable Long storeId) {
+
+        WaitingOfflineResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
