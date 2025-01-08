@@ -15,6 +15,7 @@ import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import org.springframework.http.ResponseEntity;
@@ -242,11 +243,16 @@ public class ReservationService {
         Integer personnelCount = reservation.getPersonnelCount();
 
         ReservationMaster reservationMaster = reservationMasterRepository.findByTableMaxNumberAndReservationTime(personnelCount, reservation.getReservationDateTime().toLocalTime());
+        Integer maxNumber = reservationMaster.getTableMaxNumber();
+        reservation.modifyStatus(ReservationStatus.CANCELED);
 
         AvailableTable availableTable = availableTableRepository.findByReservationMaster(reservationMaster);
         availableTable.increaseRemainTable();
+        if(availableTable.getRemainTable() > maxNumber){
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
 
-        reservationRepository.delete(reservation);
+        reservationRepository.save(reservation);
         availableTableRepository.save(availableTable);
 
     }
