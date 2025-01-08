@@ -35,6 +35,11 @@ public class InterestStoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body("관심가게로 등록되었습니다.");
     }
 
+    @DeleteMapping("/{storeId}")
+    public ResponseEntity<String> deleteStore(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails){
 
+        interestStoreService.deleteStore(storeId, userDetails.getUser());
 
+        return R
+    }
 }
