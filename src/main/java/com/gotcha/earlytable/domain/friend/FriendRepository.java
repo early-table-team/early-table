@@ -6,10 +6,14 @@ import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     default Friend findByIdOrElseThrow(Long id){
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
+
+    List<Friend> findBySendUserId(Long id);
 }
