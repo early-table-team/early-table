@@ -41,9 +41,9 @@ public class AllergyCategoryService {
 
         allergyCategory.update(allergyCategoryRequestDto);
 
-        allergyCategoryRepository.save(allergyCategory);
+        AllergyCategory updatedAllergyCategory = allergyCategoryRepository.save(allergyCategory);
 
-        return AllergyCategoryResponseDto.toDto(allergyCategory);
+        return AllergyCategoryResponseDto.toDto(updatedAllergyCategory);
     }
 
     /**

@@ -50,9 +50,10 @@ public class AllergyStuffService {
         AllergyStuff allergyStuff = allergyStuffRepository.findByIdOrElseThrow(stuffId);
 
         allergyStuff.update(allergyStuffRequestDto);
-        allergyStuffRepository.save(allergyStuff);
 
-        return AllergyStuffResponseDto.toDto(allergyStuff);
+        AllergyStuff updatedAllergyStuff = allergyStuffRepository.save(allergyStuff);
+
+        return AllergyStuffResponseDto.toDto(updatedAllergyStuff);
     }
 
     /**

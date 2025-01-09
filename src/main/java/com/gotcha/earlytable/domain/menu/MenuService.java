@@ -76,9 +76,9 @@ public class MenuService {
         menu.updateMenu(menuRequestDto);
 
         //메뉴 저장
-        menuRepository.save(menu);
+        Menu updatedMenu = menuRepository.save(menu);
 
-        return MenuResponseDto.toDto(menu);
+        return MenuResponseDto.toDto(updatedMenu);
     }
 
     /**
