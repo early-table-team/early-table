@@ -35,7 +35,9 @@ public class AllergyStuffService {
                 allergyCategory
         );
 
-        return AllergyStuffResponseDto.toDto(allergyStuff);
+        AllergyStuff savedAllergyStuff = allergyStuffRepository.save(allergyStuff);
+
+        return AllergyStuffResponseDto.toDto(savedAllergyStuff);
     }
 
     /**

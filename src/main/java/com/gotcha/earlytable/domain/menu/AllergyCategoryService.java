@@ -25,7 +25,9 @@ public class AllergyCategoryService {
                 allergyCategoryRequestDto.getAllergyCategory()
         );
 
-        return AllergyCategoryResponseDto.toDto(allergyCategory);
+        AllergyCategory savedAllergyCategory = allergyCategoryRepository.save(allergyCategory);
+
+        return AllergyCategoryResponseDto.toDto(savedAllergyCategory);
     }
 
     /**
