@@ -6,6 +6,7 @@ import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -69,7 +70,7 @@ public class WaitingController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/waiting")
-    public ResponseEntity<List<WaitingListResponseDto>> getWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<WaitingListResponseDto>> getWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -90,8 +91,9 @@ public class WaitingController {
     @PatchMapping("/waiting/{waitingId}")
     public ResponseEntity<WaitingNumberResponseDto> delayWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                  @PathVariable Long waitingId) {
+        User user = userDetails.getUser();
 
-        WaitingNumberResponseDto responseDto = waitingService.delayWaiting(waitingId);
+        WaitingNumberResponseDto responseDto = waitingService.delayWaiting(waitingId, user);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

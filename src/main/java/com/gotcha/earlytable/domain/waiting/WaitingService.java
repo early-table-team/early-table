@@ -13,6 +13,8 @@ import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.domain.waiting.entity.WaitingNumber;
 import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import jakarta.validation.Valid;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -91,7 +93,8 @@ public class WaitingService {
     }
 
     /**
-     *  웨이팅 목록 조회 메서드
+     * 웨이팅 목록 조회 메서드
+     *
      * @param user
      * @return
      */
@@ -115,9 +118,17 @@ public class WaitingService {
 
 
     @Transactional
-    public WaitingNumberResponseDto delayWaiting(Long waitingId) {
+    public WaitingNumberResponseDto delayWaiting(Long waitingId, User user) {
 
         Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        // 로그인한 유저가 웨이팅 등록자인지 확인
+        waiting.getParty().getPartyPeople().stream()
+                .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
+                .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
+                .filter(checkUser -> checkUser.equals(user))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
 
         WaitingNumber waitingNumber = waiting.getWaitingNumber();
         waitingNumber.updateWaitingNumber(waitingRepository.countByStoreAndWaitingType(waiting.getStore(), waiting.getWaitingType()));
@@ -125,7 +136,6 @@ public class WaitingService {
 
         return new WaitingNumberResponseDto(waiting);
     }
-
 
 
     @Scheduled(cron = "0 0 0 * * *")
