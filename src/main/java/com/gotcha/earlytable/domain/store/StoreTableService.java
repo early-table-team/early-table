@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.store.dto.StoreTableGetAllResponseDto;
 import com.gotcha.earlytable.domain.store.dto.UpdateStoreTableRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreTable;
+import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,12 @@ public class StoreTableService {
      * @param requestDto
      */
     @Transactional
-    public void updateStoreTable(Long storeId, Long storeTableId, UpdateStoreTableRequestDto requestDto){
+    public void updateStoreTable(Long storeId, Long storeTableId, UpdateStoreTableRequestDto requestDto, User user){
+
+        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
+        if (!isOwner) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
 
         Store store =  storeRepository.findByIdOrElseThrow(storeId);
         // 바꾸려고 하는 스토어 테이블 정보를 가져옴
@@ -73,9 +79,14 @@ public class StoreTableService {
     /**
      *  가게 내 모든 테이블 조회
      * @param storeId
-     * @return
+     * @return  StoreTableGetAllResponseDto
      */
-    public StoreTableGetAllResponseDto getAllStoreTable(Long storeId){
+    public StoreTableGetAllResponseDto getAllStoreTable(Long storeId, User user){
+
+        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
+        if (!isOwner) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
 
         Store store =  storeRepository.findByIdOrElseThrow(storeId);
         List<HashMap<String, Integer>> storeTableList = storeTableRepository.findAllByStore(store).stream().map( st -> {
@@ -89,4 +100,8 @@ public class StoreTableService {
 
     }
 
+    @Transactional
+    public void deleteStoreTable(Long storeId, Long storeTableId, User user) {
+
+    }
 }

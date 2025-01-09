@@ -4,12 +4,14 @@ import com.gotcha.earlytable.domain.store.dto.CreateStoreTableRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreTableGetAllResponseDto;
 import com.gotcha.earlytable.domain.store.dto.UpdateStoreTableRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
+import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@RestController("/store/{storeId}/tables")
 public class StoreTableController {
 
     private final StoreTableService storeTableService;
@@ -25,7 +27,7 @@ public class StoreTableController {
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
-    @PostMapping("/store/{storeId}/tables")
+    @PostMapping
     public ResponseEntity<String> createStoreTable(@PathVariable Long storeId, @RequestBody CreateStoreTableRequestDto requestDto) {
 
         storeTableService.createStoreTable(storeId, requestDto);
@@ -42,10 +44,10 @@ public class StoreTableController {
      * @return  ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
-    @PutMapping("/store/{storeId}/tables/{storeTableId}")
-    public ResponseEntity<String> updateStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @RequestBody UpdateStoreTableRequestDto requestDto){
+    @PutMapping("/{storeTableId}")
+    public ResponseEntity<String> updateStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @RequestBody UpdateStoreTableRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
 
-        storeTableService.updateStoreTable(storeId, storeTableId, requestDto);
+        storeTableService.updateStoreTable(storeId, storeTableId, requestDto, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("자리정보가 변경되었습니다.");
     }
@@ -55,14 +57,29 @@ public class StoreTableController {
      * @param storeId
      * @return
      */
-    @GetMapping("/store/{storeId}/tables}")
-    public ResponseEntity<StoreTableGetAllResponseDto> getAllStoreTable(@PathVariable Long storeId){
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping
+    public ResponseEntity<StoreTableGetAllResponseDto> getAllStoreTable(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        StoreTableGetAllResponseDto responseDto = storeTableService.getAllStoreTable(storeId);
+        StoreTableGetAllResponseDto responseDto = storeTableService.getAllStoreTable(storeId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
+    /**
+     *  가게자리정보 삭제 API
+     * @param storeId
+     * @param storeTableId
+     * @return ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @DeleteMapping("/store/{storeId}/tables/{storeTableId}")
+    public ResponseEntity<String> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        storeTableService.deleteStoreTable(storeId, storeTableId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body("자리 정보가 삭제되었습니다.");
+    }
 
 }
 
