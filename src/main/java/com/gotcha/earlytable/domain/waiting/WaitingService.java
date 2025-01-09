@@ -11,6 +11,7 @@ import com.gotcha.earlytable.domain.waiting.dto.*;
 import com.gotcha.earlytable.domain.waiting.entity.OfflineUser;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.domain.waiting.entity.WaitingNumber;
+import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import jakarta.validation.Valid;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,11 +49,13 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingOnlineResponseDto creatWaitingOnline(@Valid WaitingOnlineRequestDto requestDto, Long storeId) {
+    public WaitingOnlineResponseDto createWaitingOnline(@Valid WaitingOnlineRequestDto requestDto, Long storeId, User user) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         Party party = partyRepository.save(new Party());
+        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
+        partyPeopleRepository.save(partyPeople);
 
         WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
         WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
@@ -71,7 +74,7 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingNumberResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
+    public WaitingNumberResponseDto createWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 

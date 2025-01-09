@@ -33,10 +33,12 @@ public class WaitingController {
 
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/waiting/online")
-    public ResponseEntity<WaitingOnlineResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
-                                                                       @PathVariable Long storeId) {
+    public ResponseEntity<WaitingOnlineResponseDto> createWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
+                                                                        @PathVariable Long storeId,
+                                                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
 
-        WaitingOnlineResponseDto responseDto = waitingService.creatWaitingOnline(requestDto, storeId);
+        WaitingOnlineResponseDto responseDto = waitingService.createWaitingOnline(requestDto, storeId, user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -50,10 +52,10 @@ public class WaitingController {
      */
 
     @PostMapping("/stores/{storeId}/waiting/offline")
-    public ResponseEntity<WaitingNumberResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
+    public ResponseEntity<WaitingNumberResponseDto> createWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
                                                                         @PathVariable Long storeId) {
 
-        WaitingNumberResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
+        WaitingNumberResponseDto responseDto = waitingService.createWaitingOffline(requestDto, storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
