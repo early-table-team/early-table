@@ -76,9 +76,9 @@ public class MenuService {
         menu.updateMenu(menuRequestDto);
 
         //메뉴 저장
-        menuRepository.save(menu);
+        Menu updatedMenu = menuRepository.save(menu);
 
-        return MenuResponseDto.toDto(menu);
+        return MenuResponseDto.toDto(updatedMenu);
     }
 
     /**
@@ -93,6 +93,7 @@ public class MenuService {
     /**
      * 메뉴 삭제 서비스 메서드
      */
+    @Transactional
     public void deleteMenu(Long menuId) {
         if(!menuRepository.existsById(menuId)){
             throw new NotFoundException(ErrorCode.NOT_FOUND);

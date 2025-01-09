@@ -6,6 +6,7 @@ import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,10 +34,12 @@ public class WaitingController {
 
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/waiting/online")
-    public ResponseEntity<WaitingOnlineResponseDto> creatWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
-                                                                       @PathVariable Long storeId) {
+    public ResponseEntity<WaitingOnlineResponseDto> createWaitingOnline(@Valid @RequestBody WaitingOnlineRequestDto requestDto,
+                                                                        @PathVariable Long storeId,
+                                                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
 
-        WaitingOnlineResponseDto responseDto = waitingService.creatWaitingOnline(requestDto, storeId);
+        WaitingOnlineResponseDto responseDto = waitingService.createWaitingOnline(requestDto, storeId, user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -50,10 +53,10 @@ public class WaitingController {
      */
 
     @PostMapping("/stores/{storeId}/waiting/offline")
-    public ResponseEntity<WaitingNumberResponseDto> creatWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
+    public ResponseEntity<WaitingNumberResponseDto> createWaitingOffline(@Valid @RequestBody WaitingOfflineRequestDto requestDto,
                                                                         @PathVariable Long storeId) {
 
-        WaitingNumberResponseDto responseDto = waitingService.creatWaitingOffline(requestDto, storeId);
+        WaitingNumberResponseDto responseDto = waitingService.createWaitingOffline(requestDto, storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -67,7 +70,7 @@ public class WaitingController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/waiting")
-    public ResponseEntity<List<WaitingListResponseDto>> getWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<WaitingListResponseDto>> getWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -88,11 +91,51 @@ public class WaitingController {
     @PatchMapping("/waiting/{waitingId}")
     public ResponseEntity<WaitingNumberResponseDto> delayWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                  @PathVariable Long waitingId) {
+        User user = userDetails.getUser();
 
-        WaitingNumberResponseDto responseDto = waitingService.delayWaiting(waitingId);
+        WaitingNumberResponseDto responseDto = waitingService.delayWaiting(waitingId, user);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
+
+    /**
+     * 웨이팅 상세 조회 API
+     *
+     * @param userDetails
+     * @param waitingId
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER, Auth.OWNER})
+    @GetMapping("/waiting/{waitingId}")
+    public ResponseEntity<WaitingDetailResponseDto> getWaitingDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                     @PathVariable Long waitingId) {
+
+        User user = userDetails.getUser();
+
+        WaitingDetailResponseDto responseDto = waitingService.getWaitingDetail(waitingId, user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    /**
+     * 웨이팅 취소 API
+     *
+     * @param userDetails
+     * @param waitingId
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @DeleteMapping("/waiting/{waitingId}")
+    public ResponseEntity<String> cancelWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                @PathVariable Long waitingId) {
+        User user = userDetails.getUser();
+
+        waitingService.cancelWaiting(waitingId, user);
+
+        return ResponseEntity.status(HttpStatus.OK).body("웨이팅이 취소되었습니다");
+    }
+
+
 
 
 }

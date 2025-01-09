@@ -19,7 +19,6 @@ import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -121,9 +120,10 @@ public class ReservationService {
             personnelCount++;
         } // 인원이 홀수인 경우 2,4,6,8 등의 자리수를 맞춰주기 위한작업 3,5,7인석은 없기때문
 
-        ReservationMaster reservationMaster = reservationMasterRepository.findByTableMaxNumberAndReservationTime(personnelCount, requestDto.getReservationDate().toLocalTime());
 
-        AvailableTable availableTable = availableTableRepository.findByReservationMaster(reservationMaster);
+        AvailableTable availableTable = availableTableRepository
+                .findByPersonnelCountAndTime(personnelCount, requestDto.getReservationDate().toLocalTime());
+
         if( availableTable.getRemainTable() == 0){
             throw new BadRequestException(ErrorCode.NO_SEAT);
         }
@@ -246,16 +246,18 @@ public class ReservationService {
      */
     @Transactional
     public void cancelReservation(Long reservationId) {
+
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
 
         Integer personnelCount = reservation.getPersonnelCount();
 
-        ReservationMaster reservationMaster = reservationMasterRepository.findByTableMaxNumberAndReservationTime(personnelCount, reservation.getReservationDateTime().toLocalTime());
-        Integer maxNumber = reservationMaster.getTableMaxNumber();
+        AvailableTable availableTable = availableTableRepository.findByPersonnelCountAndTime(personnelCount, reservation.getReservationDateTime().toLocalTime());
+
+        Integer maxNumber = availableTable.getReservationMaster().getStoreTable().getTableMaxNumber();
         reservation.modifyStatus(ReservationStatus.CANCELED);
 
-        AvailableTable availableTable = availableTableRepository.findByReservationMaster(reservationMaster);
         availableTable.increaseRemainTable();
+
         if(availableTable.getRemainTable() > maxNumber){
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }

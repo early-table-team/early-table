@@ -11,7 +11,11 @@ import com.gotcha.earlytable.domain.waiting.dto.*;
 import com.gotcha.earlytable.domain.waiting.entity.OfflineUser;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.domain.waiting.entity.WaitingNumber;
+import com.gotcha.earlytable.global.enums.Auth;
+import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import jakarta.validation.Valid;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -48,11 +52,13 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingOnlineResponseDto creatWaitingOnline(@Valid WaitingOnlineRequestDto requestDto, Long storeId) {
+    public WaitingOnlineResponseDto createWaitingOnline(@Valid WaitingOnlineRequestDto requestDto, Long storeId, User user) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         Party party = partyRepository.save(new Party());
+        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
+        partyPeopleRepository.save(partyPeople);
 
         WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
         WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
@@ -71,7 +77,7 @@ public class WaitingService {
      * @return
      */
     @Transactional
-    public WaitingNumberResponseDto creatWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
+    public WaitingNumberResponseDto createWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
@@ -88,7 +94,8 @@ public class WaitingService {
     }
 
     /**
-     *  웨이팅 목록 조회 메서드
+     * 웨이팅 목록 조회 메서드
+     *
      * @param user
      * @return
      */
@@ -110,11 +117,25 @@ public class WaitingService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * 웨이팅 미루기 메서드
+     *
+     * @param waitingId
+     * @param user
+     * @return
+     */
     @Transactional
-    public WaitingNumberResponseDto delayWaiting(Long waitingId) {
+    public WaitingNumberResponseDto delayWaiting(Long waitingId, User user) {
 
         Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        // 로그인한 유저가 웨이팅 등록자인지 확인
+        waiting.getParty().getPartyPeople().stream()
+                .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
+                .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
+                .filter(checkUser -> checkUser.equals(user))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
 
         WaitingNumber waitingNumber = waiting.getWaitingNumber();
         waitingNumber.updateWaitingNumber(waitingRepository.countByStoreAndWaitingType(waiting.getStore(), waiting.getWaitingType()));
@@ -123,7 +144,57 @@ public class WaitingService {
         return new WaitingNumberResponseDto(waiting);
     }
 
+    /**
+     * 웨이팅 상세 조회 메서드
+     *
+     * @param waitingId
+     * @param user
+     * @return
+     */
+    @Transactional
+    public WaitingDetailResponseDto getWaitingDetail(Long waitingId, User user) {
 
+        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        // 사용자 권한이 일반 유저이면 해당 웨이팅에 권한이 있는지 확인
+        if (user.getAuth() == Auth.USER) {
+            waiting.getParty().getPartyPeople().stream()
+                    .filter(partyPeople -> partyPeople.getUser().equals(user))
+                    .findFirst()
+                    .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
+        }
+
+        return new WaitingDetailResponseDto(waiting);
+    }
+
+    /**
+     * 웨이팅 취소 메서드
+     *
+     * @param waitingId
+     * @param user
+     */
+    @Transactional
+    public void cancelWaiting(Long waitingId, User user) {
+        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        // 로그인한 유저가 웨이팅 등록자인지 확인
+        waiting.getParty().getPartyPeople().stream()
+                .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
+                .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
+                .filter(checkUser -> checkUser.equals(user))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
+
+        // 예약 대기 상태만 취소 가능
+        if (waiting.getWaitingStatus() != WaitingStatus.PENDING) {
+            throw new BadRequestException(ErrorCode.REJECT_CANCEL);
+        }
+
+        // 웨이팅 상태 변경
+        waiting.cancelWaiting();
+
+        waitingRepository.save(waiting);
+    }
 
     @Scheduled(cron = "0 0 0 * * *")
     public void resetWaitingNumber() {
