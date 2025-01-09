@@ -16,7 +16,6 @@ import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
-import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import org.springframework.stereotype.Service;
@@ -30,20 +29,17 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final StoreRepository storeRepository;
     private final MenuRepository menuRepository;
-    private final AvailableTableRepository availableTableRepository;
-    private final ReservationMasterRepository reservationMasterRepository;
     private final PartyRepository partyRepository;
     private final ReservationMenuRepository reservationMenuRepository;
     private final PartyPeopleRepository partyPeopleRepository;
 
     public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository,
-                              MenuRepository menuRepository, AvailableTableRepository availableTableRepository, ReservationMasterRepository reservationMasterRepository,
-                              PartyRepository partyRepository, ReservationMenuRepository reservationMenuRepository, PartyPeopleRepository partyPeopleRepository) {
+                              MenuRepository menuRepository, PartyRepository partyRepository,
+                              ReservationMenuRepository reservationMenuRepository,
+                              PartyPeopleRepository partyPeopleRepository) {
         this.reservationRepository = reservationRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
-        this.availableTableRepository = availableTableRepository;
-        this.reservationMasterRepository = reservationMasterRepository;
         this.partyRepository = partyRepository;
         this.reservationMenuRepository = reservationMenuRepository;
         this.partyPeopleRepository = partyPeopleRepository;
@@ -121,13 +117,6 @@ public class ReservationService {
         } // 인원이 홀수인 경우 2,4,6,8 등의 자리수를 맞춰주기 위한작업 3,5,7인석은 없기때문
 
 
-        AvailableTable availableTable = availableTableRepository
-                .findByPersonnelCountAndTime(personnelCount, requestDto.getReservationDate().toLocalTime());
-
-        if( availableTable.getRemainTable() == 0){
-            throw new BadRequestException(ErrorCode.NO_SEAT);
-        }
-
         // TODO : OK 그럼 예약 생성해줄게
         //파티 생성 후 예약 만들기 -> 예약 만들때 파티가 자동으로 동기화
         Party party = new Party();
@@ -149,8 +138,6 @@ public class ReservationService {
 
 
         // TODO : 남은 자리수 업데이트 하기
-        availableTable.decreaseRemainTable();
-        availableTableRepository.save(availableTable);
 
         ReservationCreateResponseDto responseDto = new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate(),requestDto.getPersonnelCount(), requestDto.getMenuList());
 
@@ -250,21 +237,6 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
 
         Integer personnelCount = reservation.getPersonnelCount();
-
-        AvailableTable availableTable = availableTableRepository.findByPersonnelCountAndTime(personnelCount, reservation.getReservationDateTime().toLocalTime());
-
-        Integer maxNumber = availableTable.getReservationMaster().getStoreTable().getTableMaxNumber();
-        reservation.modifyStatus(ReservationStatus.CANCELED);
-
-        availableTable.increaseRemainTable();
-
-        if(availableTable.getRemainTable() > maxNumber){
-            throw new BadRequestException(ErrorCode.BAD_REQUEST);
-        }
-
-        reservationRepository.save(reservation);
-        availableTableRepository.save(availableTable);
-
     }
 
 
