@@ -19,22 +19,22 @@ public class StoreTimeSlot extends BaseEntity {
     private LocalTime reservationTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_table_id")
-    private StoreTable storeTable;
+    @JoinColumn(name = "store_id")
+    private Store store;
 
 
-    public StoreTimeSlot(LocalTime reservationTime, StoreTable storeTable) {
+    public StoreTimeSlot(LocalTime reservationTime, Store store) {
         this.reservationTime = reservationTime;
-        addStoreTable(storeTable);
+        addStore(store);
     }
 
     public StoreTimeSlot() {
 
     }
 
-    public void addStoreTable(StoreTable storeTable){
-        this.storeTable = storeTable;
-        storeTable.getStoreTimeSlotList().add(this);
+    public void addStore(Store store){
+        this.store = store;
+        store.getStoreTimeSlotList().add(this);
     }
 
 }

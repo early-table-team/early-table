@@ -5,9 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class WaitingNumberResponseDto {
-    private final int waitingNumber;
 
-    public WaitingNumberResponseDto(Waiting waiting) {
-        this.waitingNumber = waiting.getWaitingNumber().getWaitingNumber();
-    }
+
+
 }
