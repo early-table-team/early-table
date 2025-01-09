@@ -10,6 +10,7 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,10 @@ public class Reservation extends BaseEntity {
     private Long reservationId;
 
     @Column(nullable = false)
-    private LocalDateTime reservationDateTime;
+    private LocalDate reservationDate;
+
+    @Column(nullable = false)
+    private LocalTime reservationTime;
 
     @Column(nullable = false)
     private Integer personnelCount;
@@ -46,8 +50,9 @@ public class Reservation extends BaseEntity {
     public Reservation() {
     }
 
-    public Reservation(LocalDateTime reservationDateTime, Integer personnelCount, Store store, Party party) {
-        this.reservationDateTime = reservationDateTime;
+    public Reservation(LocalDate reservationDate, LocalTime reservationTIme, Integer personnelCount, Store store, Party party) {
+        this.reservationDate = reservationDate;
+        this.reservationTime = reservationTIme;
         this.personnelCount = personnelCount;
         this.store = store;
         addParty(party);

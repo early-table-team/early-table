@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.store.entity;
 
 
+import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -10,7 +11,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "store_table")
-public class StoreTable {
+public class StoreTable  extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +25,6 @@ public class StoreTable {
 
     private Integer tableCount;
 
-    @OneToMany(mappedBy = "storeTable", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreTimeSlot> storeTimeSlotList = new ArrayList<>();
 
 
     public StoreTable() {}

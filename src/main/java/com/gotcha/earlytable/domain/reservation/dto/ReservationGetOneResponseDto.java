@@ -15,7 +15,6 @@ public class ReservationGetOneResponseDto {
 
     private final Long reservationId;
 
-    private final LocalDateTime reservationDate;
 
     private final String storeName;
 
@@ -31,7 +30,6 @@ public class ReservationGetOneResponseDto {
 
     public ReservationGetOneResponseDto(Reservation reservation, User user, List<HashMap<String, Long>> menuList) {
         this.reservationId = reservation.getReservationId();
-        this.reservationDate = reservation.getReservationDateTime();
         this.storeName = reservation.getStore().getStoreName();
         this.reservationStatus = reservation.getReservationStatus();
         this.personnelCount = reservation.getPersonnelCount();

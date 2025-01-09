@@ -30,11 +30,11 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/reservations")
-    public ResponseEntity<ReservationCreateResponseDto> createReservation(@PathVariable Long storeId, @RequestBody ReservationCreateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<String> createReservation(@PathVariable Long storeId, @RequestBody ReservationCreateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        ReservationCreateResponseDto resDto = reservationService.createReservation(storeId, requestDto, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(resDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("안녕하세요");
     }
 
     /**
