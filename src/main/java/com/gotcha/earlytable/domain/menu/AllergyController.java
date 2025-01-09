@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping
+@RequestMapping("/stores/{storeId}/menus/{menuId}/allergy")
 public class AllergyController {
     private final AllergyService allergyService;
 
@@ -20,12 +20,24 @@ public class AllergyController {
      * @param allergyRequestDto //allergyStuff ex.아몬드
      * @return String
      */
-    @PostMapping("/stores/{storeId}/menus/{menuId}/allergy")
+    @PostMapping
     public ResponseEntity<String> createAllergyInMenu(@PathVariable Long menuId,
                                                       @ModelAttribute AllergyRequestDto allergyRequestDto) {
 
         allergyService.createAllergyInMenu(menuId, allergyRequestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("해당 메뉴에 알러지정보가 등록되었습니다.");
+    }
+
+    /**
+     * 메뉴에 등록한 알러지 삭제 API
+     * @param allergyId
+     * @return String
+     */
+    @DeleteMapping("/{allergyId}")
+    public ResponseEntity<String> deleteAllergyInMenu(@PathVariable Long allergyId) {
+        allergyService.deleteAllergyInMenu(allergyId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("등록한 알러지 정보 삭제가 완료되었습니다.");
     }
 }

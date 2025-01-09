@@ -4,6 +4,8 @@ import com.gotcha.earlytable.domain.menu.dto.AllergyRequestDto;
 import com.gotcha.earlytable.domain.menu.entity.Allergy;
 import com.gotcha.earlytable.domain.menu.entity.AllergyStuff;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,5 +37,17 @@ public class AllergyService {
         Allergy allergy = new Allergy(menu,allergyStuff);
 
         Allergy savedAllergy = allergyRepository.save(allergy);
+    }
+
+    /**
+     * 메뉴에 등록한 알러지 삭제 서비스 메서드
+     */
+    @Transactional
+    public void deleteAllergyInMenu(Long allergyId) {
+        if(allergyRepository.existsById(allergyId)) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND);
+        }
+
+        allergyRepository.deleteById(allergyId);
     }
 }
