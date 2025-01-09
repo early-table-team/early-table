@@ -11,13 +11,15 @@ import java.util.List;
 
 @Getter
 public class WaitingOnlineResponseDto {
+    Integer waitingNumber;
     String storeName;
-    int personnelCount;
+    Integer personnelCount;
     WaitingType waitingType;
     List<String> partyPeople;
     WaitingStatus waitingStatus;
 
-    public WaitingOnlineResponseDto(Waiting waiting) {
+    public WaitingOnlineResponseDto(Integer waitingNumber, Waiting waiting) {
+        this.waitingNumber = waitingNumber;
         this.storeName = waiting.getStore().getStoreName();
         this.personnelCount = waiting.getPersonnelCount();
         this.waitingType = waiting.getWaitingType();
