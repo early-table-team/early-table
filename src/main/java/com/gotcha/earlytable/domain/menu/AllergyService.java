@@ -32,10 +32,7 @@ public class AllergyService {
         Menu menu = menuRepository.findByIdOrElseThrow(menuId);
 
         //알러지 생성
-        Allergy allergy = new Allergy(
-                menu,
-                allergyStuff
-        );
+        Allergy allergy = new Allergy(menu,allergyStuff);
 
         Allergy savedAllergy = allergyRepository.save(allergy);
     }
