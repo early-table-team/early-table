@@ -66,9 +66,9 @@ public class ReviewService {
         review.updateReview(reviewRequestDto);
 
         //리뷰 저장
-        reviewRepository.save(review);
+        Review updatedReview = reviewRepository.save(review);
 
-        return ReviewResponseDto.toDto(review);
+        return ReviewResponseDto.toDto(updatedReview);
     }
 
     /**
