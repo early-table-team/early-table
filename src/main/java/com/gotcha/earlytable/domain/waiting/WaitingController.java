@@ -98,6 +98,45 @@ public class WaitingController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
+    /**
+     * 웨이팅 상세 조회 API
+     *
+     * @param userDetails
+     * @param waitingId
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER, Auth.OWNER})
+    @GetMapping("/waiting/{waitingId}")
+    public ResponseEntity<WaitingDetailResponseDto> getWaitingDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                     @PathVariable Long waitingId) {
+
+        User user = userDetails.getUser();
+
+        WaitingDetailResponseDto responseDto = waitingService.getWaitingDetail(waitingId, user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    /**
+     * 웨이팅 취소 API
+     *
+     * @param userDetails
+     * @param waitingId
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @DeleteMapping("/waiting/{waitingId}")
+    public ResponseEntity<String> cancelWaiting(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                @PathVariable Long waitingId) {
+        User user = userDetails.getUser();
+
+        waitingService.cancelWaiting(waitingId, user);
+
+        return ResponseEntity.status(HttpStatus.OK).body("웨이팅이 취소되었습니다");
+    }
+
+
+
 
 }
 
