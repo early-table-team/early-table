@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.store.entity;
 
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
@@ -9,6 +10,7 @@ import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
+import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -63,10 +65,10 @@ public class Store extends BaseEntity {
     private List<StoreKeyword> storeKeywordList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreDayOff> storeDayOffList = new ArrayList<>();
+    private List<StoreRest> storeRestList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreHour> storeHourOffList = new ArrayList<>();
+    private List<StoreHour> storeHourList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<StoreReservationType> storeReservationTypeList = new ArrayList<>();

@@ -24,12 +24,15 @@ public class ReservationMenu extends BaseEntity {
     @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation;
 
+    private Long menuCount;
+
     public ReservationMenu() {}
 
 
-    public ReservationMenu(Menu menu, Reservation reservation) {
+    public ReservationMenu(Menu menu, Reservation reservation, Long menuCount) {
         this.menu = menu;
         addReservation(reservation);
+        this.menuCount = menuCount;
     }
 
     private void addReservation(Reservation reservation) {

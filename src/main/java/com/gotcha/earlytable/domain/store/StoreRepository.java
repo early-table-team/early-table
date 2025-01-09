@@ -15,8 +15,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
+
     int countStoreByUserId(Long userId);
 
 
     List<Store> findAllByUserId(Long userId);
+
+    List<Store> findAllByStoreIdIn(List<Long> storeIds);
 }

@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.store.entity;
 
+import com.gotcha.earlytable.domain.store.dto.StoreRestRequestDto;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,12 +9,12 @@ import java.time.LocalDate;
 
 @Getter
 @Entity
-@Table(name = "store_day_off")
-public class StoreDayOff extends BaseEntity {
+@Table(name = "store_rest")
+public class StoreRest extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long storeDayOffId;
+    private Long storeRestId;
 
     @Column(nullable = false)
     private LocalDate storeOffDay;
@@ -25,18 +26,28 @@ public class StoreDayOff extends BaseEntity {
     private Store store;
 
 
-    public StoreDayOff(LocalDate storeOffDay, String storeOffReason, Store store) {
+    public StoreRest(LocalDate storeOffDay, String storeOffReason, Store store) {
         this.storeOffDay = storeOffDay;
         this.StoreOffReason = storeOffReason;
         addStore(store);
     }
 
-    public StoreDayOff() {
+    public StoreRest() {
 
     }
 
     private void addStore(Store store) {
         this.store = store;
-        store.getStoreDayOffList().add(this);
+        store.getStoreRestList().add(this);
+    }
+
+
+    public void updateStoreRest(StoreRestRequestDto requestDto) {
+        if(requestDto.getStoreOffDay() != null) {
+            this.storeOffDay = requestDto.getStoreOffDay();
+        }
+        if(requestDto.getStoreOffReason() != null) {
+            this.StoreOffReason = requestDto.getStoreOffReason();
+        }
     }
 }

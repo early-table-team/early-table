@@ -1,5 +1,7 @@
-package com.gotcha.earlytable.domain.store.entity;
+package com.gotcha.earlytable.domain.waitingsetting.entity;
 
+import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import jakarta.persistence.*;
@@ -26,7 +28,7 @@ public class WaitingSetting extends BaseEntity {
     @Column(nullable = false)
     private WaitingStatus waitingStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "store_id")
     private Store store;
 
@@ -44,5 +46,18 @@ public class WaitingSetting extends BaseEntity {
     private void addStore(Store store) {
         this.store = store;
         store.getWaitingSettingList().add(this);
+    }
+
+    public void updateWaitingSetting(WaitingSettingRequestDto requestDto) {
+
+        if(requestDto.getWaitingOpenTime() != null) {
+            this.waitingOpenTime = requestDto.getWaitingOpenTime();
+        }
+        if(requestDto.getWaitingClosedTime() != null) {
+            this.waitingClosedTime = requestDto.getWaitingClosedTime();
+        }
+        if(requestDto.getWaitingStatus() != null) {
+            this.waitingStatus = requestDto.getWaitingStatus();
+        }
     }
 }
