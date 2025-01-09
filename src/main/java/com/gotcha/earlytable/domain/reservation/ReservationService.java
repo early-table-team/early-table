@@ -12,6 +12,7 @@ import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
 import com.gotcha.earlytable.domain.store.*;
 import com.gotcha.earlytable.domain.store.entity.*;
 import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
+import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
@@ -77,8 +78,14 @@ public class ReservationService {
         }
 
 
-        // TODO : 해당 요일의 영업시간 내에 충족하는가?
+        // TODO : 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
         String dayOfWeek = reservationDate.getDayOfWeek().toString().toUpperCase();
+        // 해당 요일의 영업상태 확인하기
+        DayStatus dayStatus = DayStatus.valueOf(dayOfWeek);
+        if( dayStatus == DayStatus.CLOSED){
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
         // 요일에 해당하는 가게 영업시간 받아오기
         StoreHour storeHour = store.getStoreHourList().stream().filter( sh -> sh.getDayOfWeek() == DayOfWeek.valueOf(dayOfWeek))
                 .findFirst()

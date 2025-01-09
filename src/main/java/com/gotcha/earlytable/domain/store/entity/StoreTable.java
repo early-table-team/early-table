@@ -41,4 +41,11 @@ public class StoreTable {
         store.getStoreTableList().add(this);
     }
 
+    public void changeTableMaxNumber(Integer tableMaxNumber) {
+        this.tableMaxNumber = tableMaxNumber;
+    }
+
+    public void changeTableCount(Integer tableCount) {
+        this.tableCount = tableCount;
+    }
 }
