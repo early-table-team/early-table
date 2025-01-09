@@ -17,4 +17,6 @@ public interface AllergyStuffRepository extends JpaRepository<AllergyStuff, Long
     }
 
     List<AllergyStuff> findAllByAllergyCategory(AllergyCategory allergyCategory);
+
+    AllergyStuff findByAllergyStuff(String allergyStuff);
 }
