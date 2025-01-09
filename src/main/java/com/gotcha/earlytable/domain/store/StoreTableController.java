@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@RestController("/store/{storeId}/tables")
+@RestController("/stores/{storeId}/tables")
 public class StoreTableController {
 
     private final StoreTableService storeTableService;
@@ -55,7 +55,7 @@ public class StoreTableController {
     /**
      *  가게 내 모든 테이블 조회 API
      * @param storeId
-     * @return
+     * @return  ResponseEntity<StoreTableGetAllResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
@@ -73,7 +73,7 @@ public class StoreTableController {
      * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
-    @DeleteMapping("/store/{storeId}/tables/{storeTableId}")
+    @DeleteMapping("/{storeTableId}")
     public ResponseEntity<String> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeTableService.deleteStoreTable(storeId, storeTableId, userDetails.getUser());
