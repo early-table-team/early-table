@@ -186,12 +186,12 @@ public class WaitingService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
 
         // 예약 대기 상태만 취소 가능
-        if (waiting.getWaitingStatus() == WaitingStatus.PENDING) {
-            waiting.cancelWaiting();
-
-        } else {
+        if (waiting.getWaitingStatus() != WaitingStatus.PENDING) {
             throw new BadRequestException(ErrorCode.REJECT_CANCEL);
         }
+
+        // 웨이팅 상태 변경
+        waiting.cancelWaiting();
 
         waitingRepository.save(waiting);
     }
