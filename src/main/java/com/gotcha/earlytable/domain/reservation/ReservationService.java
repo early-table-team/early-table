@@ -6,8 +6,7 @@ import com.gotcha.earlytable.domain.party.PartyPeopleRepository;
 import com.gotcha.earlytable.domain.party.PartyRepository;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateRequestDto;
-import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
+import com.gotcha.earlytable.domain.reservation.dto.*;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
 import com.gotcha.earlytable.domain.store.*;
@@ -16,14 +15,14 @@ import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ReservationService {
@@ -72,7 +71,7 @@ public class ReservationService {
 
         // TODO : 휴무날짜는 아닌가?
         LocalDate reservationDate = requestDto.getReservationDate().toLocalDate(); //휴무 날짜비교를 위해 LocalDate로 받아옴
-        List<StoreDayOff> storeOffDay = store.getStoreDayOffList();
+        List<StoreRest> storeOffDay = store.getStoreRestList();
         boolean isOffDay = storeOffDay.stream().anyMatch(storeDayOff -> storeDayOff.getStoreOffDay().equals(reservationDate));
         if(isOffDay){ //휴무일에 예약을 하려는 경우
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
@@ -125,7 +124,7 @@ public class ReservationService {
         // TODO : OK 그럼 예약 생성해줄게
         //파티 생성 후 예약 만들기 -> 예약 만들때 파티가 자동으로 동기화
         Party party = new Party();
-        Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getPersonnelCount(), store, party );
+        Reservation reservation = new Reservation(requestDto.getReservationDate(), requestDto.getPersonnelCount(), store, party );
         partyRepository.save(party);
 
         //예약 인원 추가
@@ -149,6 +148,114 @@ public class ReservationService {
         ReservationCreateResponseDto responseDto = new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate(),requestDto.getPersonnelCount(), requestDto.getMenuList());
 
         return responseDto;
+    }
+
+    /**
+     *  예약 전체 조회 메서드
+     * @param user
+     * @return
+     */
+    public List<ReservationGetAllResponseDto> getAllReservations(User user) {
+
+        List<Reservation> reservations = reservationRepository.findByUser(user);
+        List<ReservationGetAllResponseDto> resDto = new ArrayList<>();
+        reservations.forEach(reservation -> {
+            ReservationGetAllResponseDto reservationGetAllResponseDto = new ReservationGetAllResponseDto(reservation);
+            resDto.add(reservationGetAllResponseDto);
+        });
+
+        return resDto;
+    }
+
+    /**
+     *  예약 단건 조회 메서드
+     * @param reservationId
+     * @param user
+     * @return  ReservationGetOneResponseDto
+     */
+    public ReservationGetOneResponseDto getReservation(Long reservationId, User user) {
+
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        // 지정된 예약에 로그인된 유저가 포함되어 있는지 검사
+        reservation.getParty().getPartyPeople().stream()
+                .filter(partyPeople -> partyPeople.getUser().equals(user))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(ErrorCode.BAD_REQUEST));
+
+        List<HashMap<String, Long>> menuList = new ArrayList<>();
+        reservation.getReservationMenuList()
+                .forEach(ml -> {
+                    HashMap<String, Long> menu = new HashMap<>();
+                    menu.put(ml.getMenu().getMenuName(), ml.getMenuCount());
+                    menuList.add(menu);
+                });
+
+        return new ReservationGetOneResponseDto(reservation, user, menuList);
+    }
+
+    /**
+     *  예약 메뉴 변경 메서드
+     * @param reservationId
+     * @param user
+     * @param requestDto
+     * @return
+     */
+    @Transactional
+    public ReservationGetOneResponseDto updateReservation(Long reservationId, User user, ReservationUpdateRequestDto requestDto) {
+
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        Store store = reservation.getStore();
+        reservationMenuRepository.deleteById(reservationId);
+        List<HashMap<String, Long>> menuList = requestDto.getMenuList();
+
+        List<Menu> menus = new ArrayList<>();
+        List<Long> menuCounts = new ArrayList<>();
+
+        menuList.forEach(menu -> {
+            Long menuId = menu.get("menuId"); // 예약한 메뉴의 아이디값을 가져옴
+            Long menuCount = menu.get("menuCount");
+
+            boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
+
+            if(!isMenuExist){
+                throw new BadRequestException(ErrorCode.BAD_REQUEST);
+            }
+            Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
+            menus.add(addMenu);
+            menuCounts.add(menuCount);
+        });
+
+        for(int i = 0; i < menus.size(); i++){
+            ReservationMenu reservationMenu = new ReservationMenu(menus.get(i), reservation, menuCounts.get(i));
+            reservationMenuRepository.save(reservationMenu);
+        }
+
+        return new ReservationGetOneResponseDto(reservation, user, requestDto.getMenuList());
+    }
+
+    /**
+     *  예약 취소 메서드
+     * @param reservationId
+     */
+    @Transactional
+    public void cancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+
+        Integer personnelCount = reservation.getPersonnelCount();
+
+        ReservationMaster reservationMaster = reservationMasterRepository.findByTableMaxNumberAndReservationTime(personnelCount, reservation.getReservationDateTime().toLocalTime());
+        Integer maxNumber = reservationMaster.getTableMaxNumber();
+        reservation.modifyStatus(ReservationStatus.CANCELED);
+
+        AvailableTable availableTable = availableTableRepository.findByReservationMaster(reservationMaster);
+        availableTable.increaseRemainTable();
+        if(availableTable.getRemainTable() > maxNumber){
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        reservationRepository.save(reservation);
+        availableTableRepository.save(availableTable);
+
     }
 
 

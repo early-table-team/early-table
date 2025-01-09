@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class Reservation extends BaseEntity {
     private Long reservationId;
 
     @Column(nullable = false)
-    private LocalDate reservationDate;
+    private LocalDateTime reservationDateTime;
 
     @Column(nullable = false)
     private Integer personnelCount;
@@ -45,8 +46,8 @@ public class Reservation extends BaseEntity {
     public Reservation() {
     }
 
-    public Reservation(LocalDate reservationDate, Integer personnelCount, Store store, Party party) {
-        this.reservationDate = reservationDate;
+    public Reservation(LocalDateTime reservationDateTime, Integer personnelCount, Store store, Party party) {
+        this.reservationDateTime = reservationDateTime;
         this.personnelCount = personnelCount;
         this.store = store;
         addParty(party);
@@ -57,4 +58,9 @@ public class Reservation extends BaseEntity {
         this.party = party;
         party.addReservation(this);
     }
+
+    public void modifyStatus(ReservationStatus newStatus) {
+        this.reservationStatus = newStatus;
+    }
+
 }

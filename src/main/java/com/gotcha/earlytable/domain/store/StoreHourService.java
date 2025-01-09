@@ -29,7 +29,7 @@ public class StoreHourService {
      * @param storeId
      * @param userId
      * @param requestDto
-     * @return StoreHourResponseDto
+     * @return WaitingSettingResponseDto
      */
     @Transactional
     public StoreHourResponseDto createStoreHour(Long storeId, Long userId, StoreHourRequestDto requestDto) {
@@ -65,7 +65,7 @@ public class StoreHourService {
      * @param storeHourId
      * @param userId
      * @param requestDto
-     * @return StoreHourResponseDto
+     * @return WaitingSettingResponseDto
      */
     public StoreHourResponseDto updateStoreHour(Long storeHourId, Long userId, StoreHourRequestDto requestDto) {
 
