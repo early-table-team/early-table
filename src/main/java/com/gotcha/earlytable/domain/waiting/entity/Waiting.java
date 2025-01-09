@@ -86,4 +86,8 @@ public class Waiting extends BaseEntity {
         this.waitingNumber = waitingNumber;
         waitingNumber.addWaiting(this);
     }
+
+    public void cancelWaiting() {
+        this.waitingStatus = WaitingStatus.CANCELED;
+    }
 }
