@@ -6,6 +6,7 @@ import com.gotcha.earlytable.domain.menu.entity.AllergyCategory;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class AllergyCategoryService {
     /**
      * 알러지 카테고리 등록 서비스 메서드
      */
+    @Transactional
     public AllergyCategoryResponseDto createAllergyCategory(AllergyCategoryRequestDto allergyCategoryRequestDto) {
         AllergyCategory allergyCategory = new AllergyCategory(
                 allergyCategoryRequestDto.getAllergyCategory()
@@ -33,6 +35,7 @@ public class AllergyCategoryService {
     /**
      * 알러지 카테고리 수정 서비스 메서드
      */
+    @Transactional
     public AllergyCategoryResponseDto updateAllergyCategory(Long categoryId, AllergyCategoryRequestDto allergyCategoryRequestDto) {
         AllergyCategory allergyCategory = allergyCategoryRepository.findByIdOrElseThrow(categoryId);
 
@@ -55,6 +58,7 @@ public class AllergyCategoryService {
     /**
      * 알러지 카테고리 삭제 서비스 메서드
      */
+    @Transactional
     public void deleteAllergyCategory(Long categoryId) {
         if(!allergyCategoryRepository.existsById(categoryId)) {
             throw new NotFoundException(ErrorCode.NOT_FOUND);

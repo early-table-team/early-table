@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.menu.entity.Allergy;
 import com.gotcha.earlytable.domain.menu.entity.AllergyStuff;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AllergyService {
@@ -21,6 +22,7 @@ public class AllergyService {
     /**
      * 메뉴에 알러지 등록 서비스 메서드
      */
+    @Transactional
     public void createAllergyInMenu(Long menuId, AllergyRequestDto allergyRequestDto) {
 
         //사용자가 알러지 원재료명(Dto)을 입력 -> AllergyStuff 반환

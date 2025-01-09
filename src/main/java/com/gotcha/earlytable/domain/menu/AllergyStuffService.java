@@ -7,6 +7,7 @@ import com.gotcha.earlytable.domain.menu.entity.AllergyStuff;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class AllergyStuffService {
      * @param allergyStuffRequestDto
      * @return
      */
+    @Transactional
     public AllergyStuffResponseDto createAllergyStuff(Long categoryId, AllergyStuffRequestDto allergyStuffRequestDto) {
         //알러지 카테고리 받아오기
         AllergyCategory allergyCategory = allergyCategoryRepository.findByIdOrElseThrow(categoryId);
@@ -43,6 +45,7 @@ public class AllergyStuffService {
     /**
      * 알러지 원재료 수정 서비스 메서드
      */
+    @Transactional
     public AllergyStuffResponseDto updateAllergyStuff(Long categoryId, Long stuffId, AllergyStuffRequestDto allergyStuffRequestDto) {
         AllergyStuff allergyStuff = allergyStuffRepository.findByIdOrElseThrow(stuffId);
 
@@ -65,6 +68,7 @@ public class AllergyStuffService {
     /**
      * 알러지 원재료 삭제 서비스 메서드
      */
+    @Transactional
     public void deleteAllergyStuff(Long stuffId) {
         if(!allergyStuffRepository.existsById(stuffId)) {
             throw new NotFoundException(ErrorCode.NOT_FOUND);
