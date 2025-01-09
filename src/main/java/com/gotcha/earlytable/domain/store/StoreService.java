@@ -2,14 +2,17 @@ package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
+import com.gotcha.earlytable.domain.store.dto.StoreSearchRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.domain.waiting.dto.WaitingListResponseDto;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StoreService {
@@ -216,5 +220,40 @@ public class StoreService {
 
         storeRepository.save(store);
 
+    }
+
+    /**
+     * 가게 검색 조회
+     *
+     * @param requestDto
+     * @return
+     */
+    public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
+
+        List<Store> allStoreList = storeRepository.findAll();
+
+        List<Store> searchStoreList = allStoreList.stream()
+                .filter(store -> requestDto.getSearchWord() == null ||
+                        store.getStoreName().contains(requestDto.getSearchWord()) ||
+                        store.getMenuList().stream()
+                                .anyMatch(menu -> menu.getMenuName().contains(requestDto.getSearchWord()))) // 검색어 입력
+                .filter(store -> requestDto.getRegionTop() == null || store.getRegionTop().equalsIgnoreCase(requestDto.getRegionTop())) //  상위 지역 필터
+                .filter(store -> requestDto.getRegionBottom() == null || store.getRegionBottom().equalsIgnoreCase(requestDto.getRegionBottom())) // 하위 지역 필터
+                .filter(store -> requestDto.getStoreCategory() == null || store.getStoreCategory() == requestDto.getStoreCategory()) // 가게 카테고리 필터
+                .filter(store -> requestDto.getMaxPrice() == null ||
+                        store.getMenuList().stream()
+                                .filter(menu -> menu.getMenuStatus() == MenuStatus.RECOMMENDED) // role이 "대표"인 메뉴 필터링
+                                .anyMatch(menu -> menu.getMenuPrice() <= requestDto.getMaxPrice())) // 최대 가격 필터
+                .filter(store -> requestDto.getMinPrice() == null ||
+                        store.getMenuList().stream()
+                                .filter(menu -> menu.getMenuStatus() == MenuStatus.RECOMMENDED) // role이 "대표"인 메뉴 필터링
+                                .anyMatch(menu -> menu.getMenuPrice() <= requestDto.getMinPrice())) // 최소 가격 필터
+                // ToDo : 알러지 필터 입력
+                .toList();
+
+
+        return searchStoreList.stream()
+                .map(StoreListResponseDto::toDto)
+                .toList();
     }
 }
