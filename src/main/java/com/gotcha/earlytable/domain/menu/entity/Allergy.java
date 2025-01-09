@@ -17,25 +17,27 @@ public class Allergy extends BaseEntity {
     private Menu menu;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "allergy_detail_id")
-    private AllergyDetail allergyDetail;
+    @JoinColumn(name = "allergy_stuff_id")
+    private AllergyStuff allergyStuff;
 
-    public Allergy(Menu menu, AllergyDetail allergyDetail) {
+    public Allergy(Menu menu, AllergyStuff allergyStuff) {
         addMenu(menu);
-        addAllergyDetail(allergyDetail);
+        addAllergyStuff(allergyStuff);
     }
 
     public Allergy() {
 
     }
 
-    public void addAllergyDetail(AllergyDetail allergyDetail) {
-        this.allergyDetail = allergyDetail;
-        allergyDetail.getAllergyList().add(this);
-    }
-
     public void addMenu(Menu menu) {
         this.menu = menu;
         menu.getAllergyList().add(this);
     }
+
+    public void addAllergyStuff(AllergyStuff allergyStuff) {
+        this.allergyStuff = allergyStuff;
+        allergyStuff.getAllergyList().add(this);
+    }
+
+
 }

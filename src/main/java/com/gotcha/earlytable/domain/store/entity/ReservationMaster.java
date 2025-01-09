@@ -20,32 +20,26 @@ public class ReservationMaster extends BaseEntity {
     @Column(nullable = false)
     private LocalTime reservationTime;
 
-    @Column(nullable = false)
-    private Integer tableMaxNumber;
-
-    @Column(nullable = false)
-    private Integer tableCount;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
-    private Store store;
+    @JoinColumn(name = "store_table_id")
+    private StoreTable storeTable;
 
     @OneToMany(mappedBy = "reservationMaster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AvailableTable> availableTableList = new ArrayList<>();
 
-    public ReservationMaster(LocalTime reservationTime, Integer tableMaxNumber, Integer tableCount, Store store) {
+
+    public ReservationMaster(LocalTime reservationTime, StoreTable storeTable) {
         this.reservationTime = reservationTime;
-        this.tableMaxNumber = tableMaxNumber;
-        this.tableCount = tableCount;
-        addStore(store);
+        addStoreTable(storeTable);
     }
 
     public ReservationMaster() {
 
     }
 
-    private void addStore(Store store) {
-        this.store = store;
-        store.getReservationMasterList().add(this);
+    public void addStoreTable(StoreTable storeTable){
+        this.storeTable = storeTable;
+        storeTable.getReservationMasterList().add(this);
     }
+
 }
