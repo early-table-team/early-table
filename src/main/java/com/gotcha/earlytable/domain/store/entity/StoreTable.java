@@ -25,7 +25,7 @@ public class StoreTable {
     private Integer tableCount;
 
     @OneToMany(mappedBy = "storeTable", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ReservationMaster> reservationMasterList = new ArrayList<>();
+    private List<StoreTimeSlot> storeTimeSlotList = new ArrayList<>();
 
 
     public StoreTable() {}

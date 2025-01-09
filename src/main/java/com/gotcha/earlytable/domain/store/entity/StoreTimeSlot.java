@@ -5,17 +5,15 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Entity
-@Table(name = "reservation_master")
-public class ReservationMaster extends BaseEntity {
+@Table(name = "store_time_slot")
+public class StoreTimeSlot extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reservationMasterId;
+    private Long StoreTimeSlotId;
 
     @Column(nullable = false)
     private LocalTime reservationTime;
@@ -24,22 +22,19 @@ public class ReservationMaster extends BaseEntity {
     @JoinColumn(name = "store_table_id")
     private StoreTable storeTable;
 
-    @OneToMany(mappedBy = "reservationMaster", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<AvailableTable> availableTableList = new ArrayList<>();
 
-
-    public ReservationMaster(LocalTime reservationTime, StoreTable storeTable) {
+    public StoreTimeSlot(LocalTime reservationTime, StoreTable storeTable) {
         this.reservationTime = reservationTime;
         addStoreTable(storeTable);
     }
 
-    public ReservationMaster() {
+    public StoreTimeSlot() {
 
     }
 
     public void addStoreTable(StoreTable storeTable){
         this.storeTable = storeTable;
-        storeTable.getReservationMasterList().add(this);
+        storeTable.getStoreTimeSlotList().add(this);
     }
 
 }
