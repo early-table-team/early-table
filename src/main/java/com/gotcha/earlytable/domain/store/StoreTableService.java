@@ -100,8 +100,21 @@ public class StoreTableService {
 
     }
 
+    /**
+     *  가게자리정보 삭제 메서드
+     * @param storeId
+     * @param storeTableId
+     * @param user
+     */
     @Transactional
     public void deleteStoreTable(Long storeId, Long storeTableId, User user) {
+        //가게 주인인지 검증
+        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
+        if (!isOwner) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        storeTableRepository.deleteById(storeTableId);
 
     }
 }
