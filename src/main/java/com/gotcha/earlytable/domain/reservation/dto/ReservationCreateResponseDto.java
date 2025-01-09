@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.reservation.dto;
 
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -12,15 +13,18 @@ public class ReservationCreateResponseDto {
 
     private final Long reservationId;
 
-    private final LocalDateTime reservationDate;
+    private final LocalDate reservationDate;
+
+    private final LocalTime reservationTime;
 
     private final Integer personnelCount;
 
     private final List<HashMap<String, Long>> menuList;
 
-    public ReservationCreateResponseDto(Long reservationId, LocalDateTime reservationDate, Integer personnelCount, List<HashMap<String, Long>> menuList) {
+    public ReservationCreateResponseDto(Long reservationId, LocalDate reservation, LocalTime reservationTime, Integer personnelCount, List<HashMap<String, Long>> menuList) {
         this.reservationId = reservationId;
-        this.reservationDate = reservationDate;
+        this.reservationDate = reservation;
+        this.reservationTime = reservationTime;
         this.personnelCount = personnelCount;
         this.menuList = menuList;
     }

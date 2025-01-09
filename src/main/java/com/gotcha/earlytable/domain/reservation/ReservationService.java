@@ -14,14 +14,18 @@ import com.gotcha.earlytable.domain.store.entity.*;
 import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
+import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
+import com.gotcha.earlytable.global.error.exception.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -53,32 +57,84 @@ public class ReservationService {
      * @return  ReservationCreateResponseDto
      */
     @Transactional
-    public void createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
-
+    public ReservationCreateResponseDto createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
+        // TOdo : 해당 가게가 존재하는가?
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // TODO : 가게 예약 타입이 예약이 맞는가?
+        boolean dontReservation = store.getStoreReservationTypeList().stream()
+                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.RESERVATION);
 
-
-        // TODO : 휴무날짜는 아닌가?
-
+        if(dontReservation){
+            throw new CustomException(ErrorCode.UNAVAILABLE_RESERVATION_TYPE);
+        }
+        // TODO : 임시휴무날짜는 아닌가?
+        boolean holiday = store.getStoreRestList().stream().anyMatch(storeRest -> storeRest.getStoreOffDay() == requestDto.getReservationDate().toLocalDate());
+        if(holiday){
+            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+        }
 
         // TODO : 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
+        String dayOff = requestDto.getReservationDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN); //월, 화, 수 .. 이런식
+        // 정기 휴무일을 체크 -> 받아온 값의 요일과 동일한 요일의 status값이 closed인지 체크
+        boolean regularHoliday = store.getStoreHourList().stream().anyMatch( storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
+        if(regularHoliday){
+            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+        }
 
-
+        boolean canMake = store.getStoreTimeSlotList().stream().anyMatch(storeTimeSlot -> storeTimeSlot.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()));
+        if(!canMake){
+            throw new CustomException(ErrorCode.RESERVATION_TIME_ERROR);
+        }
 
         // TODO : 받아온 메뉴 리스트가 해당 가게 안에 모두 있는가?
+        List<HashMap<String, Long>> menuList = requestDto.getMenuList();
 
+        List<Long> menuIds = menuList.stream()
+                .map(menu -> menu.get("menuId"))
+                .toList();
 
+        List<Long> menuCounts = menuList.stream()
+                .map(menu -> menu.get("menuCount"))
+                .toList();
+        boolean existMenu = menuIds.stream()
+                .allMatch( menuId -> store.getMenuList().stream()
+                        .anyMatch(storeMenu -> storeMenu.getMenuId().equals(menuId)));
+        if(!existMenu){
+            throw new CustomException(ErrorCode.NOT_FOUND_MENU);
+        }
 
         // TODO : 인원수에 해당하는 자리가 남아 있는가?  -> 예약 불가 : 전화 문의하기
+        // 인원수를 세는게 아니라 인원수를 가지고 와서 해당 인원수로 등록된 예약만큼 빼기
+        Integer requestCount = requestDto.getPersonnelCount();
+        Integer beforeReservationCount = (int) store.getReservationList().stream()
+                .filter(reservation -> reservation.getPersonnelCount().equals(requestDto.getPersonnelCount())
+                && reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate())
+                && reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime())).count();
 
+
+        boolean canSeat = store.getStoreTableList().stream()
+                .anyMatch(storeTable -> requestCount.equals(storeTable.getTableMaxNumber()) && storeTable.getTableCount() - beforeReservationCount >= 1 );
+        if(!canSeat){
+            throw new CustomException(ErrorCode.NO_SEAT);
+        }
 
         // TODO : OK 그럼 예약 생성해줄게
+        Party party = new Party();
+        Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party);
+        partyRepository.save(party);
+        reservationRepository.save(reservation);
+        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
+        partyPeopleRepository.save(partyPeople);
 
+        for(int i = 0; i < menuIds.size(); i++){
+            Menu menuItem = menuRepository.findById(menuIds.get(i)).orElse(null);
+            ReservationMenu reservationMenu = new ReservationMenu(menuItem, reservation, menuCounts.get(i));
+            reservationMenuRepository.save(reservationMenu);
+        }
 
-
-        // TODO : 남은 자리수 업데이트 하기
+        return new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
+                , requestDto.getReservationDate().toLocalTime(), requestCount, requestDto.getMenuList());
     }
 
     /**
