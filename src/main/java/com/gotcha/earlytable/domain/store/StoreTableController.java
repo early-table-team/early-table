@@ -1,14 +1,13 @@
 package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.store.dto.CreateStoreTableRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreTableGetAllResponseDto;
+import com.gotcha.earlytable.domain.store.dto.UpdateStoreTableRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class StoreTableController {
@@ -34,6 +33,37 @@ public class StoreTableController {
         return ResponseEntity.status(HttpStatus.CREATED).body("자리가 생성되었습니다.");
 
     }
+
+    /**
+     *  스토어테이블 정보변경 API
+     * @param storeId
+     * @param storeTableId
+     * @param requestDto
+     * @return  ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @PutMapping("/store/{storeId}/tables/{storeTableId}")
+    public ResponseEntity<String> updateStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @RequestBody UpdateStoreTableRequestDto requestDto){
+
+        storeTableService.updateStoreTable(storeId, storeTableId, requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body("자리정보가 변경되었습니다.");
+    }
+
+    /**
+     *  가게 내 모든 테이블 조회 API
+     * @param storeId
+     * @return
+     */
+    @GetMapping("/store/{storeId}/tables}")
+    public ResponseEntity<StoreTableGetAllResponseDto> getAllStoreTable(@PathVariable Long storeId){
+
+        StoreTableGetAllResponseDto responseDto = storeTableService.getAllStoreTable(storeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+
 }
 
 

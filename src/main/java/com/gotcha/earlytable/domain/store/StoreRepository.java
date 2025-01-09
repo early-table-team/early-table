@@ -21,5 +21,5 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     List<Store> findAllByUserId(Long userId);
 
-    List<Store> findAllByStoreIdIn(List<Long> storeIds);
+
 }
