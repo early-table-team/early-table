@@ -11,7 +11,6 @@ import java.util.List;
 
 @Getter
 public class WaitingOnlineResponseDto {
-    int waitingNumber;
     String storeName;
     int personnelCount;
     WaitingType waitingType;
@@ -19,7 +18,6 @@ public class WaitingOnlineResponseDto {
     WaitingStatus waitingStatus;
 
     public WaitingOnlineResponseDto(Waiting waiting) {
-        this.waitingNumber = waiting.getWaitingNumber().getWaitingNumber();
         this.storeName = waiting.getStore().getStoreName();
         this.personnelCount = waiting.getPersonnelCount();
         this.waitingType = waiting.getWaitingType();

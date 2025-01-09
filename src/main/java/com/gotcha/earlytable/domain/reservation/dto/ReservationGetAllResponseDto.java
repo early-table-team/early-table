@@ -13,7 +13,6 @@ public class ReservationGetAllResponseDto {
 
     private final Long reservationId;
 
-    private final LocalDateTime reservationDate;
 
     private final String storeName;
 
@@ -22,7 +21,6 @@ public class ReservationGetAllResponseDto {
     public ReservationGetAllResponseDto(Reservation reservation) {
         this.storeId = reservation.getReservationId();
         this.reservationId = reservation.getReservationId();
-        this.reservationDate = reservation.getReservationDateTime();
         this.storeName = reservation.getStore().getStoreName();
         this.reservationStatus = reservation.getReservationStatus();
     }

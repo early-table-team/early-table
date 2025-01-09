@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 @Getter
 public class WaitingDetailResponseDto {
-    private int waitingNumber;
     private String storeName;
     private WaitingStatus waitingStatus;
     private WaitingType waitingType;
@@ -18,7 +17,6 @@ public class WaitingDetailResponseDto {
     private List<String> partyPeople;
 
     public WaitingDetailResponseDto (Waiting waiting) {
-        this.waitingNumber = waiting.getWaitingNumber().getWaitingNumber();
         this.storeName = waiting.getStore().getStoreName();
         this.waitingStatus = waiting.getWaitingStatus();
         this.waitingType = waiting.getWaitingType();

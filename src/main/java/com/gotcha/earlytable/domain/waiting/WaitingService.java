@@ -51,23 +51,23 @@ public class WaitingService {
      * @param storeId
      * @return
      */
-    @Transactional
-    public WaitingOnlineResponseDto createWaitingOnline(@Valid WaitingOnlineRequestDto requestDto, Long storeId, User user) {
-
-        Store store = storeRepository.findByIdOrElseThrow(storeId);
-
-        Party party = partyRepository.save(new Party());
-        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
-        partyPeopleRepository.save(partyPeople);
-
-        WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
-        WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
-
-        Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING, savedwaitingNumber);
-        Waiting savedWaiting = waitingRepository.save(waiting);
-
-        return new WaitingOnlineResponseDto(savedWaiting);
-    }
+//    @Transactional
+//    public WaitingOnlineResponseDto createWaitingOnline(@Valid WaitingOnlineRequestDto requestDto, Long storeId, User user) {
+//
+//        Store store = storeRepository.findByIdOrElseThrow(storeId);
+//
+//        Party party = partyRepository.save(new Party());
+//        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
+//        partyPeopleRepository.save(partyPeople);
+//
+////        WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
+////        WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
+//
+//        Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING);
+//        Waiting savedWaiting = waitingRepository.save(waiting);
+//
+//        return new WaitingOnlineResponseDto(savedWaiting);
+//    }
 
     /**
      * 현장 웨이팅 생성 메서드
@@ -76,22 +76,22 @@ public class WaitingService {
      * @param storeId
      * @return
      */
-    @Transactional
-    public WaitingNumberResponseDto createWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
-
-        Store store = storeRepository.findByIdOrElseThrow(storeId);
-
-        OfflineUser offlineUser = new OfflineUser(requestDto.getPhoneNumber());
-        OfflineUser savedOfflineUser = offlineUserRepository.save(offlineUser);
-
-        WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
-        WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
-
-        Waiting waiting = new Waiting(store, savedOfflineUser, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING, savedwaitingNumber);
-        Waiting savedWaiting = waitingRepository.save(waiting);
-
-        return new WaitingNumberResponseDto(savedWaiting);
-    }
+//    @Transactional
+//    public WaitingNumberResponseDto createWaitingOffline(@Valid WaitingOfflineRequestDto requestDto, Long storeId) {
+//
+//        Store store = storeRepository.findByIdOrElseThrow(storeId);
+//
+//        OfflineUser offlineUser = new OfflineUser(requestDto.getPhoneNumber());
+//        OfflineUser savedOfflineUser = offlineUserRepository.save(offlineUser);
+//
+//        WaitingNumber waitingNumber = new WaitingNumber(waitingRepository.countByStoreAndWaitingType(store, requestDto.getWaitingType()));
+//        WaitingNumber savedwaitingNumber = waitingNumberRepository.save(waitingNumber);
+//
+//        Waiting waiting = new Waiting(store, savedOfflineUser, requestDto.getWaitingType(), requestDto.getPersonnelCount(), WaitingStatus.PENDING, savedwaitingNumber);
+//        Waiting savedWaiting = waitingRepository.save(waiting);
+//
+//        return new WaitingNumberResponseDto(savedWaiting);
+//    }
 
     /**
      * 웨이팅 목록 조회 메서드
@@ -124,25 +124,25 @@ public class WaitingService {
      * @param user
      * @return
      */
-    @Transactional
-    public WaitingNumberResponseDto delayWaiting(Long waitingId, User user) {
-
-        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
-
-        // 로그인한 유저가 웨이팅 등록자인지 확인
-        waiting.getParty().getPartyPeople().stream()
-                .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
-                .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
-                .filter(checkUser -> checkUser.equals(user))
-                .findFirst()
-                .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
-
-        WaitingNumber waitingNumber = waiting.getWaitingNumber();
-        waitingNumber.updateWaitingNumber(waitingRepository.countByStoreAndWaitingType(waiting.getStore(), waiting.getWaitingType()));
-        waitingNumberRepository.save(waitingNumber);
-
-        return new WaitingNumberResponseDto(waiting);
-    }
+//    @Transactional
+//    public WaitingNumberResponseDto delayWaiting(Long waitingId, User user) {
+//
+//        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+//
+//        // 로그인한 유저가 웨이팅 등록자인지 확인
+//        waiting.getParty().getPartyPeople().stream()
+//                .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
+//                .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
+//                .filter(checkUser -> checkUser.equals(user))
+//                .findFirst()
+//                .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
+//
+//        WaitingNumber waitingNumber = waiting.getWaitingNumber();
+//        waitingNumber.updateWaitingNumber(waitingRepository.countByStoreAndWaitingType(waiting.getStore(), waiting.getWaitingType()));
+//        waitingNumberRepository.save(waitingNumber);
+//
+//        return new WaitingNumberResponseDto(waiting);
+//    }
 
     /**
      * 웨이팅 상세 조회 메서드
@@ -186,12 +186,12 @@ public class WaitingService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
 
         // 예약 대기 상태만 취소 가능
-        if (waiting.getWaitingStatus() == WaitingStatus.PENDING) {
-            waiting.cancelWaiting();
-
-        } else {
+        if (waiting.getWaitingStatus() != WaitingStatus.PENDING) {
             throw new BadRequestException(ErrorCode.REJECT_CANCEL);
         }
+
+        // 웨이팅 상태 변경
+        waiting.cancelWaiting();
 
         waitingRepository.save(waiting);
     }
