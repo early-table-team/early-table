@@ -51,4 +51,8 @@ public class AvailableTable extends BaseEntity {
         }
     }
 
+    public void increaseRemainTable(){
+        this.remainTable++;
+    }
+
 }
