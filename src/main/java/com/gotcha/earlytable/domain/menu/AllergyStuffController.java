@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/allergies/{categoryId}")
+@RequestMapping("/allergies/{categoryId}/allergyStuff")
 public class AllergyStuffController {
 
     private final AllergyStuffService allergyStuffService;
@@ -25,7 +25,7 @@ public class AllergyStuffController {
      * @param allergyStuffRequestDto
      * @return AllergyStuffResponseDto
      */
-    @PostMapping("/allergyStuff")
+    @PostMapping
     public ResponseEntity<AllergyStuffResponseDto> createAllergyStuff(@PathVariable Long categoryId,
                                                                       @ModelAttribute AllergyStuffRequestDto allergyStuffRequestDto) {
         AllergyStuffResponseDto createAllergyStuffResponseDto = allergyStuffService.createAllergyStuff(categoryId, allergyStuffRequestDto);
@@ -40,7 +40,7 @@ public class AllergyStuffController {
      * @param allergyStuffRequestDto
      * @return AllergyStuffResponseDto
      */
-    @PutMapping("/allergyStuff/{stuffId}")
+    @PutMapping("/{stuffId}")
     public ResponseEntity<AllergyStuffResponseDto> updateAllergyStuff(@PathVariable Long categoryId, @PathVariable Long stuffId,
                                                                       @ModelAttribute AllergyStuffRequestDto allergyStuffRequestDto) {
         AllergyStuffResponseDto updateAllergyStuffResponseDto = allergyStuffService.updateAllergyStuff(categoryId, stuffId, allergyStuffRequestDto);
@@ -65,7 +65,7 @@ public class AllergyStuffController {
      * @param stuffId
      * @return String
      */
-    @DeleteMapping("/allergyStuff/{stuffId}")
+    @DeleteMapping("/{stuffId}")
     public ResponseEntity<String> deleteAllergyStuff(@PathVariable Long stuffId) {
         allergyStuffService.deleteAllergyStuff(stuffId);
 
