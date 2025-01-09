@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/stores/{storeId}/menus/{menuId}/allergy")
 public class AllergyController {
     private final AllergyService allergyService;
 
@@ -20,7 +19,7 @@ public class AllergyController {
      * @param allergyRequestDto //allergyStuff ex.아몬드
      * @return String
      */
-    @PostMapping
+    @PostMapping("/menus/{menuId}/allergies")
     public ResponseEntity<String> createAllergyInMenu(@PathVariable Long menuId,
                                                       @ModelAttribute AllergyRequestDto allergyRequestDto) {
 
@@ -34,7 +33,7 @@ public class AllergyController {
      * @param allergyId
      * @return String
      */
-    @DeleteMapping("/{allergyId}")
+    @DeleteMapping("/menus/allergies/{allergyId}")
     public ResponseEntity<String> deleteAllergyInMenu(@PathVariable Long allergyId) {
         allergyService.deleteAllergyInMenu(allergyId);
 
