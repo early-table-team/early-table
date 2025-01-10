@@ -19,17 +19,18 @@ import java.util.stream.Collectors;
 @Service
 public class StoreTimeSlotService {
 
-    private final StoreTimeSlotRepository storeTimeSlotRepository ;
+    private final StoreTimeSlotRepository storeTimeSlotRepository;
     private final StoreRepository storeRepository;
 
 
     public StoreTimeSlotService(StoreTimeSlotRepository storeTimeSlotRepository, StoreRepository storeRepository) {
-        this.storeTimeSlotRepository = storeTimeSlotRepository ;
+        this.storeTimeSlotRepository = storeTimeSlotRepository;
         this.storeRepository = storeRepository;
     }
 
     /**
-     *  타임슬롯 생성 메서드
+     * 타임슬롯 생성 메서드
+     *
      * @param storeId
      * @param requestDto
      * @param user
@@ -40,17 +41,17 @@ public class StoreTimeSlotService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
         //본인 가게가 아닌경우
-        if(store.getUser() != user){
+        if (store.getUser() != user) {
             throw new CustomException(ErrorCode.NO_STORE_OWNER);
         }
 
         // 가게자리와 시간대를 이용하여 이미 존재하는 값인지 구분
         boolean exist = storeTimeSlotRepository.existsByStoreAndReservationTime(store, requestDto.getReservationTime());
-        if(exist){
+        if (exist) {
             throw new CustomException(ErrorCode.DUPLICATE_VALUE);
         }
 
-        StoreTimeSlot storeTimeSlot = new StoreTimeSlot(requestDto.getReservationTime(),store );
+        StoreTimeSlot storeTimeSlot = new StoreTimeSlot(requestDto.getReservationTime(), store);
         storeTimeSlotRepository.save(storeTimeSlot);
 
         return new TimeSlotResponseDto(storeTimeSlot.getStoreTimeSlotId(), storeTimeSlot.getReservationTime());
@@ -58,7 +59,8 @@ public class StoreTimeSlotService {
 
 
     /**
-     *  타임슬롯 전체조회 메서드
+     * 타임슬롯 전체조회 메서드
+     *
      * @param storeId
      * @param user
      * @return List<TimeSlotResponseDto>
@@ -67,7 +69,7 @@ public class StoreTimeSlotService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
         //본인 가게가 아닌경우
-        if(store.getUser() != user){
+        if (store.getUser() != user) {
             throw new BadRequestException(ErrorCode.NO_STORE_OWNER);
         }
         List<StoreTimeSlot> timeSlots = storeTimeSlotRepository.findByStore(store);
@@ -79,31 +81,33 @@ public class StoreTimeSlotService {
     }
 
     /**
-     *  타임슬롯 단일 조회
+     * 타임슬롯 단일 조회
+     *
      * @param storeId
      * @param timeSlotId
      * @param user
-     * @return  TimeSlotResponseDto
+     * @return TimeSlotResponseDto
      */
     public TimeSlotResponseDto getOneTimeSlot(Long storeId, Long timeSlotId, User user) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
         //본인 가게가 아닌경우
-        if(store.getUser() != user){
+        if (store.getUser() != user) {
             throw new BadRequestException(ErrorCode.NO_STORE_OWNER);
         }
 
         Optional<StoreTimeSlot> storeTimeSlot = storeTimeSlotRepository.findById(timeSlotId);
 
-        if (storeTimeSlot.isPresent()) {
-            return new TimeSlotResponseDto(storeTimeSlot.get().getStoreTimeSlotId(), storeTimeSlot.get().getReservationTime());
-        } else {
+        if (storeTimeSlot.isEmpty()) {
             throw new CustomException(ErrorCode.NOT_FOUND);
         }
+
+        return new TimeSlotResponseDto(storeTimeSlot.get().getStoreTimeSlotId(), storeTimeSlot.get().getReservationTime());
     }
 
     /**
-     *  타임슬롯 수정 메서드
+     * 타임슬롯 수정 메서드
+     *
      * @param storeId
      * @param timeSlotId
      * @param requestDto
@@ -114,23 +118,23 @@ public class StoreTimeSlotService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
         //본인 가게가 아닌경우
-        if(store.getUser() != user){
+        if (store.getUser() != user) {
             throw new BadRequestException(ErrorCode.NO_STORE_OWNER);
         }
         Optional<StoreTimeSlot> opStoreTimeSlot = storeTimeSlotRepository.findById(timeSlotId);
 
-        if (opStoreTimeSlot.isPresent()) {
-            StoreTimeSlot storeTimeSlot = opStoreTimeSlot.get();
-            storeTimeSlot.changeTimeSlot(requestDto.getReservationTime());
-            storeTimeSlotRepository.save(storeTimeSlot);
-            return new TimeSlotResponseDto(storeTimeSlot.getStoreTimeSlotId(), storeTimeSlot.getReservationTime());
-        } else {
+        if (opStoreTimeSlot.isEmpty()) {
             throw new CustomException(ErrorCode.NOT_FOUND);
         }
+        StoreTimeSlot storeTimeSlot = opStoreTimeSlot.get();
+        storeTimeSlot.changeTimeSlot(requestDto.getReservationTime());
+        storeTimeSlotRepository.save(storeTimeSlot);
+        return new TimeSlotResponseDto(storeTimeSlot.getStoreTimeSlotId(), storeTimeSlot.getReservationTime());
     }
 
     /**
-     *  타임슬롯 삭제 메서드
+     * 타임슬롯 삭제 메서드
+     *
      * @param storeId
      * @param timeSlotId
      * @param user
@@ -139,18 +143,16 @@ public class StoreTimeSlotService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
         //본인 가게가 아닌경우
-        if(store.getUser() != user){
+        if (store.getUser() != user) {
             throw new BadRequestException(ErrorCode.NO_STORE_OWNER);
         }
 
         Optional<StoreTimeSlot> storeTimeSlot = storeTimeSlotRepository.findById(timeSlotId);
 
         if (storeTimeSlot.isPresent()) {
-            storeTimeSlotRepository.deleteById(timeSlotId);
-        } else {
             throw new CustomException(ErrorCode.NOT_FOUND);
         }
-
+        storeTimeSlotRepository.deleteById(timeSlotId);
     }
 
 }
