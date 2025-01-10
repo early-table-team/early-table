@@ -129,7 +129,7 @@ public class StoreController {
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @GetMapping
+    @GetMapping("/search")
     public ResponseEntity<List<StoreListResponseDto>> searchStore(@RequestBody StoreSearchRequestDto requestDto) {
 
         List<StoreListResponseDto> responseDtoList = storeService.searchStore(requestDto);
