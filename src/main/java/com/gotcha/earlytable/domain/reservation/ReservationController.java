@@ -30,11 +30,11 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/reservations")
-    public ResponseEntity<String> createReservation(@PathVariable Long storeId, @RequestBody ReservationCreateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<ReservationCreateResponseDto> createReservation(@PathVariable Long storeId, @RequestBody ReservationCreateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
+        ReservationCreateResponseDto responseDto = reservationService.createReservation(storeId, requestDto, userDetails.getUser());
 
-
-        return ResponseEntity.status(HttpStatus.CREATED).body("안녕하세요");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     /**
@@ -44,9 +44,11 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/reservations")
-    public ResponseEntity<List<ReservationGetAllResponseDto>> getAllReservations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<ReservationGetAllResponseDto>> getAllReservations(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                                 @RequestParam(value = "size", defaultValue = "5") int size ) {
 
-        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser());
+        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser(),page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(resDto);
     }
@@ -89,10 +91,11 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @DeleteMapping("/reservations/{reservationId}")
-    public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId) {
+    public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        reservationService.cancelReservation(reservationId);
+        reservationService.cancelReservation(reservationId, userDetails.getUser());
 
+        //취소는 NO_CONTENT 반환
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("예약이 취소되었습니다.");
     }
 
