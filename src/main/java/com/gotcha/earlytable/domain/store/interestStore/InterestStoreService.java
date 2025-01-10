@@ -1,7 +1,7 @@
 package com.gotcha.earlytable.domain.store.interestStore;
 
-import com.gotcha.earlytable.domain.file.FileStatus;
-import com.gotcha.earlytable.domain.file.ImageFileRepository;
+import com.gotcha.earlytable.domain.file.enums.FileStatus;
+import com.gotcha.earlytable.domain.file.FileDetailRepository;
 import com.gotcha.earlytable.domain.menu.MenuRepository;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.review.ReviewRepository;
@@ -26,15 +26,15 @@ public class InterestStoreService {
     private final StoreRepository storeRepository;
     private final MenuRepository menuRepository;
     private final ReviewRepository reviewRepository;
-    private final ImageFileRepository imageFileRepository;
+    private final FileDetailRepository fileDetailRepository;
 
-    public InterestStoreService(InterestStoreRepository interestStoreRepository, StoreRepository storeRepository, MenuRepository menuRepository, ReviewRepository reviewRepository, ImageFileRepository imageFileRepository) {
+    public InterestStoreService(InterestStoreRepository interestStoreRepository, StoreRepository storeRepository, MenuRepository menuRepository, ReviewRepository reviewRepository, FileDetailRepository fileDetailRepository) {
 
         this.interestStoreRepository = interestStoreRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
         this.reviewRepository = reviewRepository;
-        this.imageFileRepository = imageFileRepository;
+        this.fileDetailRepository = fileDetailRepository;
     }
 
     /**
@@ -70,7 +70,7 @@ public class InterestStoreService {
             String presentMenu = menuRepository.findByStoreStoreIdAndMenuStatus(store.getStoreId(), MenuStatus.RECOMMENDED).getMenuName();
             Double averageRating = reviewRepository.findAverageRatingByStore(store);
             Long countReview = reviewRepository.countReviewsByStore(store);
-            String storeImage = imageFileRepository.findByFileStoreStoreIdAndFileStatus(store.getStoreId(), FileStatus.REPRESENTATIVE).getFileUrl();
+            String storeImage = fileDetailRepository.findByFileStoreStoreIdAndFileStatus(store.getStoreId(), FileStatus.REPRESENTATIVE).getFileUrl();
 
             InterestStoreResponseDto responseDto = new  InterestStoreResponseDto(storeId, storeName, storeContent, storeCategory, presentMenu, averageRating, countReview, storeImage);
 

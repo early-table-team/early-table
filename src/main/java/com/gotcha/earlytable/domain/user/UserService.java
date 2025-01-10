@@ -1,18 +1,20 @@
 package com.gotcha.earlytable.domain.user;
 
+import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
-import com.gotcha.earlytable.domain.file.FileStatus;
-import com.gotcha.earlytable.domain.file.ImageFileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.file.enums.FileStatus;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,22 +27,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final ImageFileService imageFileService;
+    private final FileDetailService fileDetailService;
     private final FileService fileService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final ResourceLoader resourceLoader;
 
-    public UserService(UserRepository userRepository, ImageFileService imageFileService,
+    public UserService(UserRepository userRepository, FileDetailService fileDetailService,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider, FileService fileService) {
+                       JwtProvider jwtProvider, FileService fileService, ResourceLoader resourceLoader) {
         this.userRepository = userRepository;
-        this.imageFileService = imageFileService;
+        this.fileDetailService = fileDetailService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.fileService = fileService;
+        this.resourceLoader = resourceLoader;
     }
 
     /**
@@ -64,7 +68,7 @@ public class UserService {
         File file = fileService.createFile();
 
         // 프로필 이미지 파일 저장
-        String imageUrl = imageFileService.createImageFile(requestDto.getProfileImage(), file);
+        String imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
 
         // User 생성
         User user = User.toEntity(requestDto, encodedPassword, file);
@@ -112,8 +116,9 @@ public class UserService {
      */
     public UserResponseDto getUser(User user){
 
-        String imageUrl = user.getFile().getImageFileList().stream()
-                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst().get()
+        String imageUrl = user.getFile().getFileDetailList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND))
                 .getFileUrl();
 
         return UserResponseDto.toDto(user, imageUrl);
@@ -155,16 +160,17 @@ public class UserService {
         userRepository.save(user);
 
         // 기존 이미지 url 가져오기
-        String imageUrl = user.getFile().getImageFileList().stream()
-                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst().get()
+        String imageUrl = user.getFile().getFileDetailList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND))
                 .getFileUrl();
 
         // 변경할 이미지가 있으면
         if(requestDto.getProfileImage() != null){
 
-            imageFileService.deleteImageFile(imageUrl);
+            fileDetailService.deleteImageFile(imageUrl);
 
-            imageUrl = imageFileService.createImageFile(requestDto.getProfileImage(), user.getFile());
+            imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), user.getFile());
         }
 
         return UserResponseDto.toDto(user, imageUrl);

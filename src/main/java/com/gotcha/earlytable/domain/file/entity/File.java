@@ -19,7 +19,7 @@ public class File extends BaseEntity {
     private Long fileId;
 
     @OneToMany(mappedBy = "file", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ImageFile> imageFileList = new ArrayList<>();
+    private List<FileDetail> fileDetailList = new ArrayList<>();
 
 
     public File() {
