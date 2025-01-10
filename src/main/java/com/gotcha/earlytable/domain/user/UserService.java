@@ -1,12 +1,15 @@
 package com.gotcha.earlytable.domain.user;
 
+import com.gotcha.earlytable.domain.file.FileService;
+import com.gotcha.earlytable.domain.file.FileStatus;
+import com.gotcha.earlytable.domain.file.ImageFileService;
+import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
-import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
@@ -22,22 +25,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ImageFileService imageFileService;
+    private final FileService fileService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
 
-    public UserService(UserRepository userRepository,
+    public UserService(UserRepository userRepository, ImageFileService imageFileService,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider) {
+                       JwtProvider jwtProvider, FileService fileService) {
         this.userRepository = userRepository;
+        this.imageFileService = imageFileService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
+        this.fileService = fileService;
     }
 
     /**
      * 회원가입 기능
+     *
      * @param requestDto
      * @return UserResponseDto
      */
@@ -52,12 +60,18 @@ public class UserService {
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
+        // 파일 생성
+        File file = fileService.createFile();
+
+        // 프로필 이미지 파일 저장
+        String imageUrl = imageFileService.createImageFile(requestDto.getProfileImage(), file);
+
         // User 생성
-        User user = User.toEntity(requestDto, encodedPassword);
+        User user = User.toEntity(requestDto, encodedPassword, file);
 
         User savedUser = userRepository.save(user);
 
-        return UserResponseDto.toDto(savedUser);
+        return UserResponseDto.toDto(savedUser, imageUrl);
     }
 
     /**
@@ -90,19 +104,24 @@ public class UserService {
         return new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), accessToken);
     }
 
-
     /**
-     * 유저 단건 조회(본인)
+     * 유저 단건 조회(본인) 메서드
+     *
      * @param user
      * @return UserResponseDto
      */
     public UserResponseDto getUser(User user){
 
-        return UserResponseDto.toDto(user);
+        String imageUrl = user.getFile().getImageFileList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst().get()
+                .getFileUrl();
+
+        return UserResponseDto.toDto(user, imageUrl);
     }
 
     /**
-     *  유저 삭제
+     *  유저 탈퇴 메서드
+     *
      * @param requestDto
      * @param user
      */
@@ -119,5 +138,52 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     *  유저 정보 변경 메서드
+     *
+     * @param user
+     * @param requestDto
+     * @return UserResponseDto
+     */
+    @Transactional
+    public UserResponseDto updateUser(User user, UserUpdateRequestDto requestDto) {
 
+        // 정보 수정
+        user.updateUser(requestDto);
+
+        // 저장
+        userRepository.save(user);
+
+        // 기존 이미지 url 가져오기
+        String imageUrl = user.getFile().getImageFileList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst().get()
+                .getFileUrl();
+
+        // 변경할 이미지가 있으면
+        if(requestDto.getProfileImage() != null){
+
+            imageFileService.deleteImageFile(imageUrl);
+
+            imageUrl = imageFileService.createImageFile(requestDto.getProfileImage(), user.getFile());
+        }
+
+        return UserResponseDto.toDto(user, imageUrl);
+    }
+
+    /**
+     * 비밀번호 변경 메서드
+     *
+     * @param user
+     * @param requestDto
+     */
+    @Transactional
+    public void updateUserPW(User user, UserPWRequestDto requestDto) {
+
+        // 패스워드 인코딩
+        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+        // 정보 수정
+        user.updateUserPW(encodedPassword);
+
+        userRepository.save(user);
+    }
 }

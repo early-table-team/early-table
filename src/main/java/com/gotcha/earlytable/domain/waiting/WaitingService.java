@@ -17,6 +17,7 @@ import com.gotcha.earlytable.global.enums.RemoteStatus;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
+import com.gotcha.earlytable.global.error.exception.ForbiddenException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,10 +98,6 @@ public class WaitingService {
     public WaitingNumberResponseDto createWaitingOffline(WaitingOfflineRequestDto requestDto, Long storeId) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
-
-        // 현장 사용자로 저장
-        OfflineUser offlineUser = new OfflineUser(requestDto.getPhoneNumber());
-        offlineUserRepository.save(offlineUser);
 
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
@@ -214,6 +211,13 @@ public class WaitingService {
                     .filter(partyPeople -> partyPeople.getUser().equals(user))
                     .findFirst()
                     .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
+        }
+
+        // 사용자 권한이 사장님이면
+        if(user.getAuth() == Auth.OWNER) {
+            if(!waiting.getStore().getUser().getId().equals(user.getId())) {
+                throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+            }
         }
 
         return new WaitingDetailResponseDto(waiting);
