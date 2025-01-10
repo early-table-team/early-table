@@ -11,10 +11,8 @@ import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
 import com.gotcha.earlytable.domain.store.*;
 import com.gotcha.earlytable.domain.store.entity.*;
-import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
-import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
@@ -23,10 +21,9 @@ import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
+
 import java.time.format.TextStyle;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -170,10 +167,10 @@ public class ReservationService {
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException(ErrorCode.BAD_REQUEST));
 
-        List<ReturnMenuList> menuList = new ArrayList<>();
+        List<ReturnMenuListDto> menuList = new ArrayList<>();
         reservation.getReservationMenuList()
                 .forEach(ml -> {
-                    ReturnMenuList menus = new ReturnMenuList(ml.getMenu().getMenuId(), ml.getMenuCount(), ml.getMenu().getMenuName());
+                    ReturnMenuListDto menus = new ReturnMenuListDto(ml.getMenu().getMenuId(), ml.getMenuCount(), ml.getMenu().getMenuName());
                     menuList.add(menus);
                 });
 
@@ -196,7 +193,7 @@ public class ReservationService {
         Store store = reservation.getStore();
         reservationMenuRepository.deleteById(reservationId);
         List<HashMap<String, Long>> menuList = requestDto.getMenuList();
-        List<ReturnMenuList> returnMenuLists = new ArrayList<>();
+        List<ReturnMenuListDto> returnMenuLists = new ArrayList<>();
 
         List<Menu> menus = new ArrayList<>();
         List<Long> menuCounts = new ArrayList<>();
@@ -213,7 +210,7 @@ public class ReservationService {
             Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
             menus.add(addMenu);
             menuCounts.add(menuCount);
-            ReturnMenuList returnMenuList = new ReturnMenuList(menuId, menuCount, addMenu.getMenuName());
+            ReturnMenuListDto returnMenuList = new ReturnMenuListDto(menuId, menuCount, addMenu.getMenuName());
             returnMenuLists.add(returnMenuList);
 
         });

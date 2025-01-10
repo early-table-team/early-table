@@ -6,7 +6,6 @@ import com.gotcha.earlytable.global.enums.ReservationStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,9 +26,9 @@ public class ReservationGetOneResponseDto {
 
     private final String phoneNumber;
 
-    private final List<ReturnMenuList> menuList;
+    private final List<ReturnMenuListDto> menuList;
 
-    public ReservationGetOneResponseDto(Reservation reservation, User user, List<ReturnMenuList> menuList) {
+    public ReservationGetOneResponseDto(Reservation reservation, User user, List<ReturnMenuListDto> menuList) {
         this.reservationId = reservation.getReservationId();
         this.reservationDate = reservation.getReservationDate().atTime(reservation.getReservationTime()); // 예약에 저장된 날짜와 시간을 조합하여 한번에 보여줌
         this.storeName = reservation.getStore().getStoreName();
