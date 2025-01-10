@@ -3,24 +3,28 @@ package com.gotcha.earlytable.domain.store.dto;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class StoreSearchRequestDto {
     private final String searchWord;
     private final String regionTop;
     private final String regionBottom;
-    private final Long MinPrice;
-    private final Long MaxPrice;
+    private final Long minPrice;
+    private final Long maxPrice;
     private final StoreCategory storeCategory;
-    private final String Allergy;
+    private final List<String> allergyCategory;
+    private final List<String> allergyStuff;
 
 
-    public StoreSearchRequestDto(String searchWord, String regionTop, String regionBottom, Long minPrice, Long maxPrice, StoreCategory storeCategory, String allergy) {
+    public StoreSearchRequestDto(String searchWord, String regionTop, String regionBottom, Long minPrice, Long maxPrice, StoreCategory storeCategory, List<String> allergyCategory, List<String> allergyStuff) {
         this.searchWord = searchWord;
         this.regionTop = regionTop;
         this.regionBottom = regionBottom;
-        MinPrice = minPrice;
-        MaxPrice = maxPrice;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
         this.storeCategory = storeCategory;
-        Allergy = allergy;
+        this.allergyCategory = allergyCategory;
+        this.allergyStuff = allergyStuff;
     }
 }

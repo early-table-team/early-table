@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 @Service
 public class StoreService {
@@ -35,6 +34,14 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
+    /**
+     * 가게 검색 조회
+     *
+     * @param requestDto
+     * @return
+     */
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository, FileRepository fileRepository) {
         this.storeRepository = storeRepository;
@@ -162,7 +169,6 @@ public class StoreService {
         return StoreResponseDto.toDto(store);
     }
 
-
     /**
      * 나의 가게 전체 조회 메서드
      *
@@ -229,14 +235,6 @@ public class StoreService {
 
     }
 
-    /**
-     * 가게 검색 조회
-     *
-     * @param requestDto
-     * @return
-     */
-    @PersistenceContext
-    private EntityManager entityManager;
     public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
 
         QStore store = QStore.store;
@@ -254,7 +252,8 @@ public class StoreService {
                         storeCategoryEquals(requestDto.getStoreCategory(), store),   // 가게 카테고리 조건
                         maxPriceCondition(Math.toIntExact(requestDto.getMaxPrice()), menu),           // 최대 가격 조건
                         minPriceCondition(Math.toIntExact(requestDto.getMinPrice()), menu),            // 최소 가격 조건
-                        allergyExclude(requestDto.getAllergy(), menu) // 알러지 조건
+                        allergyCategoryExclude(requestDto.getAllergyCategory(), menu), // 알러지 상위 조건
+                        allergyStuffExclude(requestDto.getAllergyStuff(), menu) // 알러지 하위 조건
                 )
                 .distinct()
                 .fetch();
@@ -300,12 +299,31 @@ public class StoreService {
         return menu.menuStatus.eq(MenuStatus.RECOMMENDED).and(menu.menuPrice.goe(minPrice));
     }
 
-    private BooleanExpression allergyExclude(String allergy, QMenu menu) {
-        if (allergy == null) {
+    private BooleanExpression allergyStuffExclude(List<String> allergyStuff, QMenu menu) {
+        if (allergyStuff == null) {
             return null;
         }
-        return menu.allergyList.any().allergyStuff.allergyStuff.contains(allergy)
-                .or(menu.allergyList.any().allergyStuff.allergyCategory.allergyCategory.contains(allergy))
-                .not();
+
+        BooleanExpression condition = null;
+        for (String allergyKey : allergyStuff) {
+            condition = menu.allergyList.any().allergyStuff.allergyCategory.allergyCategory.contains(allergyKey)
+                    .not();
+        }
+
+        return condition;
+    }
+
+    private BooleanExpression allergyCategoryExclude(List<String> allergyCategory, QMenu menu) {
+        if (allergyCategory == null) {
+            return null;
+        }
+
+        BooleanExpression condition = null;
+        for (String allergyKey : allergyCategory) {
+            condition = menu.allergyList.any().allergyStuff.allergyStuff.contains(allergyKey)
+                    .not();
+        }
+
+        return condition;
     }
 }
