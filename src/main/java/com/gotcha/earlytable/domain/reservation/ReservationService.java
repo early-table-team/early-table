@@ -237,9 +237,7 @@ public class ReservationService {
             throw new BadRequestException(ErrorCode.REJECT_CANCEL);
         }
         reservation.modifyStatus(ReservationStatus.CANCELED);
-        reservationMenuRepository.deleteById(reservationId);
-        partyRepository.deleteById(reservationId);
-        partyPeopleRepository.deleteById(reservationId);
+
         reservationRepository.save(reservation); // 예약 정보만 취소로 바꾸고 나머지는 리포지토리에서 삭제
 
     }
