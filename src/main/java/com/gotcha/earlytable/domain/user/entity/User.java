@@ -1,7 +1,9 @@
 package com.gotcha.earlytable.domain.user.entity;
 
+import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.store.entity.InterestStore;
 import com.gotcha.earlytable.domain.user.dto.UserRegisterRequestDto;
+import com.gotcha.earlytable.domain.user.dto.UserUpdateRequestDto;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.enums.Status;
@@ -39,31 +41,50 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Status status; //유저 상태
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id", nullable = false)
+    private File file;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<InterestStore> interestStoreList = new ArrayList<>();
 
-    public User(String email, String nickName, String password, String phone, Auth auth, Status status) {
+    public User(String email, String nickName, String password, String phone, Auth auth, Status status, File file) {
         this.email = email;
         this.nickName = nickName;
         this.password = password;
         this.phone = phone;
         this.auth = auth;
         this.status = status;
+        this.file = file;
     }
 
     public User() {
 
     }
 
-    public static User toEntity(UserRegisterRequestDto requestDto, String EncodingPassword){
+    public static User toEntity(UserRegisterRequestDto requestDto, String EncodingPassword, File file){
         return new User(
                 requestDto.getEmail(),
                 requestDto.getNickname(),
                 EncodingPassword,
                 requestDto.getPhoneNumber(),
                 requestDto.getAuth(),
-                Status.NORMAL
+                Status.NORMAL,
+                file
         );
+    }
+
+    public void updateUser(UserUpdateRequestDto requestDto){
+        if(requestDto.getNickname() != null){
+            this.nickName = requestDto.getNickname();
+        }
+        if(requestDto.getPhoneNumber() != null){
+            this.phone = requestDto.getPhoneNumber();
+        }
+    }
+
+    public void updateUserPW(String newPassword){
+        this.password = newPassword;
     }
 
     public void asDelete(){

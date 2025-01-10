@@ -24,21 +24,23 @@ public class UserController {
     }
 
     /**
-     * 회원가입
+     * 회원가입 API
+     *
      * @param requestDto
-     * @return
+     * @return ResponseEntity<UserResponseDto>
      */
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> registerUser (@Valid @RequestBody UserRegisterRequestDto requestDto) {
+    public ResponseEntity<UserResponseDto> registerUser (@Valid @ModelAttribute UserRegisterRequestDto requestDto) {
         UserResponseDto registerUser = userService.registerUser(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
     }
 
     /**
-     * 로그인 기능
+     * 로그인 기능 API
+     *
      * @param requestDto
-     * @return
+     * @return ResponseEntity<JwtAuthResponse>
      */
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> loginUser (@Valid @RequestBody UserLoginRequestDto requestDto) {
@@ -49,11 +51,12 @@ public class UserController {
     }
 
     /**
-     * 로그아웃 기능
+     * 로그아웃 기능 API
+     *
      * @param request
      * @param response
      * @param authentication
-     * @return
+     * @return ResponseEntity<String>
      * @throws UsernameNotFoundException
      */
     @PostMapping("/logout")
@@ -76,7 +79,8 @@ public class UserController {
     }
 
     /**
-     * 유저 단건 조회
+     * 유저 단건 조회 API
+     *
      * @param userDetails
      * @return ResponseEntity<UserResponseDto>
      */
@@ -89,13 +93,47 @@ public class UserController {
     }
 
     /**
-     *  유저 삭제
+     * 유저 정보 수정 API
+     *
+     * @param requestDto
+     * @param userDetails
+     * @return ResponseEntity<UserResponseDto>
+     */
+    @PutMapping("/users")
+    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserUpdateRequestDto requestDto,
+                                                      @AuthenticationPrincipal UserDetailsImpl userDetails){
+
+        UserResponseDto userResponseDto = userService.updateUser(userDetails.getUser(), requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+    }
+
+    /**
+     * 유저 비밀번호 변경 API
+     *
+     * @param requestDto
+     * @param userDetails
+     * @return ResponseEntity<String>
+     */
+    @PatchMapping("/users/pw")
+    public ResponseEntity<String> updateUserPW(@Valid @RequestBody UserPWRequestDto requestDto,
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails){
+
+        userService.updateUserPW(userDetails.getUser(), requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body("비밀번호 수정이 완료되었습니다.");
+    }
+
+    /**
+     *  유저 삭제 API
+     *
      * @param requestDto
      * @param userDetails
      * @return ResponseEntity<String>
      */
     @DeleteMapping("/users")
-    public ResponseEntity<String> deleteUser(@RequestBody UserDeleteRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<String> deleteUser(@RequestBody UserDeleteRequestDto requestDto,
+                                             @AuthenticationPrincipal UserDetailsImpl userDetails){
 
         userService.deleteUser(requestDto, userDetails.getUser());
 

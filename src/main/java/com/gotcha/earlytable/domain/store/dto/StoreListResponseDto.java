@@ -70,7 +70,7 @@ public class StoreListResponseDto {
                         .filter(menu -> menu.getMenuStatus().equals(MenuStatus.RECOMMENDED)).findAny()
                         .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND)).getMenuName(),
                 // 이미지 url
-                store.getFile().getImageFileList().stream().findAny()
+                store.getFile().getFileDetailList().stream().findAny()
                         .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND)).getFileUniqueName()
         );
     }

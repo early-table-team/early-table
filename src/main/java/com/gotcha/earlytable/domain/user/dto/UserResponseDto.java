@@ -17,21 +17,25 @@ public class UserResponseDto {
 
     private final Auth auth;
 
-    public UserResponseDto(Long id, String nickname, String email, String phoneNumber, Auth auth) {
+    private final String imageUrl;
+
+    public UserResponseDto(Long id, String nickname, String email, String phoneNumber, Auth auth, String imageUrl) {
         this.id = id;
         this.nickname = nickname;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.auth = auth;
+        this.imageUrl = imageUrl;
     }
 
-    public static UserResponseDto toDto(User user) {
+    public static UserResponseDto toDto(User user, String imageUrl) {
         return new UserResponseDto(
                 user.getId(),
                 user.getNickName(),
                 user.getEmail(),
                 user.getPhone(),
-                user.getAuth()
+                user.getAuth(),
+                imageUrl
         );
     }
 }
