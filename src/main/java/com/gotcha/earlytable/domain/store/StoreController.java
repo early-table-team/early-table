@@ -1,9 +1,6 @@
 package com.gotcha.earlytable.domain.store;
 
-import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
-import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
-import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
-import com.gotcha.earlytable.domain.store.dto.StoreStatusRequestDto;
+import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -20,9 +17,11 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
+    private final StoreRepository storeRepository;
 
-    public StoreController(StoreService storeService) {
+    public StoreController(StoreService storeService, StoreRepository storeRepository) {
         this.storeService = storeService;
+        this.storeRepository = storeRepository;
     }
 
     /**
@@ -121,5 +120,20 @@ public class StoreController {
         storeService.updateStoreStatus(storeId, requestDto.getStoreStatus());
 
         return ResponseEntity.status(HttpStatus.OK).body("가게 상태 변경이 완료되었습니다.");
+    }
+
+    /**
+     * 가게 검색 조회
+     *
+     * @param requestDto
+     * @return
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("/search")
+    public ResponseEntity<List<StoreListResponseDto>> searchStore(@RequestBody StoreSearchRequestDto requestDto) {
+
+        List<StoreListResponseDto> responseDtoList = storeService.searchStore(requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }
 }
