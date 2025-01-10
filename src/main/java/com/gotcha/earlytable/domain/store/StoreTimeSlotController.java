@@ -8,12 +8,12 @@ import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/stores/{storeId}/storeTimeSlots")
+@RestController
+@RequestMapping("/stores/{storeId}/storeTimeSlots")
 public class StoreTimeSlotController {
 
     private final StoreTimeSlotService storeTimeSlotService;
@@ -32,7 +32,9 @@ public class StoreTimeSlotController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping
-    public ResponseEntity<TimeSlotResponseDto> createStoreTimeSlot(@PathVariable Long storeId, @RequestBody TimeSlotRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<TimeSlotResponseDto> createStoreTimeSlot(@PathVariable Long storeId,
+                                                                   @RequestBody TimeSlotRequestDto requestDto,
+                                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         TimeSlotResponseDto responseDto = storeTimeSlotService.createStoreTimeSlot(storeId, requestDto, userDetails.getUser());
 
@@ -44,11 +46,12 @@ public class StoreTimeSlotController {
      *
      * @param storeId
      * @param userDetails
-     * @return ResponseEntity<List < TimeSlotResponseDto>>
+     * @return ResponseEntity<List<TimeSlotResponseDto>>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
-    public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId,
+                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         List<TimeSlotResponseDto> responseDto = storeTimeSlotService.getAllTimeSlots(storeId, userDetails.getUser());
 
@@ -65,7 +68,9 @@ public class StoreTimeSlotController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/{storeTimeSlotId}")
-    public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeId, @PathVariable Long storeTimeSlotId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeId,
+                                                              @PathVariable Long storeTimeSlotId,
+                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         TimeSlotResponseDto responseDto = storeTimeSlotService.getOneTimeSlot(storeId, storeTimeSlotId, userDetails.getUser());
 
@@ -84,9 +89,13 @@ public class StoreTimeSlotController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/{storeTimeSlotId}")
-    public ResponseEntity<TimeSlotResponseDto> modifyTimeSlot(@PathVariable Long storeId, @PathVariable Long storeTimeSlotId, @RequestBody TimeSlotRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<TimeSlotResponseDto> modifyTimeSlot(@PathVariable Long storeId,
+                                                              @PathVariable Long storeTimeSlotId,
+                                                              @RequestBody TimeSlotRequestDto requestDto,
+                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        TimeSlotResponseDto responseDto = storeTimeSlotService.modifyTimeSlot(storeId, storeTimeSlotId, requestDto, userDetails.getUser());
+        TimeSlotResponseDto responseDto =
+                storeTimeSlotService.modifyTimeSlot(storeId, storeTimeSlotId, requestDto, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -101,7 +110,9 @@ public class StoreTimeSlotController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/{storeTimeSlotId}")
-    public ResponseEntity<String> deleteTimeSlot(@PathVariable Long storeId, @PathVariable Long storeTimeSlotId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<String> deleteTimeSlot(@PathVariable Long storeId,
+                                                 @PathVariable Long storeTimeSlotId,
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeTimeSlotService.deleteTimeSlot(storeId, storeTimeSlotId, userDetails.getUser());
 
