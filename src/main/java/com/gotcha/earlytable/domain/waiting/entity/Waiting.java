@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.waiting.entity;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.base.BaseEntity;
+import com.gotcha.earlytable.global.enums.RemoteStatus;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.enums.WaitingType;
 import jakarta.persistence.*;
@@ -22,11 +23,10 @@ public class Waiting extends BaseEntity {
     private Store store;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "party_id", nullable = true)
+    @JoinColumn(name = "party_id")
     private Party party;
 
     @OneToOne(mappedBy = "waiting", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(nullable = true)
     private OfflineUser offlineUser;
 
 
@@ -43,29 +43,28 @@ public class Waiting extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private WaitingStatus remoteStatus;
+    private RemoteStatus remoteStatus;
+
+    @Column(nullable = false)
+    private Integer waitingNumber;
+
+    private String phone;
 
     public Waiting() {
     }
 
-    public Waiting(Store store, Party party, WaitingType waitingType,
-                   Integer personnelCount, WaitingStatus waitingStatus,WaitingStatus remoteStatus) {
+    public Waiting(Store store, Party party, WaitingType waitingType, Integer personnelCount,
+                   WaitingStatus waitingStatus, RemoteStatus remoteStatus, Integer waitingNumber, String phone) {
         addStore(store);
         addParty(party);
         this.waitingType = waitingType;
         this.personnelCount = personnelCount;
         this.waitingStatus = waitingStatus;
         this.remoteStatus = remoteStatus;
+        this.waitingNumber = waitingNumber;
+        this.phone = phone;
     }
 
-    public Waiting(Store store, OfflineUser offlineUser, WaitingType waitingType,
-                   Integer personnelCount, WaitingStatus waitingStatus) {
-        addStore(store);
-        addOfflineUser(offlineUser);
-        this.waitingType = waitingType;
-        this.personnelCount = personnelCount;
-        this.waitingStatus = waitingStatus;
-    }
 
     private void addStore(Store store) {
         this.store = store;
@@ -80,6 +79,14 @@ public class Waiting extends BaseEntity {
     private void addOfflineUser(OfflineUser offlineUser) {
         this.offlineUser = offlineUser;
         offlineUser.addWaiting(this);
+    }
+
+    public void updateWaitingNumber(Integer waitingNumber) {
+        this.waitingNumber = waitingNumber;
+    }
+
+    public void updateWaiting(WaitingStatus waitingStatus) {
+        this.waitingStatus = waitingStatus;
     }
 
 
