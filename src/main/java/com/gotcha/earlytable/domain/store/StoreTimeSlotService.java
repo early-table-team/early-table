@@ -41,13 +41,13 @@ public class StoreTimeSlotService {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
         //본인 가게가 아닌경우
         if(store.getUser() != user){
-            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.NO_STORE_OWNER);
         }
 
         // 가게자리와 시간대를 이용하여 이미 존재하는 값인지 구분
         boolean exist = storeTimeSlotRepository.existsByStoreAndReservationTime(store, requestDto.getReservationTime());
         if(exist){
-            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.DUPLICATE_VALUE);
         }
 
         StoreTimeSlot storeTimeSlot = new StoreTimeSlot(requestDto.getReservationTime(),store );
