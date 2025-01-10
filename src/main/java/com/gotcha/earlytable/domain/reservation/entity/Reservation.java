@@ -33,6 +33,10 @@ public class Reservation extends BaseEntity {
     private Integer personnelCount;
 
     @Column(nullable = false)
+    private Integer tableSize;
+
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ReservationStatus reservationStatus;
 
@@ -50,13 +54,14 @@ public class Reservation extends BaseEntity {
     public Reservation() {
     }
 
-    public Reservation(LocalDate reservationDate, LocalTime reservationTIme, Integer personnelCount, Store store, Party party) {
+    public Reservation(LocalDate reservationDate, LocalTime reservationTIme, Integer personnelCount, Store store, Party party, Integer tableSize) {
         this.reservationDate = reservationDate;
         this.reservationTime = reservationTIme;
         this.personnelCount = personnelCount;
         this.store = store;
         addParty(party);
         this.reservationStatus = ReservationStatus.PENDING;
+        this.tableSize = tableSize;
     }
 
     private void addParty(Party party) {

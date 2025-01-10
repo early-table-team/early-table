@@ -118,24 +118,34 @@ public class ReservationService {
         // TODO : 인원수에 해당하는 자리가 남아 있는가?  -> 예약 불가 : 전화 문의하기
         // 인원수를 세는게 아니라 인원수를 가지고 와서 해당 인원수로 등록된 예약만큼 빼기
         Integer requestCount = requestDto.getPersonnelCount();
-        Integer beforeReservationCount = (int) store.getReservationList().stream()
-                .filter(reservation -> reservation.getPersonnelCount().equals(requestDto.getPersonnelCount())
-                        && reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate())
-                        && reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime())).count();
+        Integer requestTableSize = requestCount;
+        // 테이블 사이즈가 예약 인원수와 같은 예약의 숫자를 일단 저장
+        Integer tablesize = Math.toIntExact(store.getReservationList().stream().filter(reservation ->
+                reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
+                reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
+                reservation.getTableSize() == requestDto.getPersonnelCount()).count());
 
-
+        // 인원수에 맞는 테이블로 예약 가능한지 확인하기, 안된다면 +1까지 검토
         boolean canSeat = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> requestCount.equals(storeTable.getTableMaxNumber()) && storeTable.getTableCount() - beforeReservationCount >= 1);
+                .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount) && storeTable.getTableCount() - tablesize >= 1);
+
         boolean canSeat2 = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> (requestCount).equals(storeTable.getTableMaxNumber() - 1) && storeTable.getTableCount() - beforeReservationCount >= 1);
-        if (!canSeat && !canSeat2) {
-            throw new CustomException(ErrorCode.NO_SEAT);
+                .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount + 1) && storeTable.getTableCount() - tablesize >= 1);
+        if (!canSeat) {
+            if(canSeat2){
+                requestTableSize = requestTableSize + 1; // 3인으로 왔는데 3인이 없는경우 4인을 검사해서 4인이 있다? -> 4인테이블로 예약하기 위해 4인을 잠깐 저장
+            }else{
+                throw new CustomException(ErrorCode.NO_SEAT);
+            }
         }
+
+
+
 
 
         // TODO : OK 그럼 예약 생성해줄게
         Party party = partyRepository.save(new Party());
-        Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party);
+        Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party, requestTableSize);
         reservationRepository.save(reservation);
         PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
         partyPeopleRepository.save(partyPeople);
