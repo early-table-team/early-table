@@ -2,21 +2,32 @@ package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.menu.MenuStatus;
+import com.gotcha.earlytable.domain.menu.entity.QAllergy;
+import com.gotcha.earlytable.domain.menu.entity.QMenu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
+import com.gotcha.earlytable.domain.store.dto.StoreSearchRequestDto;
+import com.gotcha.earlytable.domain.store.entity.QStore;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 @Service
 public class StoreService {
@@ -178,20 +189,20 @@ public class StoreService {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 나의 가게에 접근하는지 확인
-        if(!store.getUser().getId().equals(userId)) {
+        if (!store.getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         String message = "현 상태 유지되었습니다.";
 
         // 영업 상태로 변경
-        if(store.getStoreStatus().equals(StoreStatus.RESTING)){
+        if (store.getStoreStatus().equals(StoreStatus.RESTING)) {
             store.updateStoreStatus(StoreStatus.APPROVED);
             message = "정상 영업 상태로 변경되었습니다.";
         }
 
         // 휴업 상태로 변경
-        if (store.getStoreStatus().equals(StoreStatus.APPROVED)){
+        if (store.getStoreStatus().equals(StoreStatus.APPROVED)) {
             store.updateStoreStatus(StoreStatus.RESTING);
             message = "휴업 상태로 변경되었습니다.";
         }
@@ -216,5 +227,85 @@ public class StoreService {
 
         storeRepository.save(store);
 
+    }
+
+    /**
+     * 가게 검색 조회
+     *
+     * @param requestDto
+     * @return
+     */
+    @PersistenceContext
+    private EntityManager entityManager;
+    public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
+
+        QStore store = QStore.store;
+        QMenu menu = QMenu.menu;
+        QAllergy allergy = QAllergy.allergy;
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        List<Store> storeList = queryFactory.selectFrom(store)
+                .leftJoin(store.menuList, menu).fetchJoin() // Store와 Menu 간의 조인
+                .leftJoin(menu.allergyList, allergy).fetchJoin()
+                .where(
+                        searchWordContains(requestDto.getSearchWord(), store, menu), // 검색어 조건
+                        regionTopEquals(requestDto.getRegionTop(), store),           // 상위 지역 조건
+                        regionBottomEquals(requestDto.getRegionBottom(), store),     // 하위 지역 조건
+                        storeCategoryEquals(requestDto.getStoreCategory(), store),   // 가게 카테고리 조건
+                        maxPriceCondition(Math.toIntExact(requestDto.getMaxPrice()), menu),           // 최대 가격 조건
+                        minPriceCondition(Math.toIntExact(requestDto.getMinPrice()), menu),            // 최소 가격 조건
+                        allergyExclude(requestDto.getAllergy(), menu) // 알러지 조건
+                )
+                .distinct()
+                .fetch();
+
+
+        return storeList.stream()
+                .map(StoreListResponseDto::toDto)
+                .toList();
+    }
+
+
+    private BooleanExpression searchWordContains(String searchWord, QStore store, QMenu menu) {
+        if (searchWord == null) {
+            return null;
+        }
+        return store.storeName.containsIgnoreCase(searchWord)
+                .or(menu.menuName.containsIgnoreCase(searchWord));
+    }
+
+    private BooleanExpression regionTopEquals(String regionTop, QStore store) {
+        return regionTop == null ? null : store.RegionTop.equalsIgnoreCase(regionTop);
+    }
+
+    private BooleanExpression regionBottomEquals(String regionBottom, QStore store) {
+        return regionBottom == null ? null : store.RegionBottom.equalsIgnoreCase(regionBottom);
+    }
+
+    private BooleanExpression storeCategoryEquals(StoreCategory storeCategory, QStore store) {
+        return storeCategory == null ? null : store.storeCategory.eq(storeCategory);
+    }
+
+    private BooleanExpression maxPriceCondition(Integer maxPrice, QMenu menu) {
+        if (maxPrice == null) {
+            return null;
+        }
+        return menu.menuStatus.eq(MenuStatus.RECOMMENDED).and(menu.menuPrice.loe(maxPrice));
+    }
+
+    private BooleanExpression minPriceCondition(Integer minPrice, QMenu menu) {
+        if (minPrice == null) {
+            return null;
+        }
+        return menu.menuStatus.eq(MenuStatus.RECOMMENDED).and(menu.menuPrice.goe(minPrice));
+    }
+
+    private BooleanExpression allergyExclude(String allergy, QMenu menu) {
+        if (allergy == null) {
+            return null;
+        }
+        return menu.allergyList.any().allergyStuff.allergyStuff.contains(allergy)
+                .or(menu.allergyList.any().allergyStuff.allergyCategory.allergyCategory.contains(allergy))
+                .not();
     }
 }
