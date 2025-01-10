@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
+import com.gotcha.earlytable.domain.menu.entity.QAllergy;
 import com.gotcha.earlytable.domain.menu.entity.QMenu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
@@ -240,18 +241,20 @@ public class StoreService {
 
         QStore store = QStore.store;
         QMenu menu = QMenu.menu;
+        QAllergy allergy = QAllergy.allergy;
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         List<Store> storeList = queryFactory.selectFrom(store)
                 .leftJoin(store.menuList, menu).fetchJoin() // Store와 Menu 간의 조인
+                .leftJoin(menu.allergyList, allergy).fetchJoin()
                 .where(
                         searchWordContains(requestDto.getSearchWord(), store, menu), // 검색어 조건
                         regionTopEquals(requestDto.getRegionTop(), store),           // 상위 지역 조건
                         regionBottomEquals(requestDto.getRegionBottom(), store),     // 하위 지역 조건
                         storeCategoryEquals(requestDto.getStoreCategory(), store),   // 가게 카테고리 조건
                         maxPriceCondition(Math.toIntExact(requestDto.getMaxPrice()), menu),           // 최대 가격 조건
-                        minPriceCondition(Math.toIntExact(requestDto.getMinPrice()), menu)            // 최소 가격 조건
-                        // ToDo: 알러지 조건 추가
+                        minPriceCondition(Math.toIntExact(requestDto.getMinPrice()), menu),            // 최소 가격 조건
+                        allergyExclude(requestDto.getAllergy(), menu) // 알러지 조건
                 )
                 .distinct()
                 .fetch();
@@ -297,4 +300,12 @@ public class StoreService {
         return menu.menuStatus.eq(MenuStatus.RECOMMENDED).and(menu.menuPrice.goe(minPrice));
     }
 
+    private BooleanExpression allergyExclude(String allergy, QMenu menu) {
+        if (allergy == null) {
+            return null;
+        }
+        return menu.allergyList.any().allergyStuff.allergyStuff.contains(allergy)
+                .or(menu.allergyList.any().allergyStuff.allergyCategory.allergyCategory.contains(allergy))
+                .not();
+    }
 }
