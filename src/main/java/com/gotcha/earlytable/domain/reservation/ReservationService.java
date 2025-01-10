@@ -75,7 +75,7 @@ public class ReservationService {
         Integer maxSeat = store.getStoreTableList().stream()
                 .map(StoreTable::getTableMaxNumber)
                 .max(Integer::compareTo).orElse(null);
-        if(maxSeat == null || maxSeat < requestDto.getPersonnelCount() ){
+        if (maxSeat == null || maxSeat < requestDto.getPersonnelCount()) {
             throw new CustomException(ErrorCode.NO_SEAT);
         }
 
@@ -127,12 +127,10 @@ public class ReservationService {
         boolean canSeat = store.getStoreTableList().stream()
                 .anyMatch(storeTable -> requestCount.equals(storeTable.getTableMaxNumber()) && storeTable.getTableCount() - beforeReservationCount >= 1);
         boolean canSeat2 = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> (requestCount).equals(storeTable.getTableMaxNumber()-1) && storeTable.getTableCount() - beforeReservationCount >= 1);
+                .anyMatch(storeTable -> (requestCount).equals(storeTable.getTableMaxNumber() - 1) && storeTable.getTableCount() - beforeReservationCount >= 1);
         if (!canSeat && !canSeat2) {
             throw new CustomException(ErrorCode.NO_SEAT);
         }
-
-
 
 
         // TODO : OK 그럼 예약 생성해줄게
@@ -151,7 +149,6 @@ public class ReservationService {
         }
 
 
-
         return new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
                 , requestDto.getReservationDate().toLocalTime(), requestCount, returnMenuListDtos);
     }
@@ -162,7 +159,7 @@ public class ReservationService {
      * @param user
      * @return
      */
-    public List<ReservationGetAllResponseDto> getAllReservations(User user,int page, int size) {
+    public List<ReservationGetAllResponseDto> getAllReservations(User user, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Reservation> reservationPage = reservationRepository.findByUser(user, pageable);
