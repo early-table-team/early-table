@@ -16,9 +16,11 @@ public enum ErrorCode {
     REJECT_CANCEL(HttpStatus.BAD_REQUEST,"예약을 취소할 수 없습니다."),
 
 
+
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     UNAUTHORIZED_PASSWORD(HttpStatus.UNAUTHORIZED, "패스워드가 틀렸습니다."),
+    NO_STORE_OWNER(HttpStatus.UNAUTHORIZED, "가게주인이 아닙니다."),
 
     // 403 Forbidden
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN,"접근이 거부됐습니다."),
