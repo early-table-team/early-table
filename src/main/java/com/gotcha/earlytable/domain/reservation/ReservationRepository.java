@@ -19,4 +19,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("select r from Reservation r join r.party p join p.partyPeople pp where pp.user = :user")
     List<Reservation> findByUser(User user);
+
+
+
 }

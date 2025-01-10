@@ -17,6 +17,7 @@ import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.PartyRole;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
@@ -169,13 +170,14 @@ public class ReservationService {
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException(ErrorCode.BAD_REQUEST));
 
-        List<HashMap<String, Long>> menuList = new ArrayList<>();
+        List<ReturnMenuList> menuList = new ArrayList<>();
         reservation.getReservationMenuList()
                 .forEach(ml -> {
-                    HashMap<String, Long> menu = new HashMap<>();
-                    menu.put(ml.getMenu().getMenuName(), ml.getMenuCount());
-                    menuList.add(menu);
+                    ReturnMenuList menus = new ReturnMenuList(ml.getMenu().getMenuId(), ml.getMenuCount(), ml.getMenu().getMenuName());
+                    menuList.add(menus);
                 });
+
+
 
         return new ReservationGetOneResponseDto(reservation, user, menuList);
     }
@@ -194,6 +196,7 @@ public class ReservationService {
         Store store = reservation.getStore();
         reservationMenuRepository.deleteById(reservationId);
         List<HashMap<String, Long>> menuList = requestDto.getMenuList();
+        List<ReturnMenuList> returnMenuLists = new ArrayList<>();
 
         List<Menu> menus = new ArrayList<>();
         List<Long> menuCounts = new ArrayList<>();
@@ -205,11 +208,14 @@ public class ReservationService {
             boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
 
             if(!isMenuExist){
-                throw new BadRequestException(ErrorCode.BAD_REQUEST);
+                throw new BadRequestException(ErrorCode.NOT_FOUND_MENU);
             }
             Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
             menus.add(addMenu);
             menuCounts.add(menuCount);
+            ReturnMenuList returnMenuList = new ReturnMenuList(menuId, menuCount, addMenu.getMenuName());
+            returnMenuLists.add(returnMenuList);
+
         });
 
         for(int i = 0; i < menus.size(); i++){
@@ -217,7 +223,7 @@ public class ReservationService {
             reservationMenuRepository.save(reservationMenu);
         }
 
-        return new ReservationGetOneResponseDto(reservation, user, requestDto.getMenuList());
+        return new ReservationGetOneResponseDto(reservation, user, returnMenuLists);
     }
 
     /**
@@ -225,11 +231,20 @@ public class ReservationService {
      * @param reservationId
      */
     @Transactional
-    public void cancelReservation(Long reservationId) {
+    public void cancelReservation(Long reservationId, User user) {
 
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        // 예약에 등록된 유저가 아닌경우
+        User userData = reservation.getParty().getPartyPeople().stream().map(PartyPeople::getUser).filter(partyPeopleUser -> partyPeopleUser.equals(user)).findFirst().orElse(null);
+        if( userData == null){
+            throw new BadRequestException(ErrorCode.REJECT_CANCEL);
+        }
+        reservation.modifyStatus(ReservationStatus.CANCELED);
+        reservationMenuRepository.deleteById(reservationId);
+        partyRepository.deleteById(reservationId);
+        partyPeopleRepository.deleteById(reservationId);
+        reservationRepository.save(reservation); // 예약 정보만 취소로 바꾸고 나머지는 리포지토리에서 삭제
 
-        Integer personnelCount = reservation.getPersonnelCount();
     }
 
 

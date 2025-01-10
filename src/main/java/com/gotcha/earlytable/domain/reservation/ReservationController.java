@@ -89,10 +89,11 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @DeleteMapping("/reservations/{reservationId}")
-    public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId) {
+    public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        reservationService.cancelReservation(reservationId);
+        reservationService.cancelReservation(reservationId, userDetails.getUser());
 
+        //취소는 NO_CONTENT 반환
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("예약이 취소되었습니다.");
     }
 
