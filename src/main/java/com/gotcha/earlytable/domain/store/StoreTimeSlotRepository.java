@@ -19,7 +19,5 @@ public interface StoreTimeSlotRepository extends JpaRepository<StoreTimeSlot, Lo
 
     boolean existsByStoreAndReservationTime(Store store, LocalTime reservationTime);
 
-
-    List<StoreTimeSlot> findByStore(Store store);
-
+    List<StoreTimeSlot> findByStoreStoreId(Long storeId);
 }
