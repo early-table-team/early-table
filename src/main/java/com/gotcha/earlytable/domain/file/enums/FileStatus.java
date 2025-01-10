@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.file;
+package com.gotcha.earlytable.domain.file.enums;
 
 import lombok.Getter;
 

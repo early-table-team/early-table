@@ -1,6 +1,6 @@
 package com.gotcha.earlytable.domain.store.dto;
 
-import com.gotcha.earlytable.domain.file.entity.ImageFile;
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
@@ -49,8 +49,8 @@ public class StoreResponseDto {
     public static StoreResponseDto toDto(Store store) {
         Map<Integer, String> imageFileUrlMap = new HashMap<>();
 
-        for(ImageFile imageFile : store.getFile().getImageFileList()){
-            imageFileUrlMap.put(imageFile.getFileSeq(), imageFile.getFileUniqueName());
+        for(FileDetail fileDetail : store.getFile().getFileDetailList()){
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUniqueName());
         }
 
         return new StoreResponseDto(store.getStoreId(),

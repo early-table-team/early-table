@@ -1,8 +1,9 @@
 package com.gotcha.earlytable.domain.file.entity;
 
 
-import com.gotcha.earlytable.domain.file.FileStatus;
-import com.gotcha.earlytable.domain.file.FileType;
+import com.gotcha.earlytable.domain.file.dto.FileDetailDto;
+import com.gotcha.earlytable.domain.file.enums.FileStatus;
+import com.gotcha.earlytable.domain.file.enums.FileType;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import lombok.Getter;
 @Getter
 @Entity
 @Table(name = "image_file")
-public class ImageFile extends BaseEntity {
+public class FileDetail extends BaseEntity {
     @Id
     @GeneratedValue
     private Long imageFileId;
@@ -29,7 +30,7 @@ public class ImageFile extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private FileStatus fileStatus;
 
-    private Double fileSize;
+    private Long fileSize;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id")
@@ -38,8 +39,8 @@ public class ImageFile extends BaseEntity {
     private Integer fileSeq;
 
 
-    public ImageFile(String fileName, String fileUniqueName, String fileUrl,
-                     FileType fileType, FileStatus fileStatus, Double fileSize, File file, Integer fileSeq) {
+    public FileDetail(String fileName, String fileUniqueName, String fileUrl,
+                      FileType fileType, FileStatus fileStatus, Long fileSize, File file, Integer fileSeq) {
         this.fileName = fileName;
         this.fileUniqueName = fileUniqueName;
         this.fileUrl = fileUrl;
@@ -51,8 +52,18 @@ public class ImageFile extends BaseEntity {
 
     }
 
-    public ImageFile() {
+    public FileDetail() {
 
     }
 
+    public static FileDetail toEntity(FileStatus fileStatus, File file, int seq,
+                                      FileType extension, FileDetailDto fileDetailDto) {
+
+        return new FileDetail(
+                fileDetailDto.getFileName(), fileDetailDto.getFileUniqueName(),
+                fileDetailDto.getFileUrl(), extension,
+                fileStatus, fileDetailDto.getFileSize(),
+                file, seq
+        );
+    }
 }

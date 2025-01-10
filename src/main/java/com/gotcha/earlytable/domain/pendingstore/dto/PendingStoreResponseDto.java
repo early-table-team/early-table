@@ -1,7 +1,7 @@
 package com.gotcha.earlytable.domain.pendingstore.dto;
 
 import com.gotcha.earlytable.domain.file.entity.File;
-import com.gotcha.earlytable.domain.file.entity.ImageFile;
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.pendingstore.enums.PendingStoreType;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
@@ -61,8 +61,8 @@ public class PendingStoreResponseDto {
     public static PendingStoreResponseDto toDto(PendingStore pendingStore, File file) {
         Map<Integer, String> imageFileUrlMap = new HashMap<>();
 
-        for (ImageFile imageFile : file.getImageFileList()) {
-            imageFileUrlMap.put(imageFile.getFileSeq(), imageFile.getFileUniqueName());
+        for (FileDetail fileDetail : file.getFileDetailList()) {
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUniqueName());
         }
 
         return new PendingStoreResponseDto(pendingStore.getStoreId(),

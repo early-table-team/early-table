@@ -1,9 +1,9 @@
 package com.gotcha.earlytable.domain.store;
 
+import com.gotcha.earlytable.domain.allergy.entity.QAllergy;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
-import com.gotcha.earlytable.domain.menu.entity.QAllergy;
 import com.gotcha.earlytable.domain.menu.entity.QMenu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
