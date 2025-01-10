@@ -19,9 +19,9 @@ public class ReservationCreateResponseDto {
 
     private final Integer personnelCount;
 
-    private final List<HashMap<String, Long>> menuList;
+    private final List<ReturnMenuListDto> menuList;
 
-    public ReservationCreateResponseDto(Long reservationId, LocalDate reservation, LocalTime reservationTime, Integer personnelCount, List<HashMap<String, Long>> menuList) {
+    public ReservationCreateResponseDto(Long reservationId, LocalDate reservation, LocalTime reservationTime, Integer personnelCount, List<ReturnMenuListDto> menuList) {
         this.reservationId = reservationId;
         this.reservationDate = reservation;
         this.reservationTime = reservationTime;

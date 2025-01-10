@@ -19,6 +19,9 @@ import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,11 +51,12 @@ public class ReservationService {
     }
 
     /**
-     *  예약잡기 메서드
+     * 예약잡기 메서드
+     *
      * @param storeId
      * @param requestDto
      * @param user
-     * @return  ReservationCreateResponseDto
+     * @return ReservationCreateResponseDto
      */
     @Transactional
     public ReservationCreateResponseDto createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
@@ -63,25 +67,34 @@ public class ReservationService {
         boolean dontReservation = store.getStoreReservationTypeList().stream()
                 .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.RESERVATION);
 
-        if(dontReservation){
+        if (dontReservation) {
             throw new CustomException(ErrorCode.UNAVAILABLE_RESERVATION_TYPE);
         }
+
+        // TODO : 자릿수 맥스값보다 많은 인원이 신청한경우
+        Integer maxSeat = store.getStoreTableList().stream()
+                .map(StoreTable::getTableMaxNumber)
+                .max(Integer::compareTo).orElse(null);
+        if(maxSeat == null || maxSeat < requestDto.getPersonnelCount() ){
+            throw new CustomException(ErrorCode.NO_SEAT);
+        }
+
         // TODO : 임시휴무날짜는 아닌가?
         boolean holiday = store.getStoreRestList().stream().anyMatch(storeRest -> storeRest.getStoreOffDay() == requestDto.getReservationDate().toLocalDate());
-        if(holiday){
+        if (holiday) {
             throw new CustomException(ErrorCode.STORE_HOLIDAY);
         }
 
         // TODO : 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
         String dayOff = requestDto.getReservationDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN); //월, 화, 수 .. 이런식
         // 정기 휴무일을 체크 -> 받아온 값의 요일과 동일한 요일의 status값이 closed인지 체크
-        boolean regularHoliday = store.getStoreHourList().stream().anyMatch( storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
-        if(regularHoliday){
+        boolean regularHoliday = store.getStoreHourList().stream().anyMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
+        if (regularHoliday) {
             throw new CustomException(ErrorCode.STORE_HOLIDAY);
         }
 
         boolean canMake = store.getStoreTimeSlotList().stream().anyMatch(storeTimeSlot -> storeTimeSlot.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()));
-        if(!canMake){
+        if (!canMake) {
             throw new CustomException(ErrorCode.RESERVATION_TIME_ERROR);
         }
 
@@ -96,9 +109,9 @@ public class ReservationService {
                 .map(menu -> menu.get("menuCount"))
                 .toList();
         boolean existMenu = menuIds.stream()
-                .allMatch( menuId -> store.getMenuList().stream()
+                .allMatch(menuId -> store.getMenuList().stream()
                         .anyMatch(storeMenu -> storeMenu.getMenuId().equals(menuId)));
-        if(!existMenu){
+        if (!existMenu) {
             throw new CustomException(ErrorCode.NOT_FOUND_MENU);
         }
 
@@ -107,44 +120,55 @@ public class ReservationService {
         Integer requestCount = requestDto.getPersonnelCount();
         Integer beforeReservationCount = (int) store.getReservationList().stream()
                 .filter(reservation -> reservation.getPersonnelCount().equals(requestDto.getPersonnelCount())
-                && reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate())
-                && reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime())).count();
+                        && reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate())
+                        && reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime())).count();
 
 
         boolean canSeat = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> requestCount.equals(storeTable.getTableMaxNumber()) && storeTable.getTableCount() - beforeReservationCount >= 1 );
-        if(!canSeat){
+                .anyMatch(storeTable -> requestCount.equals(storeTable.getTableMaxNumber()) && storeTable.getTableCount() - beforeReservationCount >= 1);
+        boolean canSeat2 = store.getStoreTableList().stream()
+                .anyMatch(storeTable -> (requestCount).equals(storeTable.getTableMaxNumber()-1) && storeTable.getTableCount() - beforeReservationCount >= 1);
+        if (!canSeat && !canSeat2) {
             throw new CustomException(ErrorCode.NO_SEAT);
         }
 
+
+
+
         // TODO : OK 그럼 예약 생성해줄게
-        Party party = new Party();
+        Party party = partyRepository.save(new Party());
         Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party);
-        partyRepository.save(party);
         reservationRepository.save(reservation);
         PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
         partyPeopleRepository.save(partyPeople);
-
-        for(int i = 0; i < menuIds.size(); i++){
+        List<ReturnMenuListDto> returnMenuListDtos = new ArrayList<>();
+        for (int i = 0; i < menuIds.size(); i++) {
             Menu menuItem = menuRepository.findById(menuIds.get(i)).orElse(null);
             ReservationMenu reservationMenu = new ReservationMenu(menuItem, reservation, menuCounts.get(i));
             reservationMenuRepository.save(reservationMenu);
+            ReturnMenuListDto returnMenuListDto = new ReturnMenuListDto(Objects.requireNonNull(menuItem).getMenuId(), menuCounts.get(i), menuItem.getMenuName());
+            returnMenuListDtos.add(returnMenuListDto);
         }
 
+
+
         return new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
-                , requestDto.getReservationDate().toLocalTime(), requestCount, requestDto.getMenuList());
+                , requestDto.getReservationDate().toLocalTime(), requestCount, returnMenuListDtos);
     }
 
     /**
-     *  예약 전체 조회 메서드
+     * 예약 전체 조회 메서드
+     *
      * @param user
      * @return
      */
-    public List<ReservationGetAllResponseDto> getAllReservations(User user) {
+    public List<ReservationGetAllResponseDto> getAllReservations(User user,int page, int size) {
 
-        List<Reservation> reservations = reservationRepository.findByUser(user);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Reservation> reservationPage = reservationRepository.findByUser(user, pageable);
+
         List<ReservationGetAllResponseDto> resDto = new ArrayList<>();
-        reservations.forEach(reservation -> {
+        reservationPage.forEach(reservation -> {
             ReservationGetAllResponseDto reservationGetAllResponseDto = new ReservationGetAllResponseDto(reservation);
             resDto.add(reservationGetAllResponseDto);
         });
@@ -153,10 +177,11 @@ public class ReservationService {
     }
 
     /**
-     *  예약 단건 조회 메서드
+     * 예약 단건 조회 메서드
+     *
      * @param reservationId
      * @param user
-     * @return  ReservationGetOneResponseDto
+     * @return ReservationGetOneResponseDto
      */
     public ReservationGetOneResponseDto getReservation(Long reservationId, User user) {
 
@@ -175,12 +200,12 @@ public class ReservationService {
                 });
 
 
-
         return new ReservationGetOneResponseDto(reservation, user, menuList);
     }
 
     /**
-     *  예약 메뉴 변경 메서드
+     * 예약 메뉴 변경 메서드
+     *
      * @param reservationId
      * @param user
      * @param requestDto
@@ -190,6 +215,9 @@ public class ReservationService {
     public ReservationGetOneResponseDto updateReservation(Long reservationId, User user, ReservationUpdateRequestDto requestDto) {
 
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        PartyPeople reservationUser = reservation.getParty().getPartyPeople().stream()
+                .filter(partyPeople -> partyPeople.getUser().equals(user) && partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)).findFirst().orElse(null);
+
         Store store = reservation.getStore();
         reservationMenuRepository.deleteById(reservationId);
         List<HashMap<String, Long>> menuList = requestDto.getMenuList();
@@ -204,7 +232,7 @@ public class ReservationService {
 
             boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
 
-            if(!isMenuExist){
+            if (!isMenuExist) {
                 throw new BadRequestException(ErrorCode.NOT_FOUND_MENU);
             }
             Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
@@ -215,7 +243,7 @@ public class ReservationService {
 
         });
 
-        for(int i = 0; i < menus.size(); i++){
+        for (int i = 0; i < menus.size(); i++) {
             ReservationMenu reservationMenu = new ReservationMenu(menus.get(i), reservation, menuCounts.get(i));
             reservationMenuRepository.save(reservationMenu);
         }
@@ -224,7 +252,8 @@ public class ReservationService {
     }
 
     /**
-     *  예약 취소 메서드
+     * 예약 취소 메서드
+     *
      * @param reservationId
      */
     @Transactional
@@ -233,7 +262,7 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
         // 예약에 등록된 유저가 아닌경우
         User userData = reservation.getParty().getPartyPeople().stream().map(PartyPeople::getUser).filter(partyPeopleUser -> partyPeopleUser.equals(user)).findFirst().orElse(null);
-        if( userData == null){
+        if (userData == null) {
             throw new BadRequestException(ErrorCode.REJECT_CANCEL);
         }
         reservation.modifyStatus(ReservationStatus.CANCELED);

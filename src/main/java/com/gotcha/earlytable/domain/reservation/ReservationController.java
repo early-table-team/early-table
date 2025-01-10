@@ -44,9 +44,11 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/reservations")
-    public ResponseEntity<List<ReservationGetAllResponseDto>> getAllReservations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<ReservationGetAllResponseDto>> getAllReservations(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                                 @RequestParam(value = "size", defaultValue = "5") int size ) {
 
-        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser());
+        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser(),page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(resDto);
     }
