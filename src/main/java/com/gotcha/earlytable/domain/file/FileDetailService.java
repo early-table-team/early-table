@@ -97,7 +97,6 @@ public class FileDetailService extends s3 {
                         FileDetail.toEntity(fileStatus, file, fileSeq, FileType.valueOf(extension), fileDetailDto);
 
                 fileDetails.add(fileDetail);
-                fileDetailRepository.save(fileDetail);
 
                 // 순서 증가
                 fileSeq++;
