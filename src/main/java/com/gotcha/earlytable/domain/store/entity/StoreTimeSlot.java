@@ -37,4 +37,8 @@ public class StoreTimeSlot extends BaseEntity {
         store.getStoreTimeSlotList().add(this);
     }
 
+    public void changeTimeSlot(LocalTime reservationTime){
+        this.reservationTime = reservationTime;
+    }
+
 }
