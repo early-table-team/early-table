@@ -4,13 +4,13 @@ import lombok.Getter;
 
 @Getter
 public class ReviewTotalResponseDto {
-    private Integer ratingStat1;
-    private Integer ratingStat2;
-    private Integer ratingStat3;
-    private Integer ratingStat4;
-    private Integer ratingStat5;
-    private Integer countTotal;
-    private Double ratingAverage;
+    private final Integer ratingStat1;
+    private final Integer ratingStat2;
+    private final Integer ratingStat3;
+    private final Integer ratingStat4;
+    private final Integer ratingStat5;
+    private final Integer countTotal;
+    private final Double ratingAverage;
 
     public ReviewTotalResponseDto(Integer ratingStat1, Integer ratingStat2, Integer ratingStat3, Integer ratingStat4, Integer ratingStat5, Integer countTotal, Double ratingAverage) {
         this.ratingStat1 = ratingStat1;

@@ -50,7 +50,7 @@ public class StoreResponseDto {
         Map<Integer, String> imageFileUrlMap = new HashMap<>();
 
         for(FileDetail fileDetail : store.getFile().getFileDetailList()){
-            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUniqueName());
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUrl());
         }
 
         return new StoreResponseDto(store.getStoreId(),

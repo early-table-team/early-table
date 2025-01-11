@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface FileDetailRepository extends JpaRepository<FileDetail, Long> {
 
@@ -19,4 +21,6 @@ public interface FileDetailRepository extends JpaRepository<FileDetail, Long> {
 
     @Query("SELECT i FROM FileDetail i JOIN i.file f JOIN Store s ON s.file = f WHERE s.storeId = :storeId AND i.fileStatus = :fileStatus")
     FileDetail findByFileStoreStoreIdAndFileStatus(Long storeId, FileStatus fileStatus);
+
+    void deleteByFileUrlIn(List<String> uniqueFileUrls);
 }

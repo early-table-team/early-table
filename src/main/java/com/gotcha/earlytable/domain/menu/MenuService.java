@@ -1,8 +1,10 @@
 package com.gotcha.earlytable.domain.menu;
 
+import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
 
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.menu.dto.MenuRequestDto;
 import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
@@ -10,10 +12,10 @@ import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
+import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -21,64 +23,81 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final StoreRepository storeRepository;
     private final FileService fileService;
+    private final FileDetailService fileDetailService;
 
-    public MenuService(MenuRepository menuRepository, StoreRepository storeRepository, FileService fileService) {
+    public MenuService(MenuRepository menuRepository, StoreRepository storeRepository,
+                       FileService fileService, FileDetailService fileDetailService) {
+
         this.menuRepository = menuRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
+        this.fileDetailService = fileDetailService;
     }
 
     /**
      * 메뉴 생성 서비스 메서드
      */
     @Transactional
-    public MenuResponseDto createMenu(Long storeId, MenuRequestDto createMenuRequestDto) throws IOException {
-
-//        //이미지가 있을 경우
-//        String imageUrl = null;
-//        if (image != null && !image.isEmpty()) {
-//            String imageFileResponseDto = fileService.createImageFile(image);
-//
-//            //url 가져오기
-//            if(!imageFileResponseDto.isEmpty()) {
-//                imageUrl = imageFileResponseDto;
-//            }
-//        }
+    public MenuResponseDto createMenu(Long storeId, Long userId, MenuRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
+        // 가게 주인인지 확인
+        if(!store.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
+        }
+
+        // 파일 생성
         File file = fileService.createFile();
 
+        // 프로필 이미지 파일 저장
+        String imageUrl = fileDetailService.createImageFile(requestDto.getImage(), file);
+
         //메뉴 생성
-        Menu menu = new Menu(
-                createMenuRequestDto.getMenuName(),
-                createMenuRequestDto.getMenuContents(),
-                createMenuRequestDto.getMenuPrice(),
-                createMenuRequestDto.getMenuStatus(),
-                file,
-                store
+        Menu menu = new Menu(requestDto.getMenuName(),
+                requestDto.getMenuContents(),
+                requestDto.getMenuPrice(),
+                requestDto.getMenuStatus(),
+                file, store
         );
 
         //메뉴 저장
         Menu savedMenu = menuRepository.save(menu);
 
-        return MenuResponseDto.toDto(savedMenu);
+        return MenuResponseDto.toDto(savedMenu, imageUrl);
     }
 
     /**
      * 메뉴 수정 서비스 메서드
      */
     @Transactional
-    public MenuResponseDto updateMenu(Long storeId, Long menuId, MenuRequestDto menuRequestDto) {
+    public MenuResponseDto updateMenu(Long menuId, Long userId, MenuRequestDto menuRequestDto) {
+
         Menu menu = menuRepository.findByIdOrElseThrow(menuId);
 
-        //메뉴 수정
+        // 가게 주인인지 확인
+        if(!menu.getStore().getUser().getId().equals(userId)) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
+        }
+
+        //메뉴 수정 및 저장
         menu.updateMenu(menuRequestDto);
+        Menu savedMenu = menuRepository.save(menu);
 
-        //메뉴 저장
-        Menu updatedMenu = menuRepository.save(menu);
+        String imageUrl = menu.getFile().getFileDetailList().stream()
+                .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        return MenuResponseDto.toDto(updatedMenu);
+        if(menuRequestDto.getImage() != null) {
+
+            // 기존 이미지 제거
+            menu.getFile().getFileDetailList().stream()
+                    .findAny().ifPresent(fileDetail -> fileDetailService.deleteImageFile(fileDetail.getFileUrl()));
+
+            // 새로 생성
+            imageUrl = fileDetailService.createImageFile(menuRequestDto.getImage(), menu.getFile());
+        }
+
+        return MenuResponseDto.toDto(savedMenu, imageUrl);
     }
 
     /**

@@ -1,11 +1,9 @@
 package com.gotcha.earlytable.domain.pendingstore;
 
+import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreRequestDto;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreResponseDto;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreResponseListDto;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreStatusRequestDto;
+import com.gotcha.earlytable.domain.pendingstore.dto.*;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.pendingstore.enums.PendingStoreStatus;
 import com.gotcha.earlytable.domain.pendingstore.enums.PendingStoreType;
@@ -28,13 +26,15 @@ public class PendingStoreService {
     private final PendingStoreRepository pendingStoreRepository;
     private final StoreRepository storeRepository;
     private final FileService fileService;
+    private final FileDetailService fileDetailService;
     private final StoreService storeService;
 
     public PendingStoreService(PendingStoreRepository pendingStoreRepository, StoreRepository storeRepository,
-                               FileService fileService, StoreService storeService) {
+                               FileService fileService, FileDetailService fileDetailService, StoreService storeService) {
         this.pendingStoreRepository = pendingStoreRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
+        this.fileDetailService = fileDetailService;
         this.storeService = storeService;
     }
 
@@ -49,6 +49,9 @@ public class PendingStoreService {
 
         // 파일 객체 생성
         File file = fileService.createFile();
+
+        // 이미지 파일들 저장
+        fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
 
         // 팬딩 가게 객체 생성
         PendingStore pendingStore = new PendingStore(user, requestDto.getStoreName(), requestDto.getStoreTel(),
@@ -72,7 +75,7 @@ public class PendingStoreService {
      * @return PendingStoreResponseDto
      */
     @Transactional
-    public PendingStoreResponseDto updatePendingStore(Long storeId, User user,  PendingStoreRequestDto requestDto) {
+    public PendingStoreResponseDto updatePendingStore(Long storeId, User user,  PendingStoreUpdateRequestDto requestDto) {
 
         // 가게 정보 가져오기
         Store store = storeRepository.findByIdOrElseThrow(storeId);
@@ -82,12 +85,24 @@ public class PendingStoreService {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
+        File file = store.getFile();
+
+        if(!requestDto.getFileUrlList().isEmpty()) {
+            // 새롭게 파일 생성
+            file = fileService.createFile();
+
+            fileDetailService.copyFileDetails(store.getFile().getFileDetailList(), file);
+
+            // 이미지 수정
+            fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), file);
+        }
+
         // 가게 객체 생성
         PendingStore pendingStore = new PendingStore(user, requestDto.getStoreName(), requestDto.getStoreTel(),
                 requestDto.getStoreContents(), requestDto.getStoreAddress(),
                 StoreStatus.PENDING, requestDto.getStoreCategory(),
                 requestDto.getRegionTop(), requestDto.getRegionBottom(),
-                store.getFile().getFileId(), storeId, PendingStoreType.UPDATE
+                file.getFileId(), storeId, PendingStoreType.UPDATE
         );
 
 
