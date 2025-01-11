@@ -65,6 +65,7 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findBySendUserAndReceiveUserAndParty(user,receiveUser,party);
         if(invitation != null){
             throw new CustomException(ErrorCode.DUPLICATE_VALUE);
+
         }
 
         // 일행으로 보낸적이 없는경우 null인 invitation에 새로운 invitation의 정보를 넣어 저장
@@ -165,6 +166,7 @@ public class InvitationService {
      * @param invitationId
      * @param user
      */
+    @Transactional
     public void leaveInvitation(Long invitationId, User user) {
         //초대 가져오기
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -190,10 +192,11 @@ public class InvitationService {
 
     /**
      *  파티원 1명 추방 메서드
-     * @param invitationId
+     * @param partyId
      * @param userId
      * @param user
      */
+    @Transactional
     public void exilePartyPeople(Long partyId, Long userId, User user) {
 
         // 파티를 가져와
@@ -222,6 +225,7 @@ public class InvitationService {
      * @param partyId
      * @param user
      */
+    @Transactional
     public void exileAllPartyPeople(Long partyId, User user) {
 
         // 해당 파티 정보를 가져오기
