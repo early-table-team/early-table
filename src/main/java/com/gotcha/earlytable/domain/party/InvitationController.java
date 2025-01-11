@@ -1,6 +1,5 @@
 package com.gotcha.earlytable.domain.party;
 
-import com.gotcha.earlytable.domain.party.dto.InvitationResponseDto;
 import com.gotcha.earlytable.domain.party.dto.InvitationStatusDto;
 import com.gotcha.earlytable.domain.party.dto.ReceivedInvitationResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
