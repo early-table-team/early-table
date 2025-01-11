@@ -67,7 +67,7 @@ public class UserService {
         File file = fileService.createFile();
 
         String imageUrl = null;
-        if(requestDto.getProfileImage() != null) {
+        if(!requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
@@ -163,7 +163,7 @@ public class UserService {
         String imageUrl = user.getFile().getFileDetailList().stream()
                 .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        if (requestDto.getProfileImage() != null) {
+        if (!requestDto.getProfileImage().isEmpty()) {
 
             // 기존 이미지 제거
             user.getFile().getFileDetailList().stream()
