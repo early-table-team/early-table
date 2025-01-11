@@ -64,7 +64,6 @@ jobs:
                 -e S3_ACCESS_KEY=${{secrets.S3_ACCESS_KEY}} \
                 -e S3_SECRET_KEY=${{secrets.S3_SECRET_KEY}} \
                 -e S3_BUCKET_NAME=${{secrets.S3_BUCKET_NAME}} \
-                -e SLACK_BOT_TOKEN=${{secrets.SLACK_BOT_TOKEN}} \
                 -e DDL_AUTO=${{secrets.DDL_AUTO}} \
                 -e JWT_SECRET=${{secrets.JWT_SECRET}} \
                 ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_TAG_NAME }}:latest
