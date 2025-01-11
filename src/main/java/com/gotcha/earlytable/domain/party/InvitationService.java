@@ -26,14 +26,12 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final PartyPeopleRepository partyPeopleRepository;
-    private final PartyRepository partyRepository;
 
-    public InvitationService(final InvitationRepository invitationRepository, UserRepository userRepository, ReservationRepository reservationRepository, PartyPeopleRepository partyPeopleRepository , PartyRepository partyRepository) {
+    public InvitationService(final InvitationRepository invitationRepository, UserRepository userRepository, ReservationRepository reservationRepository, PartyPeopleRepository partyPeopleRepository) {
         this.invitationRepository = invitationRepository;
         this.userRepository = userRepository;
         this.reservationRepository = reservationRepository;
         this.partyPeopleRepository = partyPeopleRepository;
-        this.partyRepository = partyRepository;
     }
 
 
