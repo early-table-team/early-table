@@ -23,7 +23,7 @@ public class ReviewResponseDto {
 
         Map<Integer, String> imageFileUrlMap = new HashMap<>();
         for(FileDetail fileDetail : review.getFile().getFileDetailList()){
-            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUniqueName());
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUrl());
         }
 
             return new ReviewResponseDto(

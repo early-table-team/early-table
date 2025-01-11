@@ -31,14 +31,19 @@ public enum ErrorCode {
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN,"접근이 거부됐습니다."),
     FORBIDDEN_PERMISSION(HttpStatus.FORBIDDEN, "사용자 권한이 없습니다."),
     FORBIDDEN_LOGIN(HttpStatus.FORBIDDEN,"이미 탈퇴한 유저입니다."),
+    FORBIDDEN_PARTY_LEADER(HttpStatus.FORBIDDEN,"파티장이 아닙니다."),
+
 
     // 404 NOT_FOUND
     NOT_FOUND(HttpStatus.NOT_FOUND,"리소스를 찾을 수 없습니다."),
     NOT_MATCHED(HttpStatus.NOT_FOUND, "초대한 사용자와 이메일이 일치하지 않습니다."),
+    NOT_FOUND_PARTY(HttpStatus.NOT_FOUND,"파티를 찾을 수 없습니다."),
+
 
     // 409 CONFLICT
     DUPLICATE_VALUE(HttpStatus.CONFLICT, "중복된 정보입니다."),
     USER_ALREADY_DELETED(HttpStatus.CONFLICT, "이미 탈퇴한 사용자 아이디입니다."),
+
 
     ;
 

@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.party;
 
+import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,12 @@ import java.util.List;
 public interface PartyPeopleRepository extends JpaRepository<PartyPeople, Long> {
 
     List<PartyPeople> findByUser(User user);
+
+    void deleteByUser(User user);
+
+    void deleteByUserId(Long userId);
+
+    List<PartyPeople> findByParty(Party party);
+
+
 }

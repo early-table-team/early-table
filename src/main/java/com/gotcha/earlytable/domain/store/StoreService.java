@@ -1,28 +1,18 @@
 package com.gotcha.earlytable.domain.store;
 
-import com.gotcha.earlytable.domain.allergy.entity.QAllergy;
+import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
-import com.gotcha.earlytable.domain.menu.MenuStatus;
-import com.gotcha.earlytable.domain.menu.entity.QMenu;
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
-import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
-import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
-import com.gotcha.earlytable.domain.store.dto.StoreResponseDto;
-import com.gotcha.earlytable.domain.store.dto.StoreSearchRequestDto;
-import com.gotcha.earlytable.domain.store.entity.QStore;
+import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.Store;
-import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,19 +24,16 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
-    /**
-     * 가게 검색 조회
-     *
-     * @param requestDto
-     * @return
-     */
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final FileDetailService fileDetailService;
 
-    public StoreService(StoreRepository storeRepository, UserRepository userRepository, FileRepository fileRepository) {
+
+    public StoreService(StoreRepository storeRepository, UserRepository userRepository,
+                        FileRepository fileRepository, FileDetailService fileDetailService) {
+
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
+        this.fileDetailService = fileDetailService;
     }
 
     /**
@@ -63,12 +50,13 @@ public class StoreService {
         File file = fileRepository.findByIdOrElseThrow(requestDto.getFileId());
 
         // 가게 개수 제한 10개 이하 확인
-
         if (storeRepository.countStoreByUserId(requestDto.getUserId()) >= 10) {
 
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
+        // 이미지 파일들 저장
+        fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
 
         // 가게 객체 생성
         Store store = new Store(requestDto.getStoreName(), requestDto.getStoreTel(),
@@ -117,19 +105,20 @@ public class StoreService {
      *
      * @param storeId
      * @param requestDto
-     * @return StoreResponseDt
+     * @return StoreResponseDto
      */
     @Transactional
-    public StoreResponseDto updateStore(Long storeId, StoreRequestDto requestDto) {
+    public StoreResponseDto updateStore(Long storeId, StoreUpdateRequestDto requestDto) {
 
         // 가게 정보 가져오기
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // 가게 내용 변경
+        // 가게 내용 변경 및 저장
         store.updateStore(requestDto);
-
-        // 수정된 가게 정보 저장
         storeRepository.save(store);
+
+        // 이미지 수정
+        fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
 
         return StoreResponseDto.toDto(store);
 
@@ -145,6 +134,15 @@ public class StoreService {
 
         // 가게 정보 가져오기
         Store store = storeRepository.findByIdOrElseThrow(pendingStore.getStoreId());
+
+        // 이미지가 변경되었는지 확인
+        if(!store.getFile().getFileId().equals(pendingStore.getFileId())) {
+            // 기존 이미지들 삭제
+            fileDetailService.deleteImageFiles(store.getFile().getFileDetailList().stream().map(FileDetail::getFileUrl).toList());
+
+            // 파일 삭제
+            fileRepository.deleteById(store.getFile().getFileId());
+        }
 
         // 파일 정보 가져오기
         File file = fileRepository.findByIdOrElseThrow(pendingStore.getFileId());
@@ -235,95 +233,15 @@ public class StoreService {
 
     }
 
+
+    /**
+     * 가게 조건 검색 메서드
+     *
+     * @param requestDto
+     * @return
+     */
     public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
 
-        QStore store = QStore.store;
-        QMenu menu = QMenu.menu;
-        QAllergy allergy = QAllergy.allergy;
-
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        List<Store> storeList = queryFactory.selectFrom(store)
-                .leftJoin(store.menuList, menu).fetchJoin() // Store와 Menu 간의 조인
-                .leftJoin(menu.allergyList, allergy).fetchJoin()
-                .where(
-                        searchWordContains(requestDto.getSearchWord(), store, menu), // 검색어 조건
-                        regionTopEquals(requestDto.getRegionTop(), store),           // 상위 지역 조건
-                        regionBottomEquals(requestDto.getRegionBottom(), store),     // 하위 지역 조건
-                        storeCategoryEquals(requestDto.getStoreCategory(), store),   // 가게 카테고리 조건
-                        maxPriceCondition(Math.toIntExact(requestDto.getMaxPrice()), menu),           // 최대 가격 조건
-                        minPriceCondition(Math.toIntExact(requestDto.getMinPrice()), menu),            // 최소 가격 조건
-                        allergyCategoryExclude(requestDto.getAllergyCategory(), menu), // 알러지 상위 조건
-                        allergyStuffExclude(requestDto.getAllergyStuff(), menu) // 알러지 하위 조건
-                )
-                .distinct()
-                .fetch();
-
-
-        return storeList.stream()
-                .map(StoreListResponseDto::toDto)
-                .toList();
-    }
-
-
-    private BooleanExpression searchWordContains(String searchWord, QStore store, QMenu menu) {
-        if (searchWord == null) {
-            return null;
-        }
-        return store.storeName.containsIgnoreCase(searchWord)
-                .or(menu.menuName.containsIgnoreCase(searchWord));
-    }
-
-    private BooleanExpression regionTopEquals(String regionTop, QStore store) {
-        return regionTop == null ? null : store.RegionTop.equalsIgnoreCase(regionTop);
-    }
-
-    private BooleanExpression regionBottomEquals(String regionBottom, QStore store) {
-        return regionBottom == null ? null : store.RegionBottom.equalsIgnoreCase(regionBottom);
-    }
-
-    private BooleanExpression storeCategoryEquals(StoreCategory storeCategory, QStore store) {
-        return storeCategory == null ? null : store.storeCategory.eq(storeCategory);
-    }
-
-    private BooleanExpression maxPriceCondition(Integer maxPrice, QMenu menu) {
-        if (maxPrice == null) {
-            return null;
-        }
-        return menu.menuStatus.eq(MenuStatus.RECOMMENDED).and(menu.menuPrice.loe(maxPrice));
-    }
-
-    private BooleanExpression minPriceCondition(Integer minPrice, QMenu menu) {
-        if (minPrice == null) {
-            return null;
-        }
-        return menu.menuStatus.eq(MenuStatus.RECOMMENDED).and(menu.menuPrice.goe(minPrice));
-    }
-
-    private BooleanExpression allergyStuffExclude(List<String> allergyStuff, QMenu menu) {
-        if (allergyStuff == null) {
-            return null;
-        }
-
-        BooleanExpression condition = null;
-        for (String allergyKey : allergyStuff) {
-            condition = menu.allergyList.any().allergyStuff.allergyCategory.allergyCategory.contains(allergyKey)
-                    .not();
-        }
-
-        return condition;
-    }
-
-    private BooleanExpression allergyCategoryExclude(List<String> allergyCategory, QMenu menu) {
-        if (allergyCategory == null) {
-            return null;
-        }
-
-        BooleanExpression condition = null;
-        for (String allergyKey : allergyCategory) {
-            condition = menu.allergyList.any().allergyStuff.allergyStuff.contains(allergyKey)
-                    .not();
-        }
-
-        return condition;
+        return storeRepository.searchStoreQuery(requestDto);
     }
 }
