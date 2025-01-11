@@ -23,13 +23,23 @@ public class Invitation extends BaseEntity {
     @JoinColumn(name = "receive_user_id", nullable = false)
     private User receiveUser;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "party_id", nullable = false)
+    private Party party;
+
     private InvitationStatus invitationStatus;
 
     public Invitation() {}
 
-    public Invitation(User sendUser, User receiveUser, InvitationStatus invitationStatus) {
+    public Invitation(User sendUser, User receiveUser, Party party) {
         this.sendUser = sendUser;
         this.receiveUser = receiveUser;
-        this.invitationStatus = invitationStatus;
+        this.invitationStatus = InvitationStatus.PENDING;
+        this.party = party;
     }
+
+    public void changeStatus(InvitationStatus newStatus) {
+        this.invitationStatus = newStatus;
+    }
+
 }
