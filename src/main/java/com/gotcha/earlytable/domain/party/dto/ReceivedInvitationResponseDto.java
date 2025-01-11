@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 @Getter
 public class ReceivedInvitationResponseDto {
 
+    private final Long partyId;
+
     private final String storeName;
 
     private final User sendUser;
@@ -20,7 +22,8 @@ public class ReceivedInvitationResponseDto {
 
     private final InvitationStatus status;
 
-    public ReceivedInvitationResponseDto(String storeName, User sendUser, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status) {
+    public ReceivedInvitationResponseDto(Long partyId, String storeName, User sendUser, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status) {
+        this.partyId = partyId;
         this.storeName = storeName;
         this.sendUser = sendUser;
         this.reservationTime = reservationTime;
