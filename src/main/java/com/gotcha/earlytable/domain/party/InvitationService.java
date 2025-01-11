@@ -84,7 +84,7 @@ public class InvitationService {
 
         List<ReceivedInvitationResponseDto> responseDtos = new ArrayList<>();
         for(Invitation invitation : invitations){
-            ReceivedInvitationResponseDto dto = getReceivedInvitationResponseDto(invitation);
+            ReceivedInvitationResponseDto dto = ReceivedInvitationResponseDto.toDto(invitation);
 
             responseDtos.add(dto);
         }
@@ -109,7 +109,7 @@ public class InvitationService {
         // 해당 예약건의 파티가 없는경우
         if(invitation.getParty() == null){throw new CustomException(ErrorCode.NOT_FOUND_PARTY);}
 
-        return getReceivedInvitationResponseDto(invitation);
+        return ReceivedInvitationResponseDto.toDto(invitation);
     }
 
 
@@ -143,24 +143,10 @@ public class InvitationService {
         invitation.changeStatus(status);
         invitationRepository.save(invitation);
 
-        return getReceivedInvitationResponseDto(invitation);
+        return ReceivedInvitationResponseDto.toDto(invitation);
     }
 
 
 
-    /**
-     *  ReceivedInvitationResponseDto 생성을 위한 메서드
-     * @param invitation
-     * @return ReceivedInvitationResponseDto
-     */
-    private static ReceivedInvitationResponseDto getReceivedInvitationResponseDto(Invitation invitation) {
-        Long partyId = invitation.getParty().getPartyId();
-        String storeName = invitation.getParty().getReservation().getStore().getStoreName();
-        User sendUser =  invitation.getSendUser();
-        LocalDateTime reservationTime = invitation.getParty().getReservation().getReservationDate().atTime(invitation.getParty().getReservation().getReservationTime());
-        Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
-        InvitationStatus status = invitation.getInvitationStatus();
 
-        return new ReceivedInvitationResponseDto(partyId,storeName, sendUser, reservationTime, personnelCount, status);
-    }
 }
