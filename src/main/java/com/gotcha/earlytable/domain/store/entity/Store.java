@@ -5,7 +5,7 @@ import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
-import com.gotcha.earlytable.domain.store.dto.StoreRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
@@ -111,7 +111,7 @@ public class Store extends BaseEntity {
     }
 
 
-    public void updateStore(StoreRequestDto requestDto) {
+    public void updateStore(StoreUpdateRequestDto requestDto) {
 
         if(requestDto.getStoreName() != null) {
             this.storeName = requestDto.getStoreName();
@@ -133,9 +133,6 @@ public class Store extends BaseEntity {
         }
         if(requestDto.getRegionBottom() != null) {
             this.RegionBottom = requestDto.getRegionBottom();
-        }
-        if(requestDto.getStoreImageList() != null) {
-            //TODO : 이미지 변경
         }
     }
 

@@ -47,13 +47,26 @@ public class FileDetail extends BaseEntity {
         this.fileType = fileType;
         this.fileStatus = fileStatus;
         this.fileSize = fileSize;
-        this.file = file;
+        updateFile(file);
         this.fileSeq = fileSeq;
 
     }
 
     public FileDetail() {
 
+    }
+
+    public void updateFile(File file) {
+        this.file = file;
+        file.getFileDetailList().add(this);
+    }
+
+    public void updateFileStatus(FileStatus fileStatus) {
+        this.fileStatus = fileStatus;
+    }
+
+    public void updateSeq(int seq) {
+        this.fileSeq = seq;
     }
 
     public static FileDetail toEntity(FileStatus fileStatus, File file, int seq,

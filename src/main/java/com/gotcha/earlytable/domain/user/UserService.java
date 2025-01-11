@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.user;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.file.enums.FileStatus;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
@@ -32,7 +33,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
-    private final ResourceLoader resourceLoader;
 
     public UserService(UserRepository userRepository, FileDetailService fileDetailService,
                        PasswordEncoder passwordEncoder,
@@ -44,7 +44,6 @@ public class UserService {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.fileService = fileService;
-        this.resourceLoader = resourceLoader;
     }
 
     /**
@@ -57,7 +56,7 @@ public class UserService {
     public UserResponseDto registerUser(UserRegisterRequestDto requestDto) {
 
         // 이메일 중복 검사
-        if(userRepository.existsUserByEmail(requestDto.getEmail())){
+        if(userRepository.existsUserByEmail(requestDto.getEmail())) {
             throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
         }
 
@@ -153,27 +152,25 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUser(User user, UserUpdateRequestDto requestDto) {
 
-        // 정보 수정
+        // 정보 수정 및 저장
         user.updateUser(requestDto);
+        User savedUser = userRepository.save(user);
 
-        // 저장
-        userRepository.save(user);
-
-        // 기존 이미지 url 가져오기
+        // 기존 프로필 이미지 url 가져오기
         String imageUrl = user.getFile().getFileDetailList().stream()
-                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
-                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND))
-                .getFileUrl();
+                .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        // 변경할 이미지가 있으면
-        if(requestDto.getProfileImage() != null){
+        if (requestDto.getProfileImage() != null) {
 
-            fileDetailService.deleteImageFile(imageUrl);
+            // 기존 이미지 제거
+            user.getFile().getFileDetailList().stream()
+                    .findAny().ifPresent(fileDetail -> fileDetailService.deleteImageFile(fileDetail.getFileUrl()));
 
+            // 새로 생성
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), user.getFile());
         }
 
-        return UserResponseDto.toDto(user, imageUrl);
+        return UserResponseDto.toDto(savedUser, imageUrl);
     }
 
     /**

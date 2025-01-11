@@ -17,11 +17,9 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
-    private final StoreRepository storeRepository;
 
-    public StoreController(StoreService storeService, StoreRepository storeRepository) {
+    public StoreController(StoreService storeService) {
         this.storeService = storeService;
-        this.storeRepository = storeRepository;
     }
 
     /**
@@ -50,7 +48,7 @@ public class StoreController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PutMapping("/{storeId}")
     public ResponseEntity<StoreResponseDto> updateStore(@PathVariable Long storeId,
-                                                        @Valid @ModelAttribute StoreRequestDto requestDto) {
+                                                        @Valid @ModelAttribute StoreUpdateRequestDto requestDto) {
 
         // 생성 후 정보 받기
         StoreResponseDto storeResponseDto = storeService.updateStore(storeId, requestDto);
@@ -64,7 +62,6 @@ public class StoreController {
      * @param storeId
      * @return ResponseEntity<StoreResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER, Auth.USER})
     @GetMapping("/{storeId}")
     public ResponseEntity<StoreResponseDto> getStore(@PathVariable Long storeId) {
 
@@ -87,7 +84,6 @@ public class StoreController {
 
         return ResponseEntity.status(HttpStatus.OK).body(storeListResponseDtoList);
     }
-
 
     /**
      * 가게 휴업 상태 <-> 영업 상태 변경 API

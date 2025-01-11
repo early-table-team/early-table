@@ -7,9 +7,9 @@ import java.util.List;
 
 @Getter
 public class ReviewRequestDto {
-    private Integer rating;
-    private String reviewContent;
-    private List<MultipartFile> reviewImageList;
+    private final Integer rating;
+    private final String reviewContent;
+    private final List<MultipartFile> reviewImageList;
 
     public ReviewRequestDto(Integer rating, String reviewContent, List<MultipartFile> reviewImageList) {
         this.rating = rating;
