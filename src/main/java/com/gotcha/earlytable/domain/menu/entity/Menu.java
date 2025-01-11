@@ -80,4 +80,6 @@ public class Menu extends BaseEntity {
             this.menuStatus = menuRequestDto.getMenuStatus();
         }
     }
+
+
 }

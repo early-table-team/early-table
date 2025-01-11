@@ -4,6 +4,8 @@ import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,5 +20,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     }
 
     @Query("select r from Reservation r join r.party p join p.partyPeople pp where pp.user = :user")
-    List<Reservation> findByUser(User user);
+    Page<Reservation> findByUser(User user, Pageable pageable);
+
+
+
 }
