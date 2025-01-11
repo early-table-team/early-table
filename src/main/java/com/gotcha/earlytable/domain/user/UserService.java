@@ -66,8 +66,11 @@ public class UserService {
         // 파일 생성
         File file = fileService.createFile();
 
-        // 프로필 이미지 파일 저장
-        String imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
+        String imageUrl = null;
+        if(requestDto.getProfileImage() != null) {
+            // 프로필 이미지 파일 저장
+            imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
+        }
 
         // User 생성
         User user = User.toEntity(requestDto, encodedPassword, file);
