@@ -23,4 +23,18 @@ public class FriendRequest extends BaseEntity {
     private User receivedUser;
 
     private InvitationStatus invitationStatus;
+
+    public FriendRequest(User sendUser, User receivedUser, InvitationStatus invitationStatus) {
+        this.sendUser = sendUser;
+        this.receivedUser = receivedUser;
+        this.invitationStatus = invitationStatus;
+    }
+
+    public FriendRequest() {
+
+    }
+
+    public void update(InvitationStatus invitationStatus) {
+        this.invitationStatus = invitationStatus;
+    }
 }
