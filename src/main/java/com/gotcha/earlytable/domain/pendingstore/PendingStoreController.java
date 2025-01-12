@@ -1,9 +1,6 @@
 package com.gotcha.earlytable.domain.pendingstore;
 
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreRequestDto;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreResponseDto;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreResponseListDto;
-import com.gotcha.earlytable.domain.pendingstore.dto.PendingStoreStatusRequestDto;
+import com.gotcha.earlytable.domain.pendingstore.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
@@ -59,7 +56,7 @@ public class PendingStoreController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/stores/{storeId}")
     public ResponseEntity<PendingStoreResponseDto> updatePendingStore(@PathVariable Long storeId,
-                                                        @Valid @ModelAttribute PendingStoreRequestDto requestDto,
+                                                        @Valid @ModelAttribute PendingStoreUpdateRequestDto requestDto,
                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         User user = userDetails.getUser();

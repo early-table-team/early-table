@@ -1,6 +1,6 @@
 package com.gotcha.earlytable.domain.review.dto;
 
-import com.gotcha.earlytable.domain.file.entity.ImageFile;
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.review.entity.Review;
 import lombok.Getter;
 
@@ -22,8 +22,8 @@ public class ReviewResponseDto {
     public static ReviewResponseDto toDto(Review review) {
 
         Map<Integer, String> imageFileUrlMap = new HashMap<>();
-        for(ImageFile imageFile : review.getFile().getImageFileList()){
-            imageFileUrlMap.put(imageFile.getFileSeq(), imageFile.getFileUniqueName());
+        for(FileDetail fileDetail : review.getFile().getFileDetailList()){
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUrl());
         }
 
             return new ReviewResponseDto(

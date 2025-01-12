@@ -1,18 +1,21 @@
 package com.gotcha.earlytable.domain.user;
 
+import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
-import com.gotcha.earlytable.domain.file.FileStatus;
-import com.gotcha.earlytable.domain.file.ImageFileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
+import com.gotcha.earlytable.domain.file.enums.FileStatus;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,18 +28,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final ImageFileService imageFileService;
+    private final FileDetailService fileDetailService;
     private final FileService fileService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
 
-    public UserService(UserRepository userRepository, ImageFileService imageFileService,
+    public UserService(UserRepository userRepository, FileDetailService fileDetailService,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider, FileService fileService) {
+                       JwtProvider jwtProvider, FileService fileService, ResourceLoader resourceLoader) {
         this.userRepository = userRepository;
-        this.imageFileService = imageFileService;
+        this.fileDetailService = fileDetailService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
@@ -53,7 +56,7 @@ public class UserService {
     public UserResponseDto registerUser(UserRegisterRequestDto requestDto) {
 
         // 이메일 중복 검사
-        if(userRepository.existsUserByEmail(requestDto.getEmail())){
+        if(userRepository.existsUserByEmail(requestDto.getEmail())) {
             throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
         }
 
@@ -63,13 +66,15 @@ public class UserService {
         // 파일 생성
         File file = fileService.createFile();
 
-        // 프로필 이미지 파일 저장
-        String imageUrl = imageFileService.createImageFile(requestDto.getProfileImage(), file);
-
-        // User 생성
+        // User 생성 및 저장
         User user = User.toEntity(requestDto, encodedPassword, file);
-
         User savedUser = userRepository.save(user);
+
+        String imageUrl = null;
+        if(!requestDto.getProfileImage().isEmpty()) {
+            // 프로필 이미지 파일 저장
+            imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
+        }
 
         return UserResponseDto.toDto(savedUser, imageUrl);
     }
@@ -112,8 +117,9 @@ public class UserService {
      */
     public UserResponseDto getUser(User user){
 
-        String imageUrl = user.getFile().getImageFileList().stream()
-                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst().get()
+        String imageUrl = user.getFile().getFileDetailList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND))
                 .getFileUrl();
 
         return UserResponseDto.toDto(user, imageUrl);
@@ -148,26 +154,25 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUser(User user, UserUpdateRequestDto requestDto) {
 
-        // 정보 수정
+        // 정보 수정 및 저장
         user.updateUser(requestDto);
+        User savedUser = userRepository.save(user);
 
-        // 저장
-        userRepository.save(user);
+        // 기존 프로필 이미지 url 가져오기
+        String imageUrl = user.getFile().getFileDetailList().stream()
+                .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        // 기존 이미지 url 가져오기
-        String imageUrl = user.getFile().getImageFileList().stream()
-                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst().get()
-                .getFileUrl();
+        if (!requestDto.getProfileImage().isEmpty()) {
 
-        // 변경할 이미지가 있으면
-        if(requestDto.getProfileImage() != null){
+            // 기존 이미지 제거
+            user.getFile().getFileDetailList().stream()
+                    .findAny().ifPresent(fileDetail -> fileDetailService.deleteImageFile(fileDetail.getFileUrl()));
 
-            imageFileService.deleteImageFile(imageUrl);
-
-            imageUrl = imageFileService.createImageFile(requestDto.getProfileImage(), user.getFile());
+            // 새로 생성
+            imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), user.getFile());
         }
 
-        return UserResponseDto.toDto(user, imageUrl);
+        return UserResponseDto.toDto(savedUser, imageUrl);
     }
 
     /**

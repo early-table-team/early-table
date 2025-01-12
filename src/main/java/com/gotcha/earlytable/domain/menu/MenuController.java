@@ -2,13 +2,14 @@ package com.gotcha.earlytable.domain.menu;
 
 import com.gotcha.earlytable.domain.menu.dto.MenuRequestDto;
 import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
-import com.gotcha.earlytable.domain.menu.entity.Menu;
+import com.gotcha.earlytable.global.annotation.CheckUserAuth;
+import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
+import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -16,11 +17,9 @@ import java.util.List;
 public class MenuController {
 
     private final MenuService menuService;
-    private final MenuRepository menuRepository;
 
-    public MenuController(MenuService menuService, MenuRepository menuRepository) {
+    public MenuController(MenuService menuService) {
         this.menuService = menuService;
-        this.menuRepository = menuRepository;
     }
 
     /**
@@ -29,26 +28,30 @@ public class MenuController {
      * @param menuRequestDto
      * @return MenuResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping
     public ResponseEntity<MenuResponseDto> createMenu(@PathVariable Long storeId,
-                                                      @ModelAttribute MenuRequestDto menuRequestDto) throws IOException {
+                                                      @ModelAttribute MenuRequestDto menuRequestDto,
+                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        MenuResponseDto createMenuResponseDto = menuService.createMenu(storeId, menuRequestDto);
+        MenuResponseDto createMenuResponseDto = menuService.createMenu(storeId, userDetails.getUser().getId(), menuRequestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createMenuResponseDto);
     }
 
     /**
      * 메뉴 수정 API
-     * @param storeId
      * @param menuId
      * @param menuRequestDto
      * @return MenuResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/{menuId}")
-    public ResponseEntity<MenuResponseDto> updateMenu(@PathVariable Long storeId, @PathVariable Long menuId,
-                                                      @ModelAttribute MenuRequestDto menuRequestDto) {
-        MenuResponseDto updateMenuResponseDto = menuService.updateMenu(storeId, menuId, menuRequestDto);
+    public ResponseEntity<MenuResponseDto> updateMenu(@PathVariable Long menuId,
+                                                      @ModelAttribute MenuRequestDto menuRequestDto,
+                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        MenuResponseDto updateMenuResponseDto = menuService.updateMenu(menuId, userDetails.getUser().getId(), menuRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(updateMenuResponseDto);
     }
@@ -70,6 +73,7 @@ public class MenuController {
      * @param menuId
      * @return String
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/{menuId}")
     public ResponseEntity<String> deleteMenu(@PathVariable Long menuId) {
 

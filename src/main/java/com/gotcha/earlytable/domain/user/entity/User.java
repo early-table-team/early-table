@@ -67,7 +67,7 @@ public class User extends BaseEntity {
                 requestDto.getEmail(),
                 requestDto.getNickname(),
                 EncodingPassword,
-                requestDto.getPhoneNumber(),
+                requestDto.getPhone(),
                 requestDto.getAuth(),
                 Status.NORMAL,
                 file

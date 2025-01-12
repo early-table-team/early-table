@@ -14,26 +14,36 @@ public enum ErrorCode {
     INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일 형식이 올바르지 않습니다."),
     NO_SEAT(HttpStatus.BAD_REQUEST,"해당 인원에 맞는 자리가 남아있지 않습니다."),
     REJECT_CANCEL(HttpStatus.BAD_REQUEST,"예약을 취소할 수 없습니다."),
+    UNAVAILABLE_RESERVATION_TYPE(HttpStatus.BAD_REQUEST, "예약이 불가능한 가게입니다."),
+    STORE_HOLIDAY(HttpStatus.BAD_REQUEST,"가게 휴무일 입니다."),
+    RESERVATION_TIME_ERROR(HttpStatus.BAD_REQUEST,"예약가능한 시간이 아닙니다."),
+    NOT_FOUND_MENU(HttpStatus.BAD_REQUEST,"가게 내에서 메뉴를 찾을 수 없습니다."),
     NO_MORE_REQUEST_AVAILABLE(HttpStatus.BAD_REQUEST, "더이상 친구 요청이 불가능한 사용자입니다. 관리자에게 문의하세요."),
 
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     UNAUTHORIZED_PASSWORD(HttpStatus.UNAUTHORIZED, "패스워드가 틀렸습니다."),
+    NO_STORE_OWNER(HttpStatus.UNAUTHORIZED, "가게주인이 아닙니다."),
 
     // 403 Forbidden
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN,"접근이 거부됐습니다."),
     FORBIDDEN_PERMISSION(HttpStatus.FORBIDDEN, "사용자 권한이 없습니다."),
     FORBIDDEN_LOGIN(HttpStatus.FORBIDDEN,"이미 탈퇴한 유저입니다."),
+    FORBIDDEN_PARTY_LEADER(HttpStatus.FORBIDDEN,"파티장이 아닙니다."),
+
 
     // 404 NOT_FOUND
     NOT_FOUND(HttpStatus.NOT_FOUND,"리소스를 찾을 수 없습니다."),
     NOT_MATCHED(HttpStatus.NOT_FOUND, "초대한 사용자와 이메일이 일치하지 않습니다."),
+    NOT_FOUND_PARTY(HttpStatus.NOT_FOUND,"파티를 찾을 수 없습니다."),
+
 
     // 409 CONFLICT
     DUPLICATE_VALUE(HttpStatus.CONFLICT, "중복된 정보입니다."),
     USER_ALREADY_DELETED(HttpStatus.CONFLICT, "이미 탈퇴한 사용자 아이디입니다."),
     ALREADY_IN_FRIEND(HttpStatus.CONFLICT,"이미 친구로 등록된 사용자입니다."),
+
 
     ;
 

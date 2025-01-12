@@ -1,0 +1,50 @@
+package com.gotcha.earlytable.domain.party.dto;
+
+
+import com.gotcha.earlytable.domain.party.entity.Invitation;
+import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.InvitationStatus;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
+@Getter
+public class ReceivedInvitationResponseDto {
+
+    private final Long invitationId;
+
+    private final String storeName;
+
+    private final User sendUser;
+
+    private final LocalDateTime reservationTime;
+
+    private final Integer personnelCount;
+
+    private final InvitationStatus status;
+
+    public ReceivedInvitationResponseDto(Long invitationId, String storeName, User sendUser, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status) {
+        this.invitationId = invitationId;
+        this.storeName = storeName;
+        this.sendUser = sendUser;
+        this.reservationTime = reservationTime;
+        this.personnelCount = personnelCount;
+        this.status = status;
+    }
+
+
+    public static ReceivedInvitationResponseDto toDto(Invitation invitation) {
+        Long invitationId = invitation.getInvitationId();
+        String storeName = invitation.getParty().getReservation().getStore().getStoreName();
+        User sendUser = invitation.getSendUser();
+        LocalDateTime reservationTime = invitation.getParty().getReservation().getReservationDate()
+                .atTime(invitation.getParty().getReservation().getReservationTime());
+        Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
+        InvitationStatus status = invitation.getInvitationStatus();
+
+        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUser, reservationTime, personnelCount, status);
+    }
+
+
+
+}
