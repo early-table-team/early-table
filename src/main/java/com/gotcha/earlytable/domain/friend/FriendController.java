@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.friend;
 
+import com.gotcha.earlytable.domain.friend.dto.FriendListResponseDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendResponseDto;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
@@ -24,21 +25,23 @@ public class FriendController {
 
     /**
      * 나의 친구 목록 조회 API
+     *
      * @param userDetails
      * @return List<FriendResponseDto>
      */
     @GetMapping
-    public ResponseEntity<List<FriendResponseDto>> GetFriendList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<FriendListResponseDto>> GetFriendList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        List<FriendResponseDto> friendResponseDtoList = friendService.getFriendList(user);
+        List<FriendListResponseDto> friendListResponseDtoList = friendService.getFriendList(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(friendResponseDtoList);
+        return ResponseEntity.status(HttpStatus.OK).body(friendListResponseDtoList);
     }
 
     /**
      * 친구 단일 조회 API
+     *
      * @param userId
      * @return FriendResponseDto
      */
