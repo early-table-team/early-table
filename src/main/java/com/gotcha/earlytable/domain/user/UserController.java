@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -84,7 +85,7 @@ public class UserController {
      * @param userDetails
      * @return ResponseEntity<UserResponseDto>
      */
-    @GetMapping("/users")
+    @GetMapping
     public ResponseEntity<UserResponseDto> getUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
 
         UserResponseDto userResponseDto = userService.getUser(userDetails.getUser());
@@ -99,7 +100,7 @@ public class UserController {
      * @param userDetails
      * @return ResponseEntity<UserResponseDto>
      */
-    @PutMapping("/users")
+    @PutMapping
     public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserUpdateRequestDto requestDto,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails){
 
@@ -115,7 +116,7 @@ public class UserController {
      * @param userDetails
      * @return ResponseEntity<String>
      */
-    @PatchMapping("/users/pw")
+    @PatchMapping("/pw")
     public ResponseEntity<String> updateUserPW(@Valid @RequestBody UserPWRequestDto requestDto,
                                                @AuthenticationPrincipal UserDetailsImpl userDetails){
 
@@ -131,7 +132,7 @@ public class UserController {
      * @param userDetails
      * @return ResponseEntity<String>
      */
-    @DeleteMapping("/users")
+    @DeleteMapping
     public ResponseEntity<String> deleteUser(@RequestBody UserDeleteRequestDto requestDto,
                                              @AuthenticationPrincipal UserDetailsImpl userDetails){
 
