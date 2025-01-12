@@ -42,6 +42,19 @@ public class FriendRequestService {
             throw new ConflictException(ErrorCode.ALREADY_IN_FRIEND);
         }
 
+        //상대가 보낸 요청이 이미 존재할 때 -> 수락처리(requestId, user, 받는user)
+        if(friendRequestRepository.existsBySendUserIdAndReceivedUserIdAndInvitationStatus(receivedUser.getId(), user.getId(), InvitationStatus.PENDING)) {
+            FriendRequest friendRequest = friendRequestRepository.findBySendUserIdAndReceivedUserIdAndInvitationStatus(receivedUser.getId(), user.getId(), InvitationStatus.PENDING);
+
+            FriendRequestRequestDto reverseFriendRequestRequestDto = new FriendRequestRequestDto(receivedUser.getId(), user.getId(), InvitationStatus.ACCEPTED);
+            this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), receivedUser, reverseFriendRequestRequestDto);
+        }
+
+        //내가 보낸 대기상태인 요청 건 존재시 예외처리
+        if (friendRequestRepository.existsBySendUserIdAndReceivedUserIdAndInvitationStatus(user.getId(), receivedUser.getId(), InvitationStatus.PENDING)) {
+            throw new ConflictException(ErrorCode.ALREADY_REQUESTED);
+        }
+
         //거절상태인 요청 건 5건 이상 존재할 때 예외처리
         if(friendRequestRepository.countBySendUserIdAndReceivedUserIdAndInvitationStatus(user, receivedUser, InvitationStatus.REJECTED) >= 5) {
             throw new BadRequestException(ErrorCode.NO_MORE_REQUEST_AVAILABLE);

@@ -3,7 +3,9 @@ package com.gotcha.earlytable.domain.friend;
 import com.gotcha.earlytable.domain.friend.dto.FriendRequestRequestDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendRequestResponseDto;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
+import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +28,7 @@ public class FriendRequestController {
      * @param userDetails
      * @return FriendRequestResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping
     public ResponseEntity<FriendRequestResponseDto> createFriendRequest(@ModelAttribute FriendRequestRequestDto friendRequestRequestDto,
                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -42,6 +45,7 @@ public class FriendRequestController {
      * @param userDetails
      * @return List<FriendRequestResponseDto>
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping
     public ResponseEntity<List<FriendRequestResponseDto>> getFriendRequestList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
@@ -59,6 +63,7 @@ public class FriendRequestController {
      * @param userDetails
      * @return FriendRequestResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PatchMapping("/{friendRequestId}")
     public ResponseEntity<FriendRequestResponseDto> updateFriendRequestStatus(@PathVariable Long friendRequestId,
                                                                               @ModelAttribute FriendRequestRequestDto friendRequestRequestDto,
@@ -76,6 +81,7 @@ public class FriendRequestController {
      * @param friendRequestRequestDto
      * @return String
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @DeleteMapping
     public ResponseEntity<String> deleteFriendRequest(@ModelAttribute FriendRequestRequestDto friendRequestRequestDto) {
         friendRequestService.deleteFriendRequest(friendRequestRequestDto);

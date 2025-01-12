@@ -2,7 +2,9 @@ package com.gotcha.earlytable.domain.friend;
 
 import com.gotcha.earlytable.domain.friend.dto.FriendResponseDto;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
+import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +29,7 @@ public class FriendController {
      * @param userDetails
      * @return List<FriendResponseDto>
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping
     public ResponseEntity<List<FriendResponseDto>> GetFriendList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
@@ -42,6 +45,7 @@ public class FriendController {
      * @param userId
      * @return FriendResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/users/{userId}")
     public ResponseEntity<FriendResponseDto> GetFriend(@PathVariable Long userId) {
         FriendResponseDto getFriendResponseDto = friendService.getFriend(userId);
