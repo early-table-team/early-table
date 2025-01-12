@@ -35,6 +35,7 @@ jobs:
           file: ./docker/Dockerfile
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_TAG_NAME }}:latest
+
   # Ec2 에 배포
   deploy-to-ec2:
     needs: docker-build-and-push
