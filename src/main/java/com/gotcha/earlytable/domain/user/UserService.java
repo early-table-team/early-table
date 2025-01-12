@@ -66,16 +66,15 @@ public class UserService {
         // 파일 생성
         File file = fileService.createFile();
 
+        // User 생성 및 저장
+        User user = User.toEntity(requestDto, encodedPassword, file);
+        User savedUser = userRepository.save(user);
+
         String imageUrl = null;
         if(!requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
-
-        // User 생성
-        User user = User.toEntity(requestDto, encodedPassword, file);
-
-        User savedUser = userRepository.save(user);
 
         return UserResponseDto.toDto(savedUser, imageUrl);
     }

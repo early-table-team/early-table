@@ -18,8 +18,7 @@ public enum ErrorCode {
     STORE_HOLIDAY(HttpStatus.BAD_REQUEST,"가게 휴무일 입니다."),
     RESERVATION_TIME_ERROR(HttpStatus.BAD_REQUEST,"예약가능한 시간이 아닙니다."),
     NOT_FOUND_MENU(HttpStatus.BAD_REQUEST,"가게 내에서 메뉴를 찾을 수 없습니다."),
-
-
+    NO_MORE_REQUEST_AVAILABLE(HttpStatus.BAD_REQUEST, "더이상 친구 요청이 불가능한 사용자입니다. 관리자에게 문의하세요."),
 
 
     // 401 Unauthorized
@@ -43,7 +42,8 @@ public enum ErrorCode {
     // 409 CONFLICT
     DUPLICATE_VALUE(HttpStatus.CONFLICT, "중복된 정보입니다."),
     USER_ALREADY_DELETED(HttpStatus.CONFLICT, "이미 탈퇴한 사용자 아이디입니다."),
-
+    ALREADY_IN_FRIEND(HttpStatus.CONFLICT,"이미 친구로 등록된 사용자입니다."),
+    ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 수락 대기 중인 요청 건이 존재합니다."),
 
     ;
 

@@ -24,4 +24,9 @@ public class Friend extends BaseEntity {
 
     public Friend() {}
 
+    public Friend(User sendUser, User receivedUser) {
+        this.sendUser = sendUser;
+        this.receivedUser = receivedUser;
+    }
+
 }

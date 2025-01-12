@@ -51,7 +51,8 @@ public class FileDetailService extends s3 {
             FileDetailDto fileDetailDto = uploadFile(imageFile);
 
             FileDetail fileDetail =
-                    FileDetail.toEntity(FileStatus.REPRESENTATIVE, file, file.getFileDetailList().size()+1, FileType.valueOf(extension), fileDetailDto);
+                    FileDetail.toEntity(FileStatus.REPRESENTATIVE, file, file.getFileDetailList().size()+1,
+                            FileType.valueOf(extension.toUpperCase()), fileDetailDto);
 
             FileDetail savedFileDetail = fileDetailRepository.save(fileDetail);
 
