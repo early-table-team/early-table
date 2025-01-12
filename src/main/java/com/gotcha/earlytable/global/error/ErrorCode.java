@@ -14,6 +14,7 @@ public enum ErrorCode {
     INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일 형식이 올바르지 않습니다."),
     NO_SEAT(HttpStatus.BAD_REQUEST,"해당 인원에 맞는 자리가 남아있지 않습니다."),
     REJECT_CANCEL(HttpStatus.BAD_REQUEST,"예약을 취소할 수 없습니다."),
+    NO_MORE_REQUEST_AVAILABLE(HttpStatus.BAD_REQUEST, "더이상 친구 요청이 불가능한 사용자입니다. 관리자에게 문의하세요."),
 
 
     // 401 Unauthorized
@@ -32,6 +33,7 @@ public enum ErrorCode {
     // 409 CONFLICT
     DUPLICATE_VALUE(HttpStatus.CONFLICT, "중복된 정보입니다."),
     USER_ALREADY_DELETED(HttpStatus.CONFLICT, "이미 탈퇴한 사용자 아이디입니다."),
+    ALREADY_IN_FRIEND(HttpStatus.CONFLICT,"이미 친구로 등록된 사용자입니다."),
 
     ;
 

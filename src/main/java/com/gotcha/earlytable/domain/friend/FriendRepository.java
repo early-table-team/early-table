@@ -16,4 +16,6 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     }
 
     List<Friend> findBySendUserId(Long id);
+
+    boolean existsBySendUserIdAndReceivedUserId(Long id, Long receivedUserId);
 }
