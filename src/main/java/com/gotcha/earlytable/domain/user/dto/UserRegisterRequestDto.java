@@ -13,17 +13,17 @@ public class UserRegisterRequestDto {
 
     private final String password;
 
-    private final String phoneNumber;
+    private final String phone;
 
     private final Auth auth;
 
     private final MultipartFile profileImage;
 
-    public UserRegisterRequestDto(String nickname, String email, String password, String phoneNumber, Auth auth, MultipartFile profileImage) {
+    public UserRegisterRequestDto(String nickname, String email, String password, String phone, Auth auth, MultipartFile profileImage) {
         this.nickname = nickname;
         this.email = email;
         this.password = password;
-        this.phoneNumber = phoneNumber;
+        this.phone = phone;
         this.auth = auth;
         this.profileImage = profileImage;
     }
