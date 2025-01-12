@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.friend;
 
+import com.gotcha.earlytable.domain.friend.dto.FriendListResponseDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendResponseDto;
 import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.user.UserRepository;
@@ -21,10 +22,10 @@ public class FriendService {
     /**
      * 나의 친구 목록 조회 서비스 메서드
      */
-    public List<FriendResponseDto> getFriendList(User user) {
+    public List<FriendListResponseDto> getFriendList(User user) {
         List<Friend> friendList = friendRepository.findBySendUserId(user.getId());
 
-        return friendList.stream().map(FriendResponseDto::toDto).toList();
+        return friendList.stream().map(FriendListResponseDto::toDto).toList();
     }
 
     /**
