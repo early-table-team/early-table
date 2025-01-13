@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,7 +32,7 @@ public class MenuController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping
     public ResponseEntity<MenuResponseDto> createMenu(@PathVariable Long storeId,
-                                                      @ModelAttribute MenuRequestDto menuRequestDto,
+                                                      @Valid @ModelAttribute MenuRequestDto menuRequestDto,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         MenuResponseDto createMenuResponseDto = menuService.createMenu(storeId, userDetails.getUser().getId(), menuRequestDto);
@@ -48,7 +49,7 @@ public class MenuController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/{menuId}")
     public ResponseEntity<MenuResponseDto> updateMenu(@PathVariable Long menuId,
-                                                      @ModelAttribute MenuRequestDto menuRequestDto,
+                                                      @Valid @ModelAttribute MenuRequestDto menuRequestDto,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         MenuResponseDto updateMenuResponseDto = menuService.updateMenu(menuId, userDetails.getUser().getId(), menuRequestDto);
