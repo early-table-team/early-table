@@ -1,7 +1,9 @@
 package com.gotcha.earlytable.domain.friend;
 
+import com.gotcha.earlytable.domain.friend.dto.FriendRequestDeleteRequestDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendRequestRequestDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendRequestResponseDto;
+import com.gotcha.earlytable.domain.friend.dto.FriendRequestUpdateRequestDto;
 import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.friend.entity.FriendRequest;
 import com.gotcha.earlytable.domain.user.UserRepository;
@@ -48,8 +50,8 @@ public class FriendRequestService {
             FriendRequest friendRequest = friendRequestRepository.findBySendUserIdAndReceivedUserIdAndInvitationStatus(receivedUser.getId(), user.getId(), InvitationStatus.PENDING);
 
             //상대가 보낸 요청 수락(->친구등록) 처리
-            FriendRequestRequestDto reverseFriendRequestRequestDto = new FriendRequestRequestDto(receivedUser.getId(), user.getId(), InvitationStatus.ACCEPTED);
-            return this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), reverseFriendRequestRequestDto);
+            FriendRequestUpdateRequestDto friendRequestUpdateRequestDto = new FriendRequestUpdateRequestDto(InvitationStatus.ACCEPTED);
+            return this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), friendRequestUpdateRequestDto);
         }
 
         //내가 보낸 대기상태인 요청 건 존재시 예외처리
@@ -83,14 +85,14 @@ public class FriendRequestService {
      * 친구 요청 상태(수락/거절) 변경 서비스 메서드
      */
     @Transactional
-    public FriendRequestResponseDto updateFriendRequestStatus(Long friendRequestId, FriendRequestRequestDto friendRequestRequestDto) {
+    public FriendRequestResponseDto updateFriendRequestStatus(Long friendRequestId, FriendRequestUpdateRequestDto friendRequestUpdateRequestDto) {
+        //상태 변경할 요청 건, 보내는사람, 받는사람 정보 받아오기
         FriendRequest friendRequest = friendRequestRepository.findByIdOrElseThrow(friendRequestId);
+        User sendUser = userRepository.findByIdOrElseThrow(friendRequest.getSendUser().getId());
+        User receivedUser = userRepository.findByIdOrElseThrow(friendRequest.getReceivedUser().getId());
 
-        //친구 요청 수락으로 변경 시, 친구 데이터(2건) 추가
-        if(friendRequestRequestDto.getInvitationStatus().equals(InvitationStatus.ACCEPTED)) {
-            //친구 유저 데이터 받아오기
-            User receivedUser = userRepository.findByIdOrElseThrow(friendRequestRequestDto.getReceivedUserId());
-            User sendUser = userRepository.findByIdOrElseThrow(friendRequestRequestDto.getSendUserId());
+        //요청값이 수락일 때, 친구 데이터(2건) 추가
+        if(friendRequestUpdateRequestDto.getInvitationStatus().equals(InvitationStatus.ACCEPTED)) {
 
             //친구 데이터 생성
             Friend friend1 = new Friend(sendUser, receivedUser);
@@ -101,10 +103,10 @@ public class FriendRequestService {
             friendRepository.save(friend2);
         }
 
-        //친구 요청 상태 요청값으로 변경
-        friendRequest.update(friendRequestRequestDto.getInvitationStatus());
+        //친구요청상태 요청값으로 변경(수락 또는 거절)
+        friendRequest.update(friendRequestUpdateRequestDto.getInvitationStatus());
 
-        //친구 요청 상태 변경된 내역 저장
+        //친구요청상태 변경된내역 저장
         FriendRequest updatedFriendRequest = friendRequestRepository.save(friendRequest);
 
         return FriendRequestResponseDto.toDto(updatedFriendRequest);
@@ -114,11 +116,11 @@ public class FriendRequestService {
      * 친구요청 내역 삭제 서비스 메서드 (ADMIN)
      */
     @Transactional
-    public void deleteFriendRequest(FriendRequestRequestDto friendRequestRequestDto) {
-        if(!friendRequestRepository.existsBySendUserIdAndReceivedUserIdAndInvitationStatus(friendRequestRequestDto.getSendUserId(), friendRequestRequestDto.getReceivedUserId(), InvitationStatus.REJECTED)) {
+    public void deleteFriendRequest(FriendRequestDeleteRequestDto friendRequestDeleteRequestDto) {
+        if(!friendRequestRepository.existsBySendUserIdAndReceivedUserIdAndInvitationStatus(friendRequestDeleteRequestDto.getSendUserId(), friendRequestDeleteRequestDto.getReceivedUserId(), InvitationStatus.REJECTED)) {
             throw new NotFoundException(ErrorCode.NOT_FOUND);
         }
 
-        friendRequestRepository.deleteBySendUserIdAndReceivedUserIdAndInvitationStatus(friendRequestRequestDto.getSendUserId(), friendRequestRequestDto.getReceivedUserId(), InvitationStatus.REJECTED);
+        friendRequestRepository.deleteBySendUserIdAndReceivedUserIdAndInvitationStatus(friendRequestDeleteRequestDto.getSendUserId(), friendRequestDeleteRequestDto.getReceivedUserId(), InvitationStatus.REJECTED);
     }
 }
