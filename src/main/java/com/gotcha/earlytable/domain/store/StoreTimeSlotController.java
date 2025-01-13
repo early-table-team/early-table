@@ -1,10 +1,11 @@
 package com.gotcha.earlytable.domain.store;
 
-import com.gotcha.earlytable.domain.store.dto.TimeSlotResponseDto;
 import com.gotcha.earlytable.domain.store.dto.TimeSlotRequestDto;
+import com.gotcha.earlytable.domain.store.dto.TimeSlotResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +34,7 @@ public class StoreTimeSlotController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping
     public ResponseEntity<TimeSlotResponseDto> createStoreTimeSlot(@PathVariable Long storeId,
-                                                                   @RequestBody TimeSlotRequestDto requestDto,
+                                                                   @Valid @RequestBody TimeSlotRequestDto requestDto,
                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         TimeSlotResponseDto responseDto = storeTimeSlotService.createStoreTimeSlot(storeId, requestDto, userDetails.getUser());
@@ -45,7 +46,7 @@ public class StoreTimeSlotController {
      * 타임슬롯 전체조회 API
      *
      * @param storeId
-     * @return ResponseEntity<List<TimeSlotResponseDto>>
+     * @return ResponseEntity<List < TimeSlotResponseDto>>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
@@ -86,7 +87,7 @@ public class StoreTimeSlotController {
     @PutMapping("/{storeTimeSlotId}")
     public ResponseEntity<TimeSlotResponseDto> modifyTimeSlot(@PathVariable Long storeId,
                                                               @PathVariable Long storeTimeSlotId,
-                                                              @RequestBody TimeSlotRequestDto requestDto,
+                                                              @Valid @RequestBody TimeSlotRequestDto requestDto,
                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         TimeSlotResponseDto responseDto =
