@@ -12,6 +12,8 @@ import com.gotcha.earlytable.domain.review.enums.ReviewStatus;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,9 +109,14 @@ public class ReviewService {
      * 리뷰 삭제 서비스 메서드
      */
     @Transactional
-    public void deleteReview(Long reviewId) {
+    public void deleteReview(Long reviewId, User user) {
 
         Review review = reviewRepository.findByIdOrElseThrow(reviewId);
+
+        // 리뷰가 내가 작성한게 맞나 확인하기
+        if(!review.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_PERMISSION);
+        }
 
         //탈퇴 상태로 업데이트
         review.updateReviewStatusToDeleted();
