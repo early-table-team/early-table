@@ -64,6 +64,5 @@ jobs:
 
             # 컨테이너 실행
             cd ~
-            
             sudo docker-compose up -d
             sudo docker image prune -f
