@@ -3,8 +3,6 @@ package com.gotcha.earlytable.domain.store.dto;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,30 +11,21 @@ import java.util.List;
 @Getter
 public class StoreUpdateRequestDto {
 
-    @NotNull
     private final Long userId;
 
-    @NotNull
     private final Long fileId;
 
-    @NotBlank
     private final String storeName;
 
-    @NotBlank
     private final String storeTel;
 
-    @NotBlank
     private final String storeAddress;
 
-    @NotBlank
     private final String storeContents;
 
-    @NotBlank
     private final String regionTop;
 
-    @NotBlank
     private final String regionBottom;
-
 
     @Enumerated(EnumType.STRING)
     private final StoreCategory storeCategory;

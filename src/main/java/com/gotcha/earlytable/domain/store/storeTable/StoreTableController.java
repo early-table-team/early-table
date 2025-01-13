@@ -28,9 +28,11 @@ public class StoreTableController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping
-    public ResponseEntity<String> createStoreTable(@PathVariable Long storeId, @RequestBody CreateStoreTableRequestDto requestDto) {
+    public ResponseEntity<String> createStoreTable(@PathVariable Long storeId,
+                                                   @RequestBody CreateStoreTableRequestDto requestDto,
+                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        storeTableService.createStoreTable(storeId, requestDto);
+        storeTableService.createStoreTable(storeId, requestDto, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.CREATED).body("자리가 생성되었습니다.");
 
@@ -45,7 +47,9 @@ public class StoreTableController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/{storeTableId}")
-    public ResponseEntity<String> updateStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @RequestBody UpdateStoreTableRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<String> updateStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId,
+                                                   @RequestBody UpdateStoreTableRequestDto requestDto,
+                                                   @AuthenticationPrincipal UserDetailsImpl userDetails){
 
         storeTableService.updateStoreTable(storeId, storeTableId, requestDto, userDetails.getUser());
 
@@ -57,9 +61,9 @@ public class StoreTableController {
      * @param storeId
      * @return  ResponseEntity<StoreTableGetAllResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
-    public ResponseEntity<StoreTableGetAllResponseDto> getAllStoreTable(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<StoreTableGetAllResponseDto> getAllStoreTable(@PathVariable Long storeId,
+                                                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         StoreTableGetAllResponseDto responseDto = storeTableService.getAllStoreTable(storeId, userDetails.getUser());
 
@@ -74,7 +78,8 @@ public class StoreTableController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/{storeTableId}")
-    public ResponseEntity<String> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<String> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId,
+                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeTableService.deleteStoreTable(storeId, storeTableId, userDetails.getUser());
 
