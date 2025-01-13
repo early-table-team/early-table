@@ -8,6 +8,7 @@ import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,7 +33,7 @@ public class FriendRequestController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping
-    public ResponseEntity<FriendRequestResponseDto> createFriendRequest(@ModelAttribute FriendRequestRequestDto friendRequestRequestDto,
+    public ResponseEntity<FriendRequestResponseDto> createFriendRequest(@Valid @ModelAttribute FriendRequestRequestDto friendRequestRequestDto,
                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -68,7 +69,7 @@ public class FriendRequestController {
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PatchMapping("/{friendRequestId}")
     public ResponseEntity<FriendRequestResponseDto> updateFriendRequestStatus(@PathVariable Long friendRequestId,
-                                                                              @ModelAttribute FriendRequestUpdateRequestDto friendRequestUpdateRequestDto,
+                                                                              @Valid @ModelAttribute FriendRequestUpdateRequestDto friendRequestUpdateRequestDto,
                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -85,7 +86,7 @@ public class FriendRequestController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @DeleteMapping
-    public ResponseEntity<String> deleteFriendRequest(@ModelAttribute FriendRequestDeleteRequestDto friendRequestDeleteRequestDto) {
+    public ResponseEntity<String> deleteFriendRequest(@Valid @ModelAttribute FriendRequestDeleteRequestDto friendRequestDeleteRequestDto) {
         friendRequestService.deleteFriendRequest(friendRequestDeleteRequestDto);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("친구 신청 내역이 삭제 완료되었습니다.");
