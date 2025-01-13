@@ -33,7 +33,7 @@ public class PendingStoreController {
      * @return ResponseEntity<StoreResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
-    @PostMapping("/pending-stores")
+    @PostMapping
     public ResponseEntity<PendingStoreResponseDto> createPendingStore(@Valid @ModelAttribute PendingStoreRequestDto requestDto,
                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -73,7 +73,7 @@ public class PendingStoreController {
      * @return ResponseEntity<PendingStoreResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
-    @GetMapping("/pending-stores")
+    @GetMapping
     public ResponseEntity<List<PendingStoreResponseListDto>> getPendingStore(@PageableDefault Pageable pageable) {
 
         List<PendingStoreResponseListDto> responseDtoList = pendingStoreService.getPendingStores(pageable);
@@ -89,7 +89,7 @@ public class PendingStoreController {
      * @return ResponseEntity<PendingStoreResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
-    @GetMapping("/pending-stores/{pendingStoreId}")
+    @GetMapping("/{pendingStoreId}")
     public ResponseEntity<PendingStoreResponseDto> getPendingStore(@PathVariable Long pendingStoreId) {
 
         PendingStoreResponseDto responseDto = pendingStoreService.getPendingStore(pendingStoreId);
@@ -104,7 +104,7 @@ public class PendingStoreController {
      * @return ResponseEntity<PendingStoreResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
-    @PatchMapping("/pending-stores/{pendingStoreId}/status")
+    @PatchMapping("/{pendingStoreId}/status")
     public ResponseEntity<String> updatePendingStoreStatus(@PathVariable Long pendingStoreId,
                                                            @RequestBody PendingStoreStatusRequestDto requestDto) {
 
