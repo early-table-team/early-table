@@ -11,11 +11,9 @@ import com.gotcha.earlytable.global.config.PasswordEncoder;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
-import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,7 +35,7 @@ public class UserService {
     public UserService(UserRepository userRepository, FileDetailService fileDetailService,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider, FileService fileService, ResourceLoader resourceLoader) {
+                       JwtProvider jwtProvider, FileService fileService) {
         this.userRepository = userRepository;
         this.fileDetailService = fileDetailService;
         this.passwordEncoder = passwordEncoder;
@@ -119,8 +117,8 @@ public class UserService {
 
         String imageUrl = user.getFile().getFileDetailList().stream()
                 .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
-                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND))
-                .getFileUrl();
+                .map(FileDetail::getFileUrl)
+                .orElse(null);
 
         return UserResponseDto.toDto(user, imageUrl);
     }
