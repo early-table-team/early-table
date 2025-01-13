@@ -73,7 +73,7 @@ public class FriendRequestController {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        FriendRequestResponseDto updateFriendRequestResponseDto = friendRequestService.updateFriendRequestStatus(friendRequestId, friendRequestUpdateRequestDto);
+        FriendRequestResponseDto updateFriendRequestResponseDto = friendRequestService.updateFriendRequestStatus(friendRequestId, friendRequestUpdateRequestDto, user);
 
         return ResponseEntity.status(HttpStatus.OK).body(updateFriendRequestResponseDto);
     }

@@ -12,6 +12,7 @@ import com.gotcha.earlytable.global.enums.InvitationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
+import com.gotcha.earlytable.global.error.exception.ForbiddenException;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,7 @@ public class FriendRequestService {
 
             //상대가 보낸 요청 수락(->친구등록) 처리
             FriendRequestUpdateRequestDto friendRequestUpdateRequestDto = new FriendRequestUpdateRequestDto(InvitationStatus.ACCEPTED);
-            return this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), friendRequestUpdateRequestDto);
+            return this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), friendRequestUpdateRequestDto, user);
         }
 
         //내가 보낸 대기상태인 요청 건 존재시 예외처리
@@ -85,11 +86,16 @@ public class FriendRequestService {
      * 친구 요청 상태(수락/거절) 변경 서비스 메서드
      */
     @Transactional
-    public FriendRequestResponseDto updateFriendRequestStatus(Long friendRequestId, FriendRequestUpdateRequestDto friendRequestUpdateRequestDto) {
+    public FriendRequestResponseDto updateFriendRequestStatus(Long friendRequestId, FriendRequestUpdateRequestDto friendRequestUpdateRequestDto, User user) {
         //상태 변경할 요청 건, 보내는사람, 받는사람 정보 받아오기
         FriendRequest friendRequest = friendRequestRepository.findByIdOrElseThrow(friendRequestId);
         User sendUser = userRepository.findByIdOrElseThrow(friendRequest.getSendUser().getId());
         User receivedUser = userRepository.findByIdOrElseThrow(friendRequest.getReceivedUser().getId());
+
+        //로그인유저 != receivedUser이면 예외처리
+        if(user != receivedUser) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_FRIEND_REQUEST);
+        }
 
         //요청값이 수락일 때, 친구 데이터(2건) 추가
         if(friendRequestUpdateRequestDto.getInvitationStatus().equals(InvitationStatus.ACCEPTED)) {
