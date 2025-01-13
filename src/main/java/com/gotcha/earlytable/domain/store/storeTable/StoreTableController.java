@@ -29,7 +29,7 @@ public class StoreTableController {
      * @param requestDto
      * @return
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping
     public ResponseEntity<String> createStoreTable(@PathVariable Long storeId,
                                                    @Valid @RequestBody StoreTableCreateRequestDto requestDto,
@@ -49,7 +49,7 @@ public class StoreTableController {
      * @param requestDto
      * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PutMapping("/{storeTableId}")
     public ResponseEntity<String> updateStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId,
                                                    @Valid @RequestBody StoreTableUpdateRequestDto requestDto,
@@ -81,7 +81,7 @@ public class StoreTableController {
      * @param storeTableId
      * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping("/{storeTableId}")
     public ResponseEntity<Void> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId,
                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {

@@ -26,23 +26,23 @@ public class Store extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long storeId;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String storeName;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String storeTel;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String storeContents;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String storeAddress;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private StoreStatus storeStatus;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private StoreCategory storeCategory;
 
@@ -50,7 +50,7 @@ public class Store extends BaseEntity {
 
     private String RegionBottom;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -59,34 +59,34 @@ public class Store extends BaseEntity {
     private File file;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Menu> menuList = new ArrayList<>();
+    private final List<Menu> menuList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreKeyword> storeKeywordList = new ArrayList<>();
+    private final List<StoreKeyword> storeKeywordList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreRest> storeRestList = new ArrayList<>();
+    private final List<StoreRest> storeRestList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreHour> storeHourList = new ArrayList<>();
+    private final List<StoreHour> storeHourList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreReservationType> storeReservationTypeList = new ArrayList<>();
+    private final List<StoreReservationType> storeReservationTypeList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<WaitingSetting> waitingSettingList = new ArrayList<>();
+    private final List<WaitingSetting> waitingSettingList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreTable> storeTableList = new ArrayList<>();
+    private final List<StoreTable> storeTableList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<StoreTimeSlot> storeTimeSlotList = new ArrayList<>();
+    private final List<StoreTimeSlot> storeTimeSlotList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Waiting> waitingList = new ArrayList<>();
+    private final List<Waiting> waitingList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Reservation> reservationList = new ArrayList<>();
+    private final List<Reservation> reservationList = new ArrayList<>();
 
     public Store(String storeName, String storeTel, String storeContents, String storeAddress, StoreStatus storeStatus,
                  StoreCategory storeCategory, String regionTop, String regionBottom, User user, File file) {
@@ -113,53 +113,53 @@ public class Store extends BaseEntity {
 
     public void updateStore(StoreUpdateRequestDto requestDto) {
 
-        if(requestDto.getStoreName() != null) {
+        if (requestDto.getStoreName() != null) {
             this.storeName = requestDto.getStoreName();
         }
-        if(requestDto.getStoreTel() != null) {
+        if (requestDto.getStoreTel() != null) {
             this.storeTel = requestDto.getStoreTel();
         }
-        if(requestDto.getStoreContents() != null) {
+        if (requestDto.getStoreContents() != null) {
             this.storeContents = requestDto.getStoreContents();
         }
-        if(requestDto.getStoreAddress() != null) {
+        if (requestDto.getStoreAddress() != null) {
             this.storeAddress = requestDto.getStoreAddress();
         }
-        if(requestDto.getStoreCategory() != null) {
+        if (requestDto.getStoreCategory() != null) {
             this.storeCategory = requestDto.getStoreCategory();
         }
-        if(requestDto.getRegionTop() != null) {
+        if (requestDto.getRegionTop() != null) {
             this.RegionTop = requestDto.getRegionTop();
         }
-        if(requestDto.getRegionBottom() != null) {
+        if (requestDto.getRegionBottom() != null) {
             this.RegionBottom = requestDto.getRegionBottom();
         }
     }
 
     public void updateStoreFromPendingStore(PendingStore pendingStore, File file) {
 
-        if(pendingStore.getStoreName() != null) {
+        if (pendingStore.getStoreName() != null) {
             this.storeName = pendingStore.getStoreName();
         }
-        if(pendingStore.getStoreTel() != null) {
+        if (pendingStore.getStoreTel() != null) {
             this.storeTel = pendingStore.getStoreTel();
         }
-        if(pendingStore.getStoreContents() != null) {
+        if (pendingStore.getStoreContents() != null) {
             this.storeContents = pendingStore.getStoreContents();
         }
-        if(pendingStore.getStoreAddress() != null) {
+        if (pendingStore.getStoreAddress() != null) {
             this.storeAddress = pendingStore.getStoreAddress();
         }
-        if(pendingStore.getStoreCategory() != null) {
+        if (pendingStore.getStoreCategory() != null) {
             this.storeCategory = pendingStore.getStoreCategory();
         }
-        if(pendingStore.getRegionTop() != null) {
+        if (pendingStore.getRegionTop() != null) {
             this.RegionTop = pendingStore.getRegionTop();
         }
-        if(pendingStore.getRegionBottom() != null) {
+        if (pendingStore.getRegionBottom() != null) {
             this.RegionBottom = pendingStore.getRegionBottom();
         }
-        if(file != null) {
+        if (file != null) {
             this.file = file;
         }
     }

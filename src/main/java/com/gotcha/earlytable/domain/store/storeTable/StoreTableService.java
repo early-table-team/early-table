@@ -7,6 +7,7 @@ import com.gotcha.earlytable.domain.store.dto.StoreTableUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreTable;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.ForbiddenException;
@@ -39,7 +40,7 @@ public class StoreTableService {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 본인 가게 확인
-        validateStoreOwner(store, user.getId());
+        validateStoreOwner(store, user);
 
         // 이미 존재하는지 확인
         boolean exists = storeTableRepository.existsByStoreAndTableMaxNumber(store, requestDto.getTableMaxNumber());
@@ -66,7 +67,7 @@ public class StoreTableService {
         StoreTable storeTable = storeTableRepository.findByIdOrElseThrow(storeTableId);
 
         // 본인 가게 확인
-        validateStoreOwner(storeTable.getStore(), user.getId());
+        validateStoreOwner(storeTable.getStore(), user);
 
         // 해당 자리 테이블 정보가 입력받은 가게의 테이블 정보인지 확인
         if (!storeTable.getStore().getStoreId().equals(storeId)) {
@@ -115,7 +116,7 @@ public class StoreTableService {
         StoreTable storeTable = storeTableRepository.findByIdOrElseThrow(storeTableId);
 
         // 본인 가게 확인
-        validateStoreOwner(storeTable.getStore(), user.getId());
+        validateStoreOwner(storeTable.getStore(), user);
 
         // 해당 테이블 정보가 입력받은 가게의 정보인지 확인
         if (!storeTable.getStore().getStoreId().equals(storeId)) {
@@ -130,12 +131,12 @@ public class StoreTableService {
      * 본인 가게인지 확인하는 메서드
      *
      * @param store
-     * @param userId
+     * @param user
      */
-    public void validateStoreOwner(Store store, Long userId) {
+    public void validateStoreOwner(Store store, User user) {
 
         // 본인 가게 인지 확인
-        if (!store.getUser().getId().equals(userId)) {
+        if (user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
     }

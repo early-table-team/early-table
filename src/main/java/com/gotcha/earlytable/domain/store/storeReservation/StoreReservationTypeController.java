@@ -27,13 +27,13 @@ public class StoreReservationTypeController {
      * @param requestDto
      * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping
     public ResponseEntity<String> createStoreReservationType(@PathVariable Long storeId,
                                                              @Valid @RequestBody StoreReservationTypeRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        storeReservationTypeService.createStoreReservationType(storeId, userDetails.getUser().getId(), requestDto);
+        storeReservationTypeService.createStoreReservationType(storeId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("가게 예약 타입이 설정되었습니다.");
     }
@@ -47,13 +47,13 @@ public class StoreReservationTypeController {
      * @param userDetails
      * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping
     public ResponseEntity<Void> deleteStoreReservationType(@PathVariable Long storeId,
                                                              @Valid @RequestBody StoreReservationTypeRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        storeReservationTypeService.deleteStoreReservationType(storeId, userDetails.getUser().getId(), requestDto);
+        storeReservationTypeService.deleteStoreReservationType(storeId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
