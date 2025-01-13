@@ -113,9 +113,15 @@ public class MenuService {
      * 메뉴 삭제 서비스 메서드
      */
     @Transactional
-    public void deleteMenu(Long menuId) {
+    public void deleteMenu(Long menuId, Long userId) {
         if(!menuRepository.existsById(menuId)){
             throw new NotFoundException(ErrorCode.NOT_FOUND);
+        }
+
+        //가게 주인인지 확인
+        Menu menu = menuRepository.findByIdOrElseThrow(menuId);
+        if(!menu.getStore().getUser().getId().equals(userId)) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
         
         menuRepository.deleteById(menuId);
