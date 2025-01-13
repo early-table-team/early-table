@@ -124,7 +124,7 @@ public class ReviewController {
     public ResponseEntity<String> deleteReview(@PathVariable Long reviewId,
                                                           @ModelAttribute ReviewRequestDto reviewRequestDto,
                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        reviewService.deleteReview(reviewId);
+        reviewService.deleteReview(reviewId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("리뷰 삭제가 완료되었습니다.");
     }
