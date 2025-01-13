@@ -2,7 +2,9 @@ package com.gotcha.earlytable.domain.allergy;
 
 import com.gotcha.earlytable.domain.allergy.dto.AllergyRequestDto;
 import com.gotcha.earlytable.domain.allergy.dto.AllergyResponseDto;
+import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
+import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ public class AllergyController {
      * @param allergyRequestDto //allergyStuff ex.아몬드
      * @return String
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping("/menus/{menuId}/allergies")
     public ResponseEntity<String> createAllergyInMenu(@PathVariable Long menuId,
                                                       @Valid @ModelAttribute AllergyRequestDto allergyRequestDto,
@@ -53,6 +56,7 @@ public class AllergyController {
      * @param allergyId
      * @return String
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/menus/allergies/{allergyId}")
     public ResponseEntity<String> deleteAllergyInMenu(@PathVariable Long allergyId,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
