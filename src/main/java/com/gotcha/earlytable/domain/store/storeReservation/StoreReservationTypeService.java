@@ -61,16 +61,19 @@ public class StoreReservationTypeService {
      * @param userId
      * @param requestDto
      */
+    @Transactional
     public void deleteStoreReservationType(Long storeId, Long userId, StoreReservationTypeRequestDto requestDto) {
 
-        Store store = storeRepository.findByIdOrElseThrow(storeId);
+        StoreReservationType storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
 
         // 본인 가게인지 확인
-        if(!store.getUser().getId().equals(userId)) {
+        if(!storeReservationType.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         // 삭제
-        storeReservationTypeRepository.deleteByStoreStoreIdAndReservationType(storeId, requestDto.getReservationType());
+        storeReservationTypeRepository
+                .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.getStoreReservationTypeId(),
+                        requestDto.getReservationType());
     }
 }
