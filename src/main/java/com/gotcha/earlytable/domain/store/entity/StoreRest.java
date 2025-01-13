@@ -1,6 +1,6 @@
 package com.gotcha.earlytable.domain.store.entity;
 
-import com.gotcha.earlytable.domain.store.dto.StoreRestRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreRestUpdateRequestDto;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -42,10 +42,8 @@ public class StoreRest extends BaseEntity {
     }
 
 
-    public void updateStoreRest(StoreRestRequestDto requestDto) {
-        if(requestDto.getStoreOffDay() != null) {
-            this.storeOffDay = requestDto.getStoreOffDay();
-        }
+    public void updateStoreRest(StoreRestUpdateRequestDto requestDto) {
+
         if(requestDto.getStoreOffReason() != null) {
             this.StoreOffReason = requestDto.getStoreOffReason();
         }
