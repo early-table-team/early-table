@@ -38,16 +38,18 @@ public class FriendRequestService {
         User receivedUser = userRepository.findByIdOrElseThrow(friendRequestRequestDto.getReceivedUserId());
 
         //이미 친구관계일 때 예외처리
-        if(!friendRepository.existsBySendUserIdAndReceivedUserId(user.getId(), friendRequestRequestDto.getReceivedUserId())) {
+        if(friendRepository.existsBySendUserIdAndReceivedUserId(user.getId(), friendRequestRequestDto.getReceivedUserId())) {
             throw new ConflictException(ErrorCode.ALREADY_IN_FRIEND);
         }
 
-        //상대가 보낸 요청이 이미 존재할 때 -> 수락처리(requestId, user, 받는user)
+        //상대가 보낸 요청이 이미 존재할 때 -> 존재하는 요청 건 수락처리, 신규 요청은 생성하지 않음
         if(friendRequestRepository.existsBySendUserIdAndReceivedUserIdAndInvitationStatus(receivedUser.getId(), user.getId(), InvitationStatus.PENDING)) {
+            //이미 존재하는 요청건 찾아오기
             FriendRequest friendRequest = friendRequestRepository.findBySendUserIdAndReceivedUserIdAndInvitationStatus(receivedUser.getId(), user.getId(), InvitationStatus.PENDING);
 
+            //상대가 보낸 요청 수락(->친구등록) 처리
             FriendRequestRequestDto reverseFriendRequestRequestDto = new FriendRequestRequestDto(receivedUser.getId(), user.getId(), InvitationStatus.ACCEPTED);
-            this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), receivedUser, reverseFriendRequestRequestDto);
+            return this.updateFriendRequestStatus(friendRequest.getFriendRequestId(), reverseFriendRequestRequestDto);
         }
 
         //내가 보낸 대기상태인 요청 건 존재시 예외처리
@@ -56,7 +58,7 @@ public class FriendRequestService {
         }
 
         //거절상태인 요청 건 5건 이상 존재할 때 예외처리
-        if(friendRequestRepository.countBySendUserIdAndReceivedUserIdAndInvitationStatus(user, receivedUser, InvitationStatus.REJECTED) >= 5) {
+        if(friendRequestRepository.countBySendUserIdAndReceivedUserIdAndInvitationStatus(user.getId(), receivedUser.getId(), InvitationStatus.REJECTED) >= 5) {
             throw new BadRequestException(ErrorCode.NO_MORE_REQUEST_AVAILABLE);
         }
 
@@ -81,17 +83,18 @@ public class FriendRequestService {
      * 친구 요청 상태(수락/거절) 변경 서비스 메서드
      */
     @Transactional
-    public FriendRequestResponseDto updateFriendRequestStatus(Long friendRequestId, User user, FriendRequestRequestDto friendRequestRequestDto) {
+    public FriendRequestResponseDto updateFriendRequestStatus(Long friendRequestId, FriendRequestRequestDto friendRequestRequestDto) {
         FriendRequest friendRequest = friendRequestRepository.findByIdOrElseThrow(friendRequestId);
 
         //친구 요청 수락으로 변경 시, 친구 데이터(2건) 추가
         if(friendRequestRequestDto.getInvitationStatus().equals(InvitationStatus.ACCEPTED)) {
             //친구 유저 데이터 받아오기
             User receivedUser = userRepository.findByIdOrElseThrow(friendRequestRequestDto.getReceivedUserId());
+            User sendUser = userRepository.findByIdOrElseThrow(friendRequestRequestDto.getSendUserId());
 
             //친구 데이터 생성
-            Friend friend1 = new Friend(user, receivedUser);
-            Friend friend2 = new Friend(receivedUser, user);
+            Friend friend1 = new Friend(sendUser, receivedUser);
+            Friend friend2 = new Friend(receivedUser, sendUser);
 
             //친구 데이터 저장
             friendRepository.save(friend1);
