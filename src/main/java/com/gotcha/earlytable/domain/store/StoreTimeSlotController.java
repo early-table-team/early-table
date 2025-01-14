@@ -45,15 +45,13 @@ public class StoreTimeSlotController {
      * 타임슬롯 전체조회 API
      *
      * @param storeId
-     * @param userDetails
      * @return ResponseEntity<List<TimeSlotResponseDto>>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
-    public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId,
-                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId) {
 
-        List<TimeSlotResponseDto> responseDto = storeTimeSlotService.getAllTimeSlots(storeId, userDetails.getUser());
+        List<TimeSlotResponseDto> responseDto = storeTimeSlotService.getAllTimeSlots(storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -61,18 +59,15 @@ public class StoreTimeSlotController {
     /**
      * 타임슬롯 단일 조회 API
      *
-     * @param storeId
      * @param storeTimeSlotId
-     * @param userDetails
      * @return ResponseEntity<TimeSlotResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/{storeTimeSlotId}")
-    public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeId,
-                                                              @PathVariable Long storeTimeSlotId,
-                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeTimeSlotId,
+                                                              @PathVariable Long storeId) {
 
-        TimeSlotResponseDto responseDto = storeTimeSlotService.getOneTimeSlot(storeId, storeTimeSlotId, userDetails.getUser());
+        TimeSlotResponseDto responseDto = storeTimeSlotService.getOneTimeSlot(storeTimeSlotId, storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
 

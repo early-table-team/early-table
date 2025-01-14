@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.store.storeTable;
 
 import com.gotcha.earlytable.domain.store.StoreRepository;
+import com.gotcha.earlytable.domain.store.ValidateStore;
 import com.gotcha.earlytable.domain.store.dto.CreateStoreTableRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreTableGetAllResponseDto;
 import com.gotcha.earlytable.domain.store.dto.UpdateStoreTableRequestDto;
@@ -16,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Service
-public class StoreTableService {
+public class StoreTableService implements ValidateStore {
 
     private final StoreTableRepository storeTableRepository;
     private final StoreRepository storeRepository;
@@ -32,10 +33,14 @@ public class StoreTableService {
      * @param requestDto
      */
     @Transactional
-    public void createStoreTable(Long storeId, CreateStoreTableRequestDto requestDto){
+    public void createStoreTable(Long storeId, CreateStoreTableRequestDto requestDto, User user){
+
+        // 본인 가게 확인
+        validateStoreOwner(storeId, user.getId());
 
         Store store =  storeRepository.findByIdOrElseThrow(storeId);
 
+        // 이미 존재하는지 확인
         boolean exists = storeTableRepository.existsByStoreAndTableMaxNumber(store, requestDto.getTableMaxNumber());
         if(exists){
             throw new CustomException(ErrorCode.DUPLICATE_VALUE);
@@ -54,18 +59,17 @@ public class StoreTableService {
     @Transactional
     public void updateStoreTable(Long storeId, Long storeTableId, UpdateStoreTableRequestDto requestDto, User user){
 
-        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
-        if (!isOwner) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
+        // 본인 가게 확인
+        validateStoreOwner(storeId, user.getId());
 
-        Store store =  storeRepository.findByIdOrElseThrow(storeId);
         // 바꾸려고 하는 스토어 테이블 정보를 가져옴
-        StoreTable storeTable = storeTableRepository.findById(storeTableId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        StoreTable storeTable = storeTableRepository.findByIdOrElseThrow(storeTableId);
 
         // 바꾸고자 하는 데이터로 스토어테이블 정보를 변경
         storeTable.changeTableMaxNumber(requestDto.getTableMaxNumber());
         storeTable.changeTableCount(requestDto.getTableCount());
+
+        Store store =  storeRepository.findByIdOrElseThrow(storeId);
 
         // 바뀐 자리수에 해당하는 정보가 이미 있는지 검사
         boolean exist = storeTableRepository.existsByStoreAndTableMaxNumber(store, storeTable.getTableMaxNumber());
@@ -82,10 +86,8 @@ public class StoreTableService {
      */
     public StoreTableGetAllResponseDto getAllStoreTable(Long storeId, User user){
 
-        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
-        if (!isOwner) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
-        }
+        // 본인 가게 확인
+        validateStoreOwner(storeId, user.getId());
 
         Store store =  storeRepository.findByIdOrElseThrow(storeId);
         List<HashMap<String, Integer>> storeTableList = storeTableRepository.findAllByStore(store).stream().map( st -> {
@@ -107,13 +109,26 @@ public class StoreTableService {
      */
     @Transactional
     public void deleteStoreTable(Long storeId, Long storeTableId, User user) {
-        //가게 주인인지 검증
-        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
+
+        // 본인 가게 확인
+        validateStoreOwner(storeId, user.getId());
+
+        // 삭제
+        storeTableRepository.deleteById(storeTableId);
+    }
+
+    /**
+     * 본인 가게인지 확인하는 메서드
+     *
+     * @param storeId
+     * @param userId
+     */
+    @Override
+    public void validateStoreOwner(Long storeId, Long userId) {
+        // 본인 가게 인지 확인
+        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, userId);
         if (!isOwner) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
-
-        storeTableRepository.deleteById(storeTableId);
-
     }
 }

@@ -142,7 +142,7 @@ public class FileDetailService extends s3 {
     public void updateFileDetail(List<MultipartFile> fileList, List<String> fileUrlList, File file) {
 
         // 새로운 파일 등록
-        if (!fileList.isEmpty()) {
+        if (fileList != null && fileList.size() > 1) {
             createImageFiles(fileList, file);
         }
 
