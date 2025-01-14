@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Service
-public class StoreTableService {
+public class StoreTableService implements ValidateStore {
 
     private final StoreTableRepository storeTableRepository;
     private final StoreRepository storeRepository;
