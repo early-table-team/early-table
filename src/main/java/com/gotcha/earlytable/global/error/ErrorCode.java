@@ -31,6 +31,7 @@ public enum ErrorCode {
     FORBIDDEN_PERMISSION(HttpStatus.FORBIDDEN, "사용자 권한이 없습니다."),
     FORBIDDEN_LOGIN(HttpStatus.FORBIDDEN,"이미 탈퇴한 유저입니다."),
     FORBIDDEN_PARTY_LEADER(HttpStatus.FORBIDDEN,"파티장이 아닙니다."),
+    FORBIDDEN_ACCESS_PTAH(HttpStatus.FORBIDDEN,"잘못된 접근입니다."),
 
 
     // 404 NOT_FOUND
