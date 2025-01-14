@@ -106,13 +106,13 @@ public class StoreTimeSlotController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/{storeTimeSlotId}")
-    public ResponseEntity<String> deleteTimeSlot(@PathVariable Long storeId,
+    public ResponseEntity<Void> deleteTimeSlot(@PathVariable Long storeId,
                                                  @PathVariable Long storeTimeSlotId,
                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeTimeSlotService.deleteTimeSlot(storeId, storeTimeSlotId, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("타임슬롯이 삭제되었습니다.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 

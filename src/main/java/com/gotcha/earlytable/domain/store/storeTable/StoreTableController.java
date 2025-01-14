@@ -83,12 +83,12 @@ public class StoreTableController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/{storeTableId}")
-    public ResponseEntity<String> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId,
+    public ResponseEntity<Void> deleteStoreTable(@PathVariable Long storeId, @PathVariable Long storeTableId,
                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeTableService.deleteStoreTable(storeId, storeTableId, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.OK).body("자리 정보가 삭제되었습니다.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }
