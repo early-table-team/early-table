@@ -35,8 +35,8 @@ public class WaitingSettingService {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 자신의 가게인지 확인
-        if (store.getUser().getId().equals(userId)) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        if (!store.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
 
         // 웨이팅 설정 생성
@@ -66,8 +66,8 @@ public class WaitingSettingService {
         WaitingSetting waitingSetting = waitingSettingRepository.findByIdOrElseThrow(waitingSettingId);
 
         // 자신의 가게인지 확인
-        if (waitingSetting.getStore().getUser().getId().equals(userId)) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        if (!waitingSetting.getStore().getUser().getId().equals(userId)) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
 
         // 내용 수정
@@ -106,8 +106,8 @@ public class WaitingSettingService {
                 .existsByWaitingSettingIdAndStoreUserId(waitingSettingId, userId);
 
         // 자신의 가게인지 확인
-        if (isExistSetting) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        if (!isExistSetting) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
 
         // 삭제
