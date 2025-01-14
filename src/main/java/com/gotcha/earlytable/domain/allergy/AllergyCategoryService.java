@@ -4,6 +4,7 @@ import com.gotcha.earlytable.domain.allergy.dto.AllergyCategoryRequestDto;
 import com.gotcha.earlytable.domain.allergy.dto.AllergyCategoryResponseDto;
 import com.gotcha.earlytable.domain.allergy.entity.AllergyCategory;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,12 @@ public class AllergyCategoryService {
      */
     @Transactional
     public AllergyCategoryResponseDto createAllergyCategory(AllergyCategoryRequestDto allergyCategoryRequestDto) {
+
+        //이미 존재하는 카테고리명이면 예외처리
+        if(allergyCategoryRepository.existsByAllergyCategory(allergyCategoryRequestDto.getAllergyCategory())) {
+            throw new ConflictException(ErrorCode.ALREADY_IN_ALLERGY_CATEGORY);
+        }
+
         AllergyCategory allergyCategory = new AllergyCategory(
                 allergyCategoryRequestDto.getAllergyCategory()
         );
