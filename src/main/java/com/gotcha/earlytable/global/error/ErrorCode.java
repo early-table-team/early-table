@@ -26,11 +26,15 @@ public enum ErrorCode {
     UNAUTHORIZED_PASSWORD(HttpStatus.UNAUTHORIZED, "패스워드가 틀렸습니다."),
     NO_STORE_OWNER(HttpStatus.UNAUTHORIZED, "가게주인이 아닙니다."),
 
+  
     // 403 Forbidden
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN,"접근이 거부됐습니다."),
     FORBIDDEN_PERMISSION(HttpStatus.FORBIDDEN, "사용자 권한이 없습니다."),
     FORBIDDEN_LOGIN(HttpStatus.FORBIDDEN,"이미 탈퇴한 유저입니다."),
     FORBIDDEN_PARTY_LEADER(HttpStatus.FORBIDDEN,"파티장이 아닙니다."),
+    FORBIDDEN_ACCESS_PTAH(HttpStatus.FORBIDDEN,"잘못된 접근입니다."),
+    FORBIDDEN_FRIEND_REQUEST(HttpStatus.FORBIDDEN, "본인의 요청이 아닙니다."),
+    FORBIDDEN_ACCESS_PTAH(HttpStatus.FORBIDDEN,"잘못된 접근입니다."),
 
 
     // 404 NOT_FOUND

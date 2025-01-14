@@ -19,7 +19,7 @@ public interface FriendRequestRepository extends JpaRepository <FriendRequest, L
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
-    int countBySendUserIdAndReceivedUserIdAndInvitationStatus(User sendUser, User receivedUser, InvitationStatus invitationStatus);
+    int countBySendUserIdAndReceivedUserIdAndInvitationStatus(Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus);
 
     List<FriendRequest> findByReceivedUserIdAndInvitationStatus(Long id, InvitationStatus invitationStatus);
 
