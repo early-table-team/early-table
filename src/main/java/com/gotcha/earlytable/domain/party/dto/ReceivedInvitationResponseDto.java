@@ -15,7 +15,7 @@ public class ReceivedInvitationResponseDto {
 
     private final String storeName;
 
-    private final User sendUser;
+    private final Long sendUserId;
 
     private final LocalDateTime reservationTime;
 
@@ -23,10 +23,10 @@ public class ReceivedInvitationResponseDto {
 
     private final InvitationStatus status;
 
-    public ReceivedInvitationResponseDto(Long invitationId, String storeName, User sendUser, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status) {
+    public ReceivedInvitationResponseDto(Long invitationId, String storeName, Long sendUserId, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status) {
         this.invitationId = invitationId;
         this.storeName = storeName;
-        this.sendUser = sendUser;
+        this.sendUserId = sendUserId;
         this.reservationTime = reservationTime;
         this.personnelCount = personnelCount;
         this.status = status;
@@ -36,13 +36,13 @@ public class ReceivedInvitationResponseDto {
     public static ReceivedInvitationResponseDto toDto(Invitation invitation) {
         Long invitationId = invitation.getInvitationId();
         String storeName = invitation.getParty().getReservation().getStore().getStoreName();
-        User sendUser = invitation.getSendUser();
+        Long sendUserId = invitation.getSendUser().getId();
         LocalDateTime reservationTime = invitation.getParty().getReservation().getReservationDate()
                 .atTime(invitation.getParty().getReservation().getReservationTime());
         Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
         InvitationStatus status = invitation.getInvitationStatus();
 
-        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUser, reservationTime, personnelCount, status);
+        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
     }
 
 

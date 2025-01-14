@@ -21,9 +21,9 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 
     Invitation findByReceiveUserAndParty(User user, Party party);
 
-    Optional<Invitation> findByParty(Party party);
+    Optional<List<Invitation>> findByParty(Party party);
 
-    default Invitation findByPartyOrThrow(Party party){
+    default List<Invitation> findByPartyOrThrow(Party party){
         return  findByParty(party).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
     }
 
