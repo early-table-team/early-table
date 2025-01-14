@@ -19,6 +19,7 @@ public enum ErrorCode {
     RESERVATION_TIME_ERROR(HttpStatus.BAD_REQUEST,"예약가능한 시간이 아닙니다."),
     NOT_FOUND_MENU(HttpStatus.BAD_REQUEST,"가게 내에서 메뉴를 찾을 수 없습니다."),
     NO_MORE_REQUEST_AVAILABLE(HttpStatus.BAD_REQUEST, "더이상 친구 요청이 불가능한 사용자입니다. 관리자에게 문의하세요."),
+    FULL_PARTY_PEOPLE(HttpStatus.BAD_REQUEST,"파티가 꽉 찼습니다."),
 
 
     // 401 Unauthorized

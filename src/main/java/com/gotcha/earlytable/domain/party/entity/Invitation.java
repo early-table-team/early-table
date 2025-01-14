@@ -27,6 +27,7 @@ public class Invitation extends BaseEntity {
     @JoinColumn(name = "party_id", nullable = false)
     private Party party;
 
+    @Enumerated(EnumType.STRING)
     private InvitationStatus invitationStatus;
 
     public Invitation() {}

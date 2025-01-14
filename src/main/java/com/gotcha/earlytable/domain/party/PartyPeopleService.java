@@ -37,7 +37,7 @@ public class PartyPeopleService {
         Invitation invitation = invitationRepository.findByInvitationIdOrThrow(invitationId);
 
         // 예약을 초대로 받은 기억이 있는지 확인
-        if(!invitation.getReceiveUser().equals(user)){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
+        if(!invitation.getReceiveUser().getId().equals(user.getId())){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
 
         // 해당 예약의 상태가 수락인지 확인
         if(!invitation.getInvitationStatus().equals(InvitationStatus.ACCEPTED)){
@@ -66,20 +66,22 @@ public class PartyPeopleService {
         Party party = partyRepository.findByPartyIdOrThrow(partyId);
 
         // 일단 초대장 정보도 가져와
-        Invitation invitation = invitationRepository.findByPartyOrThrow(party); //로 만들기
+        List<Invitation> invitations = invitationRepository.findByPartyOrThrow(party); //로 만들기
 
         // 해당 유저가 파티원으로 존재하는가?
-        boolean isPartyPeople = invitation.getParty().getPartyPeople().stream().anyMatch(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REGULAR) && partyPeople.getUser().getId().equals(userId));
-        if(!isPartyPeople){throw new CustomException(ErrorCode.BAD_REQUEST);}
+        Invitation userInvitation = invitations.stream()
+                .filter(invitation -> // 조건에 맞는 첫 번째 초대장을 가져옴
+                        invitation.getReceiveUser().getId().equals(userId))
+                .findFirst().orElse(null);
 
         // 내가 해당 파티의 파티장이 맞는가?
-        boolean isPartyLeader = invitation.getParty().getPartyPeople().stream().anyMatch(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE) && partyPeople.getUser().equals(user));
+        boolean isPartyLeader = userInvitation.getParty().getPartyPeople().stream().anyMatch(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE) && partyPeople.getUser().getId().equals(user.getId()));
         if(!isPartyLeader){throw new CustomException(ErrorCode.FORBIDDEN_PARTY_LEADER);}
 
         // 파티피플에서 추방 후 초대장 정보를 떠남으로 변경
         partyPeopleRepository.deleteByUserId(userId);
-        invitation.changeStatus(InvitationStatus.EXILE);
-        invitationRepository.save(invitation);
+        userInvitation.changeStatus(InvitationStatus.EXILE);
+        invitationRepository.save(userInvitation);
 
     }
 
@@ -99,7 +101,7 @@ public class PartyPeopleService {
 
 
         //파티장인지 검증
-        boolean isLeader = party.getPartyPeople().stream().anyMatch(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE) && partyPeople.getUser().equals(user));
+        boolean isLeader = party.getPartyPeople().stream().anyMatch(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE) && partyPeople.getUser().getId().equals(user.getId()));
         if(!isLeader){throw new CustomException(ErrorCode.FORBIDDEN_PARTY_LEADER);}
 
         // 파티원 리스트를 돌면서 나뺴고 모두 없애기

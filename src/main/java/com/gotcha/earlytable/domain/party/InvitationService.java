@@ -71,6 +71,7 @@ public class InvitationService {
      * @param user
      * @return List<ReceivedInvitationResponseDto>
      */
+    @Transactional
     public List<ReceivedInvitationResponseDto> getAllReceiveInvitations(User user) {
 
         // 내가 받은 예약의 리스트를 가져옴
@@ -97,12 +98,13 @@ public class InvitationService {
      * @param user
      * @return ReceivedInvitationResponseDto
      */
+    @Transactional
     public ReceivedInvitationResponseDto getReceiveInvitation(Long invitationId, User user) {
         // 초대 아이디로 단건의 초대를 가져옴
         Invitation invitation = invitationRepository.findByInvitationIdOrThrow(invitationId);
 
         // 해당 예약이 내것인지 확인
-        if(!invitation.getReceiveUser().equals(user)){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
+        if(!invitation.getReceiveUser().getId().equals(user.getId())){throw new CustomException(ErrorCode.FORBIDDEN_PERMISSION);}
 
         // 해당 예약건의 파티가 없는경우
         if(invitation.getParty() == null){throw new CustomException(ErrorCode.NOT_FOUND_PARTY);}
@@ -124,7 +126,7 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findByInvitationIdOrThrow(invitationId);
 
         // 해당 예약이 내것인지 확인
-        if(!invitation.getReceiveUser().equals(user)){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
+        if(!invitation.getReceiveUser().getId().equals(user.getId())){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
 
         InvitationStatus status = requestDto.getStatus();
 
@@ -132,9 +134,13 @@ public class InvitationService {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
-        // 수락인 경우 파티피플로 추가
+        //현재 파티참여 인원수
+        Integer countPeople = invitation.getParty().getPartyPeople().size();
+
+        // 수락인 경우 파티피플로 추가 -> 파티 인원수를 넘어서면 안되도록 수정
         if(status.equals(InvitationStatus.ACCEPTED)){
-            PartyPeople partyPeople = new PartyPeople(invitation.getParty(), user, PartyRole.REPRESENTATIVE);
+            if(invitation.getParty().getReservation().getPersonnelCount() <= countPeople){throw new CustomException(ErrorCode.FULL_PARTY_PEOPLE);}
+            PartyPeople partyPeople = new PartyPeople(invitation.getParty(), user, PartyRole.REGULAR);
             partyPeopleRepository.save(partyPeople);
         }
 
