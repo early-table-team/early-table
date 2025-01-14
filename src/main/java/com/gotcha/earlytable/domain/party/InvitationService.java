@@ -71,7 +71,6 @@ public class InvitationService {
      * @param user
      * @return List<ReceivedInvitationResponseDto>
      */
-    @Transactional
     public List<ReceivedInvitationResponseDto> getAllReceiveInvitations(User user) {
 
         // 내가 받은 예약의 리스트를 가져옴
@@ -98,7 +97,6 @@ public class InvitationService {
      * @param user
      * @return ReceivedInvitationResponseDto
      */
-    @Transactional
     public ReceivedInvitationResponseDto getReceiveInvitation(Long invitationId, User user) {
         // 초대 아이디로 단건의 초대를 가져옴
         Invitation invitation = invitationRepository.findByInvitationIdOrThrow(invitationId);

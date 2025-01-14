@@ -70,8 +70,7 @@ public class PartyPeopleService {
 
         // 해당 유저가 파티원으로 존재하는가?
         Invitation userInvitation = invitations.stream()
-                .filter(invitation -> // 조건에 맞는 첫 번째 초대장을 가져옴
-                        invitation.getReceiveUser().getId().equals(userId))
+                .filter(invitation -> invitation.getReceiveUser().getId().equals(userId))
                 .findFirst().orElse(null);
 
         // 내가 해당 파티의 파티장이 맞는가?
