@@ -29,9 +29,13 @@ public class PartyPeople extends BaseEntity {
     }
 
     public PartyPeople(Party party, User user, PartyRole partyRole) {
-        this.party = party;
+        addParty(party);
         this.user = user;
         this.partyRole = partyRole;
     }
 
+    private void addParty(Party party) {
+        this.party = party;
+        party.getPartyPeople().add(this);
+    }
 }

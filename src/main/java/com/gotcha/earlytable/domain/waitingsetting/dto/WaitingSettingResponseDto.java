@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.waitingsetting.dto;
 
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
+import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import lombok.Getter;
 
@@ -17,16 +18,16 @@ public class WaitingSettingResponseDto {
 
     private final LocalTime waitingClosedTime;
 
-    private final WaitingStatus waitingStatus;
+    private final WaitingSettingStatus waitingSettingStatus;
 
     public WaitingSettingResponseDto(Long waitingSettingId, Long storeId, LocalTime waitingOpenTime,
-                                     LocalTime waitingClosedTime, WaitingStatus waitingStatus) {
+                                     LocalTime waitingClosedTime, WaitingSettingStatus waitingSettingStatus) {
 
         this.waitingSettingId = waitingSettingId;
         this.storeId = storeId;
         this.waitingOpenTime = waitingOpenTime;
         this.waitingClosedTime = waitingClosedTime;
-        this.waitingStatus = waitingStatus;
+        this.waitingSettingStatus = waitingSettingStatus;
     }
 
 
@@ -36,7 +37,7 @@ public class WaitingSettingResponseDto {
                 waitingSetting.getStore().getStoreId(),
                 waitingSetting.getWaitingOpenTime(),
                 waitingSetting.getWaitingClosedTime(),
-                waitingSetting.getWaitingStatus()
+                waitingSetting.getWaitingSettingStatus()
         );
     }
 }
