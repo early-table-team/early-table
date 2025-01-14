@@ -21,5 +21,5 @@ public interface AllergyStuffRepository extends JpaRepository<AllergyStuff, Long
 
     AllergyStuff findByAllergyStuff(String allergyStuff);
 
-    boolean existsByAllergyStuff(String allergyStuff);
+    boolean existsByAllergyStuffAndAllergyCategoryAllergyCategoryId(String allergyStuff, Long categoryId);
 }
