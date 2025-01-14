@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.store.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -7,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 public class StoreRestRequestDto {
 
+    @NotNull
     private final LocalDate storeOffDay;
 
     private final String storeOffReason;

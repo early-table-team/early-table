@@ -46,7 +46,7 @@ public class StoreTimeSlotController {
      * 타임슬롯 전체조회 API
      *
      * @param storeId
-     * @return ResponseEntity<List<TimeSlotResponseDto>>
+     * @return ResponseEntity<List < TimeSlotResponseDto>>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping

@@ -55,7 +55,6 @@ public class StoreTableController {
                                                    @Valid @RequestBody StoreTableUpdateRequestDto requestDto,
                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-
         storeTableService.updateStoreTable(storeId, storeTableId, requestDto, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("자리정보가 변경되었습니다.");
