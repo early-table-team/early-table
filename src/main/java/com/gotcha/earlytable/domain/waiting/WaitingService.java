@@ -84,7 +84,7 @@ public class WaitingService {
 
         // 웨이팅 번호
         int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0,0,0), date.atTime(23, 59, 59));
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
 
         waitingNumber++;
 
@@ -110,28 +110,28 @@ public class WaitingService {
         // 가게 확인
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // 가게 예약 타입 확인
-        boolean dontReservation = store.getStoreReservationTypeList().stream()
-                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
-
-        if (dontReservation) {
-            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
-        }
-
-        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
-        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
-                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
-                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
-        if (holiday) {
-            throw new CustomException(ErrorCode.STORE_HOLIDAY);
-        }
-
-
-        // 웨이팅 가능 여부 확인
-        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
-        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
-            throw new BadRequestException(ErrorCode.WAITING_ERROR);
-        }
+//        // 가게 예약 타입 확인
+//        boolean dontReservation = store.getStoreReservationTypeList().stream()
+//                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
+//
+//        if (dontReservation) {
+//            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
+//        }
+//
+//        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
+//        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
+//                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
+//                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
+//        if (holiday) {
+//            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+//        }
+//
+//
+//        // 웨이팅 가능 여부 확인
+//        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
+//        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
+//            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+//        }
 
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
@@ -139,7 +139,7 @@ public class WaitingService {
         Party party = null;
 
         // 이미 존재하는 유저일 경우
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             party = partyRepository.save(new Party());
 
             PartyPeople partyPeople = new PartyPeople(party, user.get(), PartyRole.REPRESENTATIVE);
@@ -152,7 +152,7 @@ public class WaitingService {
 
         // 웨이팅 번호
         int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0,0,0), date.atTime(23, 59, 59));
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
 
         waitingNumber++;
 
@@ -214,7 +214,7 @@ public class WaitingService {
 
         // 웨이팅 번호
         int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(waiting.getStore(),
-                waitingDate.atTime(0,0,0), waitingDate.atTime(23, 59, 59));
+                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59));
 
         waitingNumber++;
 
@@ -247,8 +247,8 @@ public class WaitingService {
         }
 
         // 사용자 권한이 사장님이면
-        if(user.getAuth() == Auth.OWNER) {
-            if(!waiting.getStore().getUser().getId().equals(user.getId())) {
+        if (user.getAuth() == Auth.OWNER) {
+            if (!waiting.getStore().getUser().getId().equals(user.getId())) {
                 throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
             }
         }
@@ -322,7 +322,7 @@ public class WaitingService {
         int nowSeqNum = waitingRepository.countByStoreAndWaitingStatusAndCreatedAtBetweenAndWaitingNumberLessThanEqual(
                 waiting.getStore(),
                 WaitingStatus.PENDING,
-                waitingDate.atTime(0,0,0), waitingDate.atTime(23, 59, 59),
+                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59),
                 waiting.getWaitingNumber()
         );
 
