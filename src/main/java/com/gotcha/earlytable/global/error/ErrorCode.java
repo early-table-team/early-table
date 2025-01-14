@@ -32,6 +32,9 @@ public enum ErrorCode {
     FORBIDDEN_LOGIN(HttpStatus.FORBIDDEN,"이미 탈퇴한 유저입니다."),
     FORBIDDEN_PARTY_LEADER(HttpStatus.FORBIDDEN,"파티장이 아닙니다."),
     FORBIDDEN_ACCESS_PTAH(HttpStatus.FORBIDDEN,"잘못된 접근입니다."),
+    FORBIDDEN_FRIEND_REQUEST(HttpStatus.FORBIDDEN, "본인의 요청이 아닙니다."),
+    FORBIDDEN_ACCESS_PTAH(HttpStatus.FORBIDDEN,"잘못된 접근입니다."),
+
 
 
     // 404 NOT_FOUND

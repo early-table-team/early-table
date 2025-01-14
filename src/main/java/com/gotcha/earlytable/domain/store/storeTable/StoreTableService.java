@@ -2,6 +2,8 @@ package com.gotcha.earlytable.domain.store.storeTable;
 
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreTableCreateRequestDto;
+import com.gotcha.earlytable.domain.store.ValidateStore;
+import com.gotcha.earlytable.domain.store.dto.CreateStoreTableRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreTableGetAllResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreTableUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -17,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Service
-public class StoreTableService {
+public class StoreTableService implements ValidateStore {
 
     private final StoreTableRepository storeTableRepository;
     private final StoreRepository storeRepository;
