@@ -10,5 +10,7 @@ public interface StoreReservationTypeRepository extends JpaRepository<StoreReser
 
     boolean existsByStoreStoreIdAndReservationType(Long storeId, ReservationType reservationType);
 
-    void deleteByStoreStoreIdAndReservationType(Long storeId, ReservationType reservationType);
+    void deleteByStoreReservationTypeIdAndReservationType(Long storeReservationTypeId, ReservationType reservationType);
+
+    StoreReservationType findByStoreStoreId(Long storeId);
 }

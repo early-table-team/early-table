@@ -1,11 +1,12 @@
 package com.gotcha.earlytable.domain.store.dto;
 
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
+import com.gotcha.earlytable.domain.file.enums.FileStatus;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
+import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
-import com.gotcha.earlytable.global.error.ErrorCode;
-import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -67,11 +68,12 @@ public class StoreListResponseDto {
                 store.getStoreStatus(),
                 // 대표 메뉴
                 store.getMenuList().stream()
-                        .filter(menu -> menu.getMenuStatus().equals(MenuStatus.RECOMMENDED)).findAny()
-                        .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND)).getMenuName(),
+                        .filter(menu -> menu.getMenuStatus().equals(MenuStatus.RECOMMENDED)).findFirst()
+                        .map(Menu::getMenuName).orElse(null),
                 // 이미지 url
-                store.getFile().getFileDetailList().stream().findAny()
-                        .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND)).getFileUniqueName()
+                store.getFile().getFileDetailList().stream()
+                        .filter(fileDetail -> fileDetail.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
+                        .map(FileDetail::getFileUrl).orElse(null)
         );
     }
 }

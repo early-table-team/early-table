@@ -8,12 +8,12 @@ import java.util.List;
 @Getter
 public class StoreTableGetAllResponseDto {
 
-    private final Long StoreTableId;
+    private final Long storeId;
 
-    private final List<HashMap<String, Integer>> storeTable;
+    private final List<HashMap<String, Long>> storeTable;
 
-    public StoreTableGetAllResponseDto(Long StoreTableId, List<HashMap<String, Integer>> storeTable) {
-        this.StoreTableId = StoreTableId;
+    public StoreTableGetAllResponseDto(Long storeId, List<HashMap<String, Long>> storeTable) {
+        this.storeId = storeId;
         this.storeTable = storeTable;
     }
 

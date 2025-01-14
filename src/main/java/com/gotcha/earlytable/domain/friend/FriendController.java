@@ -9,10 +9,7 @@ import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -54,5 +51,23 @@ public class FriendController {
         FriendResponseDto getFriendResponseDto = friendService.getFriend(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(getFriendResponseDto);
+    }
+
+    /**
+     * 친구 삭제 API
+     * @param userId
+     * @param userDetails
+     * @return String
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<String> deleteFriend(@PathVariable Long userId,
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        // 로그인된 유저 정보 가져오기
+        User user = userDetails.getUser();
+
+        friendService.deleteFriend(userId, user);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("친구 삭제가 완료되었습니다.");
     }
 }

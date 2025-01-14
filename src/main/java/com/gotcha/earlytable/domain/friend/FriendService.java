@@ -5,7 +5,10 @@ import com.gotcha.earlytable.domain.friend.dto.FriendResponseDto;
 import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,5 +38,18 @@ public class FriendService {
         User user = userRepository.findByIdOrElseThrow(userId);
 
         return new FriendResponseDto(user);
+    }
+
+    /**
+     * 친구 삭제 서비스 메서드
+     */
+    @Transactional
+    public void deleteFriend(Long userId, User user) {
+        if(!friendRepository.existsBySendUserIdAndReceivedUserId(userId, user.getId())) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND);
+        }
+
+        friendRepository.deleteBySendUserIdAndReceivedUserId(userId, user.getId());
+        friendRepository.deleteBySendUserIdAndReceivedUserId(user.getId(), userId);
     }
 }

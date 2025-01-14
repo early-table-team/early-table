@@ -108,7 +108,7 @@ public class WebSecurityConfig {
      */
     @Bean
     public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_OWNER > ROLE_USER");
+        return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_OWNER\nROLE_ADMIN > ROLE_USER");
     }
 
     /**

@@ -3,9 +3,11 @@ package com.gotcha.earlytable.domain.store.storeRest;
 import com.gotcha.earlytable.domain.store.dto.StoreRestRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRestResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRestSearchRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreRestUpdateRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,13 +33,13 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<StoreRestResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<StoreRestResponseDto> createStoreRest(@PathVariable Long storeId,
-                                                                @RequestBody StoreRestRequestDto requestDto,
+                                                                @Valid @RequestBody StoreRestRequestDto requestDto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        StoreRestResponseDto responseDto = storeRestService.createStoreRest(storeId, userDetails.getUser().getId(), requestDto);
+        StoreRestResponseDto responseDto = storeRestService.createStoreRest(storeId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -48,7 +50,6 @@ public class StoreRestController {
      * @param restId
      * @return ResponseEntity<StoreRestResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER, Auth.USER})
     @GetMapping("/{restId}")
     public ResponseEntity<StoreRestResponseDto> getStoreRest(@PathVariable Long restId) {
 
@@ -57,9 +58,16 @@ public class StoreRestController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
+    /**
+     * 가게 휴무일 조건 조회 API
+     *
+     * @param storeId
+     * @param requestDto
+     * @return ResponseEntity<List<StoreRestResponseDto>>
+     */
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<List<StoreRestResponseDto>> getStoreRests(@PathVariable Long storeId,
-                                                                    @RequestBody StoreRestSearchRequestDto requestDto) {
+                                                                    @Valid @RequestBody StoreRestSearchRequestDto requestDto) {
 
         List<StoreRestResponseDto> responseDtoList = storeRestService.getAllStoreRest(storeId, requestDto);
 
@@ -74,12 +82,13 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<StoreRestResponseDto>
      */
-    @PutMapping("/{restId}")
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
+    @PatchMapping("/{restId}")
     public ResponseEntity<StoreRestResponseDto> updateStoreRest(@PathVariable Long restId,
-                                                                @RequestBody StoreRestRequestDto requestDto,
+                                                                @Valid @RequestBody StoreRestUpdateRequestDto requestDto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        StoreRestResponseDto responseDto = storeRestService.updateStoreRest(restId, userDetails.getUser().getId(), requestDto);
+        StoreRestResponseDto responseDto = storeRestService.updateStoreRest(restId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -91,11 +100,12 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<Void>
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping("/{restId}")
     public ResponseEntity<Void> deleteStoreRest(@PathVariable Long restId,
                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        storeRestService.deleteStoreRest(restId, userDetails.getUser().getId());
+        storeRestService.deleteStoreRest(restId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

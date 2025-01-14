@@ -56,7 +56,10 @@ public class StoreService {
         }
 
         // 이미지 파일들 저장
-        fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
+        if(requestDto.getStoreImageList() != null && requestDto.getStoreImageList().size() > 1) {
+            // 프로필 이미지 파일 저장
+            fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
+        }
 
         // 가게 객체 생성
         Store store = new Store(requestDto.getStoreName(), requestDto.getStoreTel(),
@@ -117,8 +120,11 @@ public class StoreService {
         store.updateStore(requestDto);
         storeRepository.save(store);
 
-        // 이미지 수정
-        fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
+        // 이미지 파일들 저장
+        if(requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
+            // 이미지 수정
+            fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
+        }
 
         return StoreResponseDto.toDto(store);
 
@@ -197,16 +203,15 @@ public class StoreService {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
-        String message = "현 상태 유지되었습니다.";
+        String message = "현재 상태를 변경할 수 없습니다. 관리자에게 문의하세요.";
 
         // 영업 상태로 변경
         if (store.getStoreStatus().equals(StoreStatus.RESTING)) {
             store.updateStoreStatus(StoreStatus.APPROVED);
             message = "정상 영업 상태로 변경되었습니다.";
         }
-
         // 휴업 상태로 변경
-        if (store.getStoreStatus().equals(StoreStatus.APPROVED)) {
+        else if (store.getStoreStatus().equals(StoreStatus.APPROVED)) {
             store.updateStoreStatus(StoreStatus.RESTING);
             message = "휴업 상태로 변경되었습니다.";
         }

@@ -4,14 +4,18 @@ import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreRestRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRestResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRestSearchRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreRestUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreRest;
+import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,17 +33,17 @@ public class StoreRestService {
      * 가게 휴무일 등록 메서드
      *
      * @param storeId
-     * @param userId
+     * @param user
      * @param requestDto
      * @return StoreRestResponseDto
      */
     @Transactional
-    public StoreRestResponseDto createStoreRest(Long storeId, Long userId, StoreRestRequestDto requestDto) {
+    public StoreRestResponseDto createStoreRest(Long storeId, User user, StoreRestRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 본인 가게인지 확인
-        if(!store.getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -82,9 +86,22 @@ public class StoreRestService {
      */
     public List<StoreRestResponseDto> getAllStoreRest(Long storeId, StoreRestSearchRequestDto requestDto) {
 
+        LocalDate startDate = requestDto.getStartDate();
+        LocalDate endDate = requestDto.getEndDate();
+
+        // 시작날이 null 이면 현재 기준
+        if(startDate == null) {
+            startDate = LocalDate.now();
+        }
+
+        // 마지막날이 null 이면 시작날 기준 + 30일
+        if(endDate == null) {
+            endDate = startDate.plusDays(30);
+        }
+
         // 일정 구간으로 휴무일 조회하기
         List<StoreRest> storeRestList = storeRestRepository
-                .findAllByStoreStoreIdAndStoreOffDayBetween(storeId, requestDto.getStartDate(), requestDto.getEndDate());
+                .findAllByStoreStoreIdAndStoreOffDayBetween(storeId, startDate, endDate);
 
         return storeRestList.stream().map(StoreRestResponseDto::toDto).toList();
     }
@@ -93,17 +110,17 @@ public class StoreRestService {
      * 가게 휴무일 수정 메서드
      *
      * @param restId
-     * @param userId
+     * @param user
      * @param requestDto
      * @return StoreRestResponseDto
      */
     @Transactional
-    public StoreRestResponseDto updateStoreRest(Long restId, Long userId, StoreRestRequestDto requestDto) {
+    public StoreRestResponseDto updateStoreRest(Long restId, User user, StoreRestUpdateRequestDto requestDto) {
 
         StoreRest storeRest = storeRestRepository.findByIdOrElseThrow(restId);
 
         // 본인 가게인지 확인
-        if(!storeRest.getStore().getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !storeRest.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -118,15 +135,15 @@ public class StoreRestService {
      * 가게 휴무일 삭제 메서드
      *
      * @param restId
-     * @param userId
+     * @param user
      */
     @Transactional
-    public void deleteStoreRest(Long restId, Long userId) {
+    public void deleteStoreRest(Long restId, User user) {
 
         StoreRest storeRest = storeRestRepository.findByIdOrElseThrow(restId);
 
         // 본인 가게인지 확인
-        if(!storeRest.getStore().getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !storeRest.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 

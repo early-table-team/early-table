@@ -5,19 +5,17 @@ import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Entity
 @Table(name = "store_table")
-public class StoreTable  extends BaseEntity {
+public class StoreTable extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long storeTableId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
@@ -26,8 +24,8 @@ public class StoreTable  extends BaseEntity {
     private Integer tableCount;
 
 
-
-    public StoreTable() {}
+    public StoreTable() {
+    }
 
     public StoreTable(Store store, Integer tableMaxNumber, Integer tableCount) {
         addStore(store);
