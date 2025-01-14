@@ -1,6 +1,8 @@
 package com.gotcha.earlytable.domain.store.dto;
 
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
+import com.gotcha.earlytable.global.enums.RegionBottom;
+import com.gotcha.earlytable.global.enums.RegionTop;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
@@ -32,12 +34,14 @@ public class StoreRequestDto {
     private final String storeContents;
 
     @NotBlank
-    private final String regionTop;
+    @Enumerated(EnumType.STRING)
+    private final RegionTop regionTop;
 
     @NotBlank
-    private final String regionBottom;
+    @Enumerated(EnumType.STRING)
+    private final RegionBottom regionBottom;
 
-
+    @NotNull
     @Enumerated(EnumType.STRING)
     private final StoreCategory storeCategory;
 
@@ -45,7 +49,7 @@ public class StoreRequestDto {
 
 
     public StoreRequestDto(Long userId, Long fileId, String storeName, String storeTel, String storeAddress,
-                           String storeContents, String regionTop, String regionBottom,
+                           String storeContents, RegionTop regionTop, RegionBottom regionBottom,
                            StoreCategory storeCategory, List<MultipartFile> storeImageList) {
 
         this.userId = userId;

@@ -6,6 +6,7 @@ import com.gotcha.earlytable.global.dto.CommonResponseBody;
 import com.gotcha.earlytable.global.error.exception.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.AccessDeniedException;
@@ -69,6 +71,35 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new CommonResponseBody<>(message));
+    }
+
+    /**
+     * 파라미터 변환 실패 오류 처리
+     *
+     * @param ex
+     * @return {@code ResponseEntity<CommonResponseBody<String>>}
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<CommonResponseBody<String>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new CommonResponseBody<>("잘못된 타입입니다." + ex.getLocalizedMessage()));
+    }
+
+
+    /**
+     * 데이터 입력 제약 조건 위반 처리
+     *
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<CommonResponseBody<String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new CommonResponseBody<>("데이터 제약 조건 위반하였습니다." + ex.getLocalizedMessage()));
     }
 
     /**

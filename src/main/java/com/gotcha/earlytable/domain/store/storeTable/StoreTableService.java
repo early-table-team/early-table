@@ -137,7 +137,6 @@ public class StoreTableService implements ValidateStore {
 
         // 본인 가게 인지 확인
         if (user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
-
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
     }
