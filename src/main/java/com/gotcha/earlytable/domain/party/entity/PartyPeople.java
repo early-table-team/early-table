@@ -23,6 +23,7 @@ public class PartyPeople extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     private PartyRole partyRole;
 
     public PartyPeople() {
