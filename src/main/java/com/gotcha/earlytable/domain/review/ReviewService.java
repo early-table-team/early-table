@@ -120,12 +120,12 @@ public class ReviewService {
      * 리뷰 삭제 서비스 메서드
      */
     @Transactional
-    public void deleteReview(Long reviewId, User user) {
+    public void deleteReview(Long reviewId, Long userId) {
 
         Review review = reviewRepository.findByIdOrElseThrow(reviewId);
 
         // 리뷰가 내가 작성한게 맞나 확인하기
-        if(!review.getUser().equals(user)) {
+        if(!review.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 

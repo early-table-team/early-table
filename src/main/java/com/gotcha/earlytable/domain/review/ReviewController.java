@@ -120,7 +120,7 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<String> deleteReview(@PathVariable Long reviewId,
                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        reviewService.deleteReview(reviewId, userDetails.getUser());
+        reviewService.deleteReview(reviewId, userDetails.getUser().getId());
 
         return ResponseEntity.status(HttpStatus.OK).body("리뷰 삭제가 완료되었습니다.");
     }
