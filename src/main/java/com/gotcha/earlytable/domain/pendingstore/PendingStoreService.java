@@ -50,8 +50,10 @@ public class PendingStoreService {
         // 파일 객체 생성
         File file = fileService.createFile();
 
-        // 이미지 파일들 저장
-        fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
+        if(requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
+            // 이미지 파일들 저장
+            fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
+        }
 
         // 팬딩 가게 객체 생성
         PendingStore pendingStore = new PendingStore(user, requestDto.getStoreName(), requestDto.getStoreTel(),
@@ -87,10 +89,11 @@ public class PendingStoreService {
 
         File file = store.getFile();
 
-        if(!requestDto.getFileUrlList().isEmpty()) {
-            // 새롭게 파일 생성
+        if(requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
+
             file = fileService.createFile();
 
+            // 새로운 파일에 파일 디테일 복사
             fileDetailService.copyFileDetails(store.getFile().getFileDetailList(), file);
 
             // 이미지 수정
@@ -109,7 +112,7 @@ public class PendingStoreService {
         // 팬딩 가게 저장
         PendingStore savedPendingStore = pendingStoreRepository.save(pendingStore);
 
-        return PendingStoreResponseDto.toDto(savedPendingStore, store.getFile());
+        return PendingStoreResponseDto.toDto(savedPendingStore, file);
     }
 
     /**

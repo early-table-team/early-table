@@ -18,9 +18,6 @@ public class StoreRequestDto {
     @NotNull
     private final Long userId;
 
-    @NotNull
-    private final Long fileId;
-
     @NotBlank
     private final String storeName;
 
@@ -48,12 +45,11 @@ public class StoreRequestDto {
     private final List<MultipartFile> storeImageList;
 
 
-    public StoreRequestDto(Long userId, Long fileId, String storeName, String storeTel, String storeAddress,
+    public StoreRequestDto(Long userId, String storeName, String storeTel, String storeAddress,
                            String storeContents, RegionTop regionTop, RegionBottom regionBottom,
                            StoreCategory storeCategory, List<MultipartFile> storeImageList) {
 
         this.userId = userId;
-        this.fileId = fileId;
         this.storeName = storeName;
         this.storeTel = storeTel;
         this.storeAddress = storeAddress;

@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,16 +16,11 @@ import java.util.List;
 @Getter
 public class PendingStoreRequestDto {
 
-    @NotNull
-    private final Long userId;
-
-    @NotNull
-    private final Long fileId;
-
     @NotBlank
     private final String storeName;
 
     @NotBlank
+    @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "유효한 핸드폰 번호를 입력하세요.")
     private final String storeTel;
 
     @NotBlank
@@ -33,27 +29,25 @@ public class PendingStoreRequestDto {
     @NotBlank
     private final String storeContents;
 
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     private final RegionTop regionTop;
 
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     private final RegionBottom regionBottom;
 
-
+    @NotNull
     @Enumerated(EnumType.STRING)
     private final StoreCategory storeCategory;
 
     private final List<MultipartFile> storeImageList;
 
 
-    public PendingStoreRequestDto(Long userId, Long fileId, String storeName, String storeTel, String storeAddress, String storeContents,
+    public PendingStoreRequestDto(String storeName, String storeTel, String storeAddress, String storeContents,
                                   RegionTop regionTop, RegionBottom regionBottom,
                                   StoreCategory storeCategory, List<MultipartFile> storeImageList) {
 
-        this.userId = userId;
-        this.fileId = fileId;
         this.storeName = storeName;
         this.storeTel = storeTel;
         this.storeAddress = storeAddress;
