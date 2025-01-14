@@ -111,7 +111,7 @@ public class StoreController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PatchMapping("/{storeId}/status")
     public ResponseEntity<String> updateStoreStatus( @PathVariable Long storeId,
-                                                     @RequestBody StoreStatusRequestDto requestDto) {
+                                                     @Valid @RequestBody StoreStatusRequestDto requestDto) {
 
         storeService.updateStoreStatus(storeId, requestDto.getStoreStatus());
 
@@ -126,7 +126,7 @@ public class StoreController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/search")
-    public ResponseEntity<List<StoreListResponseDto>> searchStore(@RequestBody StoreSearchRequestDto requestDto) {
+    public ResponseEntity<List<StoreListResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
 
         List<StoreListResponseDto> responseDtoList = storeService.searchStore(requestDto);
 

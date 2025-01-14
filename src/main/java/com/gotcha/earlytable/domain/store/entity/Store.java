@@ -12,6 +12,8 @@ import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
 import com.gotcha.earlytable.global.base.BaseEntity;
+import com.gotcha.earlytable.global.enums.RegionBottom;
+import com.gotcha.earlytable.global.enums.RegionTop;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -46,9 +48,11 @@ public class Store extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private StoreCategory storeCategory;
 
-    private String RegionTop;
+    @Enumerated(EnumType.STRING)
+    private RegionTop regionTop;
 
-    private String RegionBottom;
+    @Enumerated(EnumType.STRING)
+    private RegionBottom regionBottom;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -89,15 +93,15 @@ public class Store extends BaseEntity {
     private final List<Reservation> reservationList = new ArrayList<>();
 
     public Store(String storeName, String storeTel, String storeContents, String storeAddress, StoreStatus storeStatus,
-                 StoreCategory storeCategory, String regionTop, String regionBottom, User user, File file) {
+                 StoreCategory storeCategory, RegionTop regionTop, RegionBottom regionBottom, User user, File file) {
         this.storeName = storeName;
         this.storeTel = storeTel;
         this.storeContents = storeContents;
         this.storeAddress = storeAddress;
         this.storeStatus = storeStatus;
         this.storeCategory = storeCategory;
-        this.RegionTop = regionTop;
-        this.RegionBottom = regionBottom;
+        this.regionTop = regionTop;
+        this.regionBottom = regionBottom;
         this.user = user;
         this.file = file;
     }
@@ -129,10 +133,10 @@ public class Store extends BaseEntity {
             this.storeCategory = requestDto.getStoreCategory();
         }
         if (requestDto.getRegionTop() != null) {
-            this.RegionTop = requestDto.getRegionTop();
+            this.regionTop = requestDto.getRegionTop();
         }
         if (requestDto.getRegionBottom() != null) {
-            this.RegionBottom = requestDto.getRegionBottom();
+            this.regionBottom = requestDto.getRegionBottom();
         }
     }
 
@@ -154,10 +158,10 @@ public class Store extends BaseEntity {
             this.storeCategory = pendingStore.getStoreCategory();
         }
         if (pendingStore.getRegionTop() != null) {
-            this.RegionTop = pendingStore.getRegionTop();
+            this.regionTop = pendingStore.getRegionTop();
         }
         if (pendingStore.getRegionBottom() != null) {
-            this.RegionBottom = pendingStore.getRegionBottom();
+            this.regionBottom = pendingStore.getRegionBottom();
         }
         if (file != null) {
             this.file = file;
