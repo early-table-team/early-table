@@ -5,6 +5,8 @@ import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.base.BaseEntity;
+import com.gotcha.earlytable.global.enums.RegionBottom;
+import com.gotcha.earlytable.global.enums.RegionTop;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -35,9 +37,9 @@ public class PendingStore extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private StoreCategory storeCategory;
 
-    private String RegionTop;
+    private RegionTop RegionTop;
 
-    private String RegionBottom;
+    private RegionBottom RegionBottom;
 
     @Column(nullable=false)
     private Long fileId;
@@ -50,7 +52,7 @@ public class PendingStore extends BaseEntity {
 
     public PendingStore(User user, String storeName, String storeTel,
                         String storeContents, String storeAddress, StoreStatus storeStatus,
-                        StoreCategory storeCategory, String regionTop, String regionBottom, Long fileId,
+                        StoreCategory storeCategory, RegionTop regionTop, RegionBottom regionBottom, Long fileId,
                         Long storeId, PendingStoreType pendingStoreType) {
 
         this.user = user;

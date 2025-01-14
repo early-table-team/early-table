@@ -5,6 +5,8 @@ import com.gotcha.earlytable.domain.keyword.entity.Keyword;
 import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,10 @@ public class StoreKeywordService {
 
         // 가게 키워드 리스트 생성
         for(Store store  : storeList) {
+            // 존재하면 패스
+            if(storeKeywordRepository.existsByStore(store)){
+                continue;
+            }
             StoreKeyword storeKeyword = new StoreKeyword(store, keyword);
             storeKeywordList.add(storeKeyword);
         }
@@ -58,15 +64,20 @@ public class StoreKeywordService {
      *
      * @param requestDto
      */
+    @Transactional
     public void deleteStoreKeywords(StoreKeywordRequestDto requestDto) {
 
         if(requestDto.getKeywordId() == null || requestDto.getStoreIds().isEmpty()) {
             return;
         }
 
-        storeKeywordRepository.deleteByKeywordKeywordIdAndStoreStoreIdIn(requestDto.getKeywordId(),
+        // 삭제
+        Integer countDelete = storeKeywordRepository.deleteByKeywordKeywordIdAndStoreStoreIdIn(requestDto.getKeywordId(),
                                                                             requestDto.getStoreIds());
 
-
+        // 하나라도 제거를 못하면 예외처리
+        if(countDelete == 0) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND);
+        }
     }
 }
