@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class StoreTimeSlotService {
+public class StoreTimeSlotService implements ValidateStore {
 
     private final StoreTimeSlotRepository storeTimeSlotRepository;
     private final StoreRepository storeRepository;
