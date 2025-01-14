@@ -4,6 +4,8 @@ import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreReservationType;
+import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
@@ -27,16 +29,16 @@ public class StoreReservationTypeService {
      * 가게 예약 타입 설정 메서드
      *
      * @param storeId
-     * @param userId
+     * @param user
      * @param requestDto
      */
     @Transactional
-    public void createStoreReservationType(Long storeId, Long userId, StoreReservationTypeRequestDto requestDto) {
+    public void createStoreReservationType(Long storeId, User user, StoreReservationTypeRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 본인 가게인지 확인
-        if(!store.getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -58,19 +60,22 @@ public class StoreReservationTypeService {
      * 가게 예약 타입 제거 메서드
      *
      * @param storeId
-     * @param userId
+     * @param user
      * @param requestDto
      */
-    public void deleteStoreReservationType(Long storeId, Long userId, StoreReservationTypeRequestDto requestDto) {
+    @Transactional
+    public void deleteStoreReservationType(Long storeId, User user, StoreReservationTypeRequestDto requestDto) {
 
-        Store store = storeRepository.findByIdOrElseThrow(storeId);
+        StoreReservationType storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
 
         // 본인 가게인지 확인
-        if(!store.getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !storeReservationType.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         // 삭제
-        storeReservationTypeRepository.deleteByStoreStoreIdAndReservationType(storeId, requestDto.getReservationType());
+        storeReservationTypeRepository
+                .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.getStoreReservationTypeId(),
+                        requestDto.getReservationType());
     }
 }
