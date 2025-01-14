@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.store.dto.TimeSlotRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.ForbiddenException;
@@ -37,7 +38,7 @@ public class StoreTimeSlotService implements ValidateStore {
     public TimeSlotResponseDto createStoreTimeSlot(Long storeId, TimeSlotRequestDto requestDto, User user) {
 
         // 본인 가게 확인
-        validateStoreOwner(storeId, user.getId());
+        validateStoreOwner(storeId, user);
 
         // 가게와 시간대를 이용하여 이미 존재하는 값인지 구분
         boolean isExist = storeTimeSlotRepository
@@ -102,7 +103,7 @@ public class StoreTimeSlotService implements ValidateStore {
     public TimeSlotResponseDto modifyTimeSlot(Long storeId, Long timeSlotId, TimeSlotRequestDto requestDto, User user) {
 
         // 본인가게 확인
-        validateStoreOwner(storeId, user.getId());
+        validateStoreOwner(storeId, user);
 
         StoreTimeSlot storeTimeSlot = storeTimeSlotRepository.findByIdOrElseThrow(timeSlotId);
 
@@ -137,7 +138,7 @@ public class StoreTimeSlotService implements ValidateStore {
     public void deleteTimeSlot(Long storeId, Long timeSlotId, User user) {
 
         // 본인 가게 확인
-        validateStoreOwner(storeId, user.getId());
+        validateStoreOwner(storeId, user);
 
         // 해당 가게의 타임슬롯인지 확인
         StoreTimeSlot storeTimeSlot = storeTimeSlotRepository.findByIdOrElseThrow(timeSlotId);
@@ -156,14 +157,13 @@ public class StoreTimeSlotService implements ValidateStore {
      * 본인 가게인지 확인하는 메서드
      *
      * @param storeId
-     * @param userId
+     * @param user
      */
-    @Override
-    public void validateStoreOwner(Long storeId, Long userId) {
+    public void validateStoreOwner(Long storeId, User user) {
 
         // 본인 가게 인지 확인
-        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, userId);
-        if (!isOwner) {
+        boolean isOwner = storeRepository.existsByStoreIdAndUserId(storeId, user.getId());
+        if (user.getAuth().equals(Auth.OWNER) && !isOwner) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
     }

@@ -3,10 +3,12 @@ package com.gotcha.earlytable.domain.store.storeHour;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreHourRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreHourResponseDto;
+import com.gotcha.earlytable.domain.store.dto.StoreHourUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreHour;
+import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
-import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
@@ -28,17 +30,17 @@ public class StoreHourService {
      * 가게 영업시간 등록 메서드
      *
      * @param storeId
-     * @param userId
+     * @param user
      * @param requestDto
      * @return WaitingSettingResponseDto
      */
     @Transactional
-    public StoreHourResponseDto createStoreHour(Long storeId, Long userId, StoreHourRequestDto requestDto) {
+    public StoreHourResponseDto createStoreHour(Long storeId, User user, StoreHourRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 자신의 가게인지 확인
-        if(store.getUser().getId().equals(userId)) {
+        if (user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -52,7 +54,7 @@ public class StoreHourService {
 
         // 영업시간 객체 생성
         StoreHour storeHour = new StoreHour(requestDto.getDayOfWeek(), requestDto.getOpenTime(),
-                                            requestDto.getClosedTime(), requestDto.getDayStatus(), store);
+                requestDto.getClosedTime(), requestDto.getDayStatus(), store);
 
         // 저장
         StoreHour savedStoreHour = storeHourRepository.save(storeHour);
@@ -64,22 +66,18 @@ public class StoreHourService {
      * 가게 영업시간 수정 메서드
      *
      * @param storeHourId
-     * @param userId
+     * @param user
      * @param requestDto
      * @return WaitingSettingResponseDto
      */
-    public StoreHourResponseDto updateStoreHour(Long storeHourId, Long userId, StoreHourRequestDto requestDto) {
+    @Transactional
+    public StoreHourResponseDto updateStoreHour(Long storeHourId, User user, StoreHourUpdateRequestDto requestDto) {
 
         StoreHour storeHour = storeHourRepository.findByIdOrElseThrow(storeHourId);
 
         // 자신의 가게인지 확인
-        if(!storeHour.getStore().getUser().getId().equals(userId)) {
+        if (user.getAuth().equals(Auth.OWNER) && !storeHour.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        // 같은 요일인지 확인
-        if(requestDto.getDayOfWeek() != null && !storeHour.getDayOfWeek().equals(requestDto.getDayOfWeek())) {
-            throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
         // 수정

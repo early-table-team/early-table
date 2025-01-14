@@ -7,6 +7,8 @@ import com.gotcha.earlytable.domain.store.dto.StoreRestSearchRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreRestUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreRest;
+import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
@@ -31,17 +33,17 @@ public class StoreRestService {
      * 가게 휴무일 등록 메서드
      *
      * @param storeId
-     * @param userId
+     * @param user
      * @param requestDto
      * @return StoreRestResponseDto
      */
     @Transactional
-    public StoreRestResponseDto createStoreRest(Long storeId, Long userId, StoreRestRequestDto requestDto) {
+    public StoreRestResponseDto createStoreRest(Long storeId, User user, StoreRestRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 본인 가게인지 확인
-        if(!store.getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -108,17 +110,17 @@ public class StoreRestService {
      * 가게 휴무일 수정 메서드
      *
      * @param restId
-     * @param userId
+     * @param user
      * @param requestDto
      * @return StoreRestResponseDto
      */
     @Transactional
-    public StoreRestResponseDto updateStoreRest(Long restId, Long userId, StoreRestUpdateRequestDto requestDto) {
+    public StoreRestResponseDto updateStoreRest(Long restId, User user, StoreRestUpdateRequestDto requestDto) {
 
         StoreRest storeRest = storeRestRepository.findByIdOrElseThrow(restId);
 
         // 본인 가게인지 확인
-        if(!storeRest.getStore().getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !storeRest.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -133,15 +135,15 @@ public class StoreRestService {
      * 가게 휴무일 삭제 메서드
      *
      * @param restId
-     * @param userId
+     * @param user
      */
     @Transactional
-    public void deleteStoreRest(Long restId, Long userId) {
+    public void deleteStoreRest(Long restId, User user) {
 
         StoreRest storeRest = storeRestRepository.findByIdOrElseThrow(restId);
 
         // 본인 가게인지 확인
-        if(!storeRest.getStore().getUser().getId().equals(userId)) {
+        if(user.getAuth().equals(Auth.OWNER) && !storeRest.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
