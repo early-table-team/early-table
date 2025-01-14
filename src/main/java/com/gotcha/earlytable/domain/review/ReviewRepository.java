@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -39,5 +40,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "      round(avg(r.rating),1) as ratingAverage" +
             "  from Review r" +
             " where r.store.storeId = :storeId ")
-    ReviewTotalResponseDto findStatisticsByStoreId(@Param("storeId") Long storeId);
+    Map<String,Object> findStatisticsByStoreId(@Param("storeId") Long storeId);
 }

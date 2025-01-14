@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReviewService {
@@ -102,7 +103,17 @@ public class ReviewService {
      */
     public ReviewTotalResponseDto getStoreReviewTotal(Long storeId) {
 
-        return reviewRepository.findStatisticsByStoreId(storeId);
+        Map<String, Object> result = reviewRepository.findStatisticsByStoreId(storeId);
+
+        return new ReviewTotalResponseDto(
+                ((Long) result.get("ratingStat1")).intValue(),
+                ((Long) result.get("ratingStat2")).intValue(),
+                ((Long) result.get("ratingStat3")).intValue(),
+                ((Long) result.get("ratingStat4")).intValue(),
+                ((Long) result.get("ratingStat5")).intValue(),
+                ((Long) result.get("countTotal")).intValue(),
+                (Double) result.get("ratingAverage")
+        );
     }
 
     /**
