@@ -1,6 +1,5 @@
 package com.gotcha.earlytable.domain.store;
 
-import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
@@ -17,7 +16,9 @@ public interface StoreTimeSlotRepository extends JpaRepository<StoreTimeSlot, Lo
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
-    boolean existsByStoreAndReservationTime(Store store, LocalTime reservationTime);
+    boolean existsByStoreStoreIdAndReservationTime(Long storeId, LocalTime reservationTime);
 
     List<StoreTimeSlot> findByStoreStoreId(Long storeId);
+
+
 }

@@ -1,10 +1,11 @@
 package com.gotcha.earlytable.domain.store;
 
-import com.gotcha.earlytable.domain.store.dto.TimeSlotResponseDto;
 import com.gotcha.earlytable.domain.store.dto.TimeSlotRequestDto;
+import com.gotcha.earlytable.domain.store.dto.TimeSlotResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,10 +31,10 @@ public class StoreTimeSlotController {
      * @param userDetails
      * @return ResponseEntity<ReservationMasterResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping
     public ResponseEntity<TimeSlotResponseDto> createStoreTimeSlot(@PathVariable Long storeId,
-                                                                   @RequestBody TimeSlotRequestDto requestDto,
+                                                                   @Valid @RequestBody TimeSlotRequestDto requestDto,
                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         TimeSlotResponseDto responseDto = storeTimeSlotService.createStoreTimeSlot(storeId, requestDto, userDetails.getUser());
@@ -45,15 +46,12 @@ public class StoreTimeSlotController {
      * 타임슬롯 전체조회 API
      *
      * @param storeId
-     * @param userDetails
-     * @return ResponseEntity<List<TimeSlotResponseDto>>
+     * @return ResponseEntity<List < TimeSlotResponseDto>>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
-    public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId,
-                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId) {
 
-        List<TimeSlotResponseDto> responseDto = storeTimeSlotService.getAllTimeSlots(storeId, userDetails.getUser());
+        List<TimeSlotResponseDto> responseDto = storeTimeSlotService.getAllTimeSlots(storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -61,18 +59,14 @@ public class StoreTimeSlotController {
     /**
      * 타임슬롯 단일 조회 API
      *
-     * @param storeId
      * @param storeTimeSlotId
-     * @param userDetails
      * @return ResponseEntity<TimeSlotResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/{storeTimeSlotId}")
-    public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeId,
-                                                              @PathVariable Long storeTimeSlotId,
-                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeTimeSlotId,
+                                                              @PathVariable Long storeId) {
 
-        TimeSlotResponseDto responseDto = storeTimeSlotService.getOneTimeSlot(storeId, storeTimeSlotId, userDetails.getUser());
+        TimeSlotResponseDto responseDto = storeTimeSlotService.getOneTimeSlot(storeTimeSlotId, storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
 
@@ -87,11 +81,11 @@ public class StoreTimeSlotController {
      * @param userDetails
      * @return ResponseEntity<TimeSlotResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PutMapping("/{storeTimeSlotId}")
     public ResponseEntity<TimeSlotResponseDto> modifyTimeSlot(@PathVariable Long storeId,
                                                               @PathVariable Long storeTimeSlotId,
-                                                              @RequestBody TimeSlotRequestDto requestDto,
+                                                              @Valid @RequestBody TimeSlotRequestDto requestDto,
                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         TimeSlotResponseDto responseDto =
@@ -108,15 +102,15 @@ public class StoreTimeSlotController {
      * @param userDetails
      * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping("/{storeTimeSlotId}")
-    public ResponseEntity<String> deleteTimeSlot(@PathVariable Long storeId,
+    public ResponseEntity<Void> deleteTimeSlot(@PathVariable Long storeId,
                                                  @PathVariable Long storeTimeSlotId,
                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeTimeSlotService.deleteTimeSlot(storeId, storeTimeSlotId, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("타임슬롯이 삭제되었습니다.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 
