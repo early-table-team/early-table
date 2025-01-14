@@ -57,7 +57,6 @@ public class KeywordController {
      *
      * @return ResponseEntity<List<KeywordResponseDto>>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.USER})
     @GetMapping
     public ResponseEntity<List<KeywordResponseDto>> getAllKeywords() {
 
@@ -72,7 +71,6 @@ public class KeywordController {
      * @param keywordId
      * @return ResponseEntity<KeywordResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.USER})
     @GetMapping("/{keywordId}")
     public ResponseEntity<KeywordResponseDto> getKeyword(@PathVariable Long keywordId) {
 
