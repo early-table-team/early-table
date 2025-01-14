@@ -44,6 +44,8 @@ public enum ErrorCode {
     USER_ALREADY_DELETED(HttpStatus.CONFLICT, "이미 탈퇴한 사용자 아이디입니다."),
     ALREADY_IN_FRIEND(HttpStatus.CONFLICT,"이미 친구로 등록된 사용자입니다."),
     ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 수락 대기 중인 요청 건이 존재합니다."),
+    ALREADY_IN_ALLERGY_CATEGORY(HttpStatus.CONFLICT, "이미 등록된 카테고리 입니다."),
+    ALREADY_IN_ALLERGY_STUFF(HttpStatus.CONFLICT, "이미 등록된 원재료입니다."),
 
     ;
 
