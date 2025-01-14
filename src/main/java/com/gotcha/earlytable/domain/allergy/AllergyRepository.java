@@ -19,4 +19,6 @@ public interface AllergyRepository extends JpaRepository<Allergy, Long> {
     }
 
     List<Allergy> findAllByMenuMenuId(Long menuId);
+
+    boolean existsByMenuMenuIdAndAllergyStuffAllergyStuffId(Long menuId, Long allergyStuffId);
 }

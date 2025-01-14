@@ -8,6 +8,7 @@ import com.gotcha.earlytable.domain.allergy.entity.Allergy;
 import com.gotcha.earlytable.domain.allergy.entity.AllergyStuff;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,11 @@ public class AllergyService {
 
         //사용자가 알러지 원재료명(Dto)을 입력 -> AllergyStuff 반환
         AllergyStuff allergyStuff = allergyStuffRepository.findByAllergyStuff(allergyRequestDto.getAllergyStuff());
+
+        //이미 등록한 원재료 재입력 시, 예외처리
+        if(allergyRepository.existsByMenuMenuIdAndAllergyStuffAllergyStuffId(menuId, allergyStuff.getAllergyStuffId())) {
+            throw new ConflictException(ErrorCode.ALREADY_REGISTERED_ALLERGYSTUFF_IN_MENU);
+        }
 
         //알러지 생성
         Allergy allergy = new Allergy(menu,allergyStuff);
