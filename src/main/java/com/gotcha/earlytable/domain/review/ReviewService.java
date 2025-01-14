@@ -13,7 +13,9 @@ import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
+import com.gotcha.earlytable.global.error.exception.ForbiddenException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,9 +66,14 @@ public class ReviewService {
      * 리뷰 수정 서비스 메서드
      */
     @Transactional
-    public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto) {
+    public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto, Long userId) {
 
         Review review = reviewRepository.findByIdOrElseThrow(reviewId);
+
+        //내가 쓴 리뷰인지 확인
+        if(!review.getUser().getId().equals(userId)) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+        }
 
         //리뷰 수정 및 저장
         review.updateReview(reviewUpdateRequestDto);

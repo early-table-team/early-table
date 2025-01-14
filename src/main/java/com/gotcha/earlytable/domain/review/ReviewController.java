@@ -64,7 +64,7 @@ public class ReviewController {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        ReviewResponseDto updateReviewResponseDto = reviewService.updateReview(reviewId, requestDto);
+        ReviewResponseDto updateReviewResponseDto = reviewService.updateReview(reviewId, requestDto, user.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(updateReviewResponseDto);
     }
