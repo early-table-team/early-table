@@ -4,7 +4,6 @@ import com.gotcha.earlytable.domain.allergy.entity.AllergyCategory;
 import com.gotcha.earlytable.domain.allergy.entity.AllergyStuff;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +19,8 @@ public interface AllergyStuffRepository extends JpaRepository<AllergyStuff, Long
     List<AllergyStuff> findAllByAllergyCategory(AllergyCategory allergyCategory);
 
     AllergyStuff findByAllergyStuff(String allergyStuff);
+
+    boolean existsByAllergyStuffAndAllergyCategoryAllergyCategoryId(String allergyStuff, Long categoryId);
 
     boolean existsByAllergyStuff(String allergyStuff);
 }
