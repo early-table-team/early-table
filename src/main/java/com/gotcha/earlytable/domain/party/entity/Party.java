@@ -6,6 +6,7 @@ import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,8 +25,7 @@ public class Party extends BaseEntity {
     private Reservation reservation;
 
     @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<PartyPeople> partyPeople;
-
+    private List<PartyPeople> partyPeople = new ArrayList<>();
 
     public Party() {
     }

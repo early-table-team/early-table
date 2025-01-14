@@ -6,23 +6,31 @@ import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.enums.DayStatus;
+import com.gotcha.earlytable.domain.store.enums.ReservationType;
+import com.gotcha.earlytable.domain.store.storeHour.StoreHourRepository;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.dto.*;
-import com.gotcha.earlytable.domain.waiting.entity.OfflineUser;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
+import com.gotcha.earlytable.domain.waitingsetting.WaitingSettingRepository;
+import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
+import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.RemoteStatus;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
+import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.ForbiddenException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,20 +41,23 @@ public class WaitingService {
     private final WaitingRepository waitingRepository;
     private final StoreRepository storeRepository;
     private final PartyRepository partyRepository;
-    private final OfflineUserRepository offlineUserRepository;
     private final PartyPeopleRepository partyPeopleRepository;
     private final UserRepository userRepository;
+    private final WaitingSettingRepository waitingSettingRepository;
+    private final StoreHourRepository storeHourRepository;
 
     public WaitingService(WaitingRepository waitingRepository, StoreRepository storeRepository,
-                          PartyRepository partyRepository, OfflineUserRepository offlineUserRepository,
-                          PartyPeopleRepository partyPeopleRepository, UserRepository userRepository) {
+                          PartyRepository partyRepository, PartyPeopleRepository partyPeopleRepository,
+                          UserRepository userRepository, WaitingSettingRepository waitingSettingRepository,
+                          StoreHourRepository storeHourRepository) {
 
         this.waitingRepository = waitingRepository;
         this.storeRepository = storeRepository;
         this.partyRepository = partyRepository;
-        this.offlineUserRepository = offlineUserRepository;
         this.partyPeopleRepository = partyPeopleRepository;
         this.userRepository = userRepository;
+        this.waitingSettingRepository = waitingSettingRepository;
+        this.storeHourRepository = storeHourRepository;
     }
 
     /**
@@ -61,6 +72,29 @@ public class WaitingService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
+        // 가게 예약 타입 확인
+        boolean dontReservation = store.getStoreReservationTypeList().stream()
+                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
+
+        if (dontReservation) {
+            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
+        }
+
+        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
+        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
+                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
+                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
+        if (holiday) {
+            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+        }
+
+
+        // 웨이팅 가능 여부 확인
+        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
+        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
         // 일행 그룹 생성
         Party party = partyRepository.save(new Party());
 
@@ -73,7 +107,7 @@ public class WaitingService {
 
         // 웨이팅 번호
         int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0,0,0), date.atTime(23, 59, 59));
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
 
         waitingNumber++;
 
@@ -96,8 +130,31 @@ public class WaitingService {
      */
     @Transactional
     public WaitingNumberResponseDto createWaitingOffline(WaitingOfflineRequestDto requestDto, Long storeId) {
-
+        // 가게 확인
         Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        // 가게 예약 타입 확인
+        boolean dontReservation = store.getStoreReservationTypeList().stream()
+                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
+
+        if (dontReservation) {
+            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
+        }
+
+        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
+        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
+                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
+                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
+        if (holiday) {
+            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+        }
+
+
+        // 웨이팅 가능 여부 확인
+        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
+        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
 
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
@@ -105,11 +162,10 @@ public class WaitingService {
         Party party = null;
 
         // 이미 존재하는 유저일 경우
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             party = partyRepository.save(new Party());
 
             PartyPeople partyPeople = new PartyPeople(party, user.get(), PartyRole.REPRESENTATIVE);
-
             // 일행 인원 등록
             partyPeopleRepository.save(partyPeople);
         }
@@ -119,7 +175,7 @@ public class WaitingService {
 
         // 웨이팅 번호
         int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0,0,0), date.atTime(23, 59, 59));
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
 
         waitingNumber++;
 
@@ -172,7 +228,7 @@ public class WaitingService {
         waiting.getParty().getPartyPeople().stream()
                 .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
                 .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
-                .filter(checkUser -> checkUser.equals(user))
+                .filter(checkUser -> checkUser.getId().equals(user.getId()))
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
 
@@ -181,7 +237,7 @@ public class WaitingService {
 
         // 웨이팅 번호
         int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(waiting.getStore(),
-                waitingDate.atTime(0,0,0), waitingDate.atTime(23, 59, 59));
+                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59));
 
         waitingNumber++;
 
@@ -208,16 +264,14 @@ public class WaitingService {
         // 사용자 권한이 일반 유저이면 해당 웨이팅에 권한이 있는지 확인
         if (user.getAuth() == Auth.USER) {
             waiting.getParty().getPartyPeople().stream()
-                    .filter(partyPeople -> partyPeople.getUser().equals(user))
+                    .filter(partyPeople -> partyPeople.getUser().getId().equals(user.getId()))
                     .findFirst()
                     .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
         }
 
         // 사용자 권한이 사장님이면
-        if(user.getAuth() == Auth.OWNER) {
-            if(!waiting.getStore().getUser().getId().equals(user.getId())) {
-                throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
-            }
+        if (user.getAuth() == Auth.OWNER && !waiting.getStore().getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 
         return new WaitingDetailResponseDto(waiting);
@@ -239,7 +293,7 @@ public class WaitingService {
             waiting.getParty().getPartyPeople().stream()
                     .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)) // role이 REPRESENTATIVE인 PartyPeople 필터링
                     .map(PartyPeople::getUser) // PartyPeople에서 User 객체로 변환
-                    .filter(checkUser -> checkUser.equals(user))
+                    .filter(checkUser -> checkUser.getId().equals(user.getId()))
                     .findFirst()
                     .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
         }
@@ -289,7 +343,7 @@ public class WaitingService {
         int nowSeqNum = waitingRepository.countByStoreAndWaitingStatusAndCreatedAtBetweenAndWaitingNumberLessThanEqual(
                 waiting.getStore(),
                 WaitingStatus.PENDING,
-                waitingDate.atTime(0,0,0), waitingDate.atTime(23, 59, 59),
+                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59),
                 waiting.getWaitingNumber()
         );
 

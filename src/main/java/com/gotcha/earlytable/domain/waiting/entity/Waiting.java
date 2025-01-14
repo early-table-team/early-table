@@ -26,10 +26,6 @@ public class Waiting extends BaseEntity {
     @JoinColumn(name = "party_id")
     private Party party;
 
-    @OneToOne(mappedBy = "waiting", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private OfflineUser offlineUser;
-
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private WaitingType waitingType;
@@ -56,7 +52,9 @@ public class Waiting extends BaseEntity {
     public Waiting(Store store, Party party, WaitingType waitingType, Integer personnelCount,
                    WaitingStatus waitingStatus, RemoteStatus remoteStatus, Integer waitingNumber, String phone) {
         addStore(store);
-        addParty(party);
+        if (party != null) {
+            addParty(party);
+        }
         this.waitingType = waitingType;
         this.personnelCount = personnelCount;
         this.waitingStatus = waitingStatus;
@@ -74,11 +72,6 @@ public class Waiting extends BaseEntity {
     private void addParty(Party party) {
         this.party = party;
         party.addWaiting(this);
-    }
-
-    private void addOfflineUser(OfflineUser offlineUser) {
-        this.offlineUser = offlineUser;
-        offlineUser.addWaiting(this);
     }
 
     public void updateWaitingNumber(Integer waitingNumber) {

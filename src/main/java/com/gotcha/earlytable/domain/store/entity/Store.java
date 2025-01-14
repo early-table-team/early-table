@@ -78,9 +78,6 @@ public class Store extends BaseEntity {
     private final List<StoreReservationType> storeReservationTypeList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private final List<WaitingSetting> waitingSettingList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<StoreTable> storeTableList = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

@@ -42,7 +42,7 @@ public class WaitingSettingService {
         // 웨이팅 설정 생성
         WaitingSetting waitingSetting = new WaitingSetting(requestDto.getWaitingOpenTime(),
                 requestDto.getWaitingClosedTime(),
-                requestDto.getWaitingStatus(), store);
+                requestDto.getWaitingSettingStatus(), store);
 
 
         // 저장

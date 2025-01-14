@@ -2,8 +2,8 @@ package com.gotcha.earlytable.domain.waitingsetting.entity;
 
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
+import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.base.BaseEntity;
-import com.gotcha.earlytable.global.enums.WaitingStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -26,16 +26,16 @@ public class WaitingSetting extends BaseEntity {
     private LocalTime waitingClosedTime;
 
     @Column(nullable = false)
-    private WaitingStatus waitingStatus;
+    private WaitingSettingStatus waitingSettingStatus;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "store_id")
     private Store store;
 
-    public WaitingSetting(LocalTime waitingOpenTime, LocalTime waitingClosedTime, WaitingStatus waitingStatus, Store store) {
+    public WaitingSetting(LocalTime waitingOpenTime, LocalTime waitingClosedTime, WaitingSettingStatus waitingSettingStatus, Store store) {
         this.waitingOpenTime = waitingOpenTime;
         this.waitingClosedTime = waitingClosedTime;
-        this.waitingStatus = waitingStatus;
+        this.waitingSettingStatus = waitingSettingStatus;
         addStore(store);
     }
 
@@ -45,7 +45,7 @@ public class WaitingSetting extends BaseEntity {
 
     private void addStore(Store store) {
         this.store = store;
-        store.getWaitingSettingList().add(this);
+//        store.getWaitingSettingList().add(this);
     }
 
     public void updateWaitingSetting(WaitingSettingRequestDto requestDto) {
@@ -56,8 +56,8 @@ public class WaitingSetting extends BaseEntity {
         if(requestDto.getWaitingClosedTime() != null) {
             this.waitingClosedTime = requestDto.getWaitingClosedTime();
         }
-        if(requestDto.getWaitingStatus() != null) {
-            this.waitingStatus = requestDto.getWaitingStatus();
+        if(requestDto.getWaitingSettingStatus() != null) {
+            this.waitingSettingStatus = requestDto.getWaitingSettingStatus();
         }
     }
 }

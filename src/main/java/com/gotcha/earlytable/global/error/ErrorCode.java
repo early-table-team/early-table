@@ -15,11 +15,16 @@ public enum ErrorCode {
     NO_SEAT(HttpStatus.BAD_REQUEST,"해당 인원에 맞는 자리가 남아있지 않습니다."),
     REJECT_CANCEL(HttpStatus.BAD_REQUEST,"예약을 취소할 수 없습니다."),
     UNAVAILABLE_RESERVATION_TYPE(HttpStatus.BAD_REQUEST, "예약이 불가능한 가게입니다."),
+    UNAVAILABLE_Onsite_Waiting_TYPE(HttpStatus.BAD_REQUEST, "현장 웨이팅이 불가능한 가게입니다."),
+    UNAVAILABLE_Remote_Waiting_TYPE(HttpStatus.BAD_REQUEST, "원격 웨이팅이 불가능한 가게입니다."),
     STORE_HOLIDAY(HttpStatus.BAD_REQUEST,"가게 휴무일 입니다."),
     RESERVATION_TIME_ERROR(HttpStatus.BAD_REQUEST,"예약가능한 시간이 아닙니다."),
+    WAITING_ERROR(HttpStatus.BAD_REQUEST,"현재 웨이팅 가능 상태가 아닙니다."),
     NOT_FOUND_MENU(HttpStatus.BAD_REQUEST,"가게 내에서 메뉴를 찾을 수 없습니다."),
     NO_MORE_REQUEST_AVAILABLE(HttpStatus.BAD_REQUEST, "더이상 친구 요청이 불가능한 사용자입니다. 관리자에게 문의하세요."),
     FULL_PARTY_PEOPLE(HttpStatus.BAD_REQUEST,"파티가 꽉 찼습니다."),
+    NO_INPUT_PHONE(HttpStatus.BAD_REQUEST, "연락처를 입력해주세요."),
+
 
 
     // 401 Unauthorized
