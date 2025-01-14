@@ -88,7 +88,7 @@ public class StoreTableController {
 
         storeTableService.deleteStoreTable(storeId, storeTableId, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }
