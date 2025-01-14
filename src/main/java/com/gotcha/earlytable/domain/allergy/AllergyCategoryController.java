@@ -2,6 +2,9 @@ package com.gotcha.earlytable.domain.allergy;
 
 import com.gotcha.earlytable.domain.allergy.dto.AllergyCategoryRequestDto;
 import com.gotcha.earlytable.domain.allergy.dto.AllergyCategoryResponseDto;
+import com.gotcha.earlytable.global.annotation.CheckUserAuth;
+import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +25,9 @@ public class AllergyCategoryController {
      * @param allergyCategoryRequestDto
      * @return AllergyCategoryResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PostMapping
-    public ResponseEntity<AllergyCategoryResponseDto> createAllergyCategory(@ModelAttribute AllergyCategoryRequestDto allergyCategoryRequestDto) {
+    public ResponseEntity<AllergyCategoryResponseDto> createAllergyCategory(@Valid @ModelAttribute AllergyCategoryRequestDto allergyCategoryRequestDto) {
         AllergyCategoryResponseDto createAllergyCategoryResponseDto = allergyCategoryService.createAllergyCategory(allergyCategoryRequestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createAllergyCategoryResponseDto);
@@ -35,9 +39,10 @@ public class AllergyCategoryController {
      * @param allergyCategoryRequestDto
      * @return AllergyCategoryResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PutMapping("/{categoryId}")
     public ResponseEntity<AllergyCategoryResponseDto> updateAllergyCategory(@PathVariable Long categoryId,
-                                                                            @ModelAttribute AllergyCategoryRequestDto allergyCategoryRequestDto) {
+                                                                            @Valid @ModelAttribute AllergyCategoryRequestDto allergyCategoryRequestDto) {
         AllergyCategoryResponseDto updateAllergyCategoryResponseDto = allergyCategoryService.updateAllergyCategory(categoryId, allergyCategoryRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(updateAllergyCategoryResponseDto);
@@ -59,6 +64,7 @@ public class AllergyCategoryController {
      * @param categoryId
      * @return String
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<String> deleteAllergyCategory(@PathVariable Long categoryId) {
         allergyCategoryService.deleteAllergyCategory(categoryId);

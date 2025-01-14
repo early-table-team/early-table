@@ -12,13 +12,13 @@ public class StoreReservationType extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long storeKeywordId;
+    private Long storeReservationTypeId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ReservationType reservationType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "store_id")
     private Store store;
 
