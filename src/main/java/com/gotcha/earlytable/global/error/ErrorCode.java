@@ -40,6 +40,7 @@ public enum ErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND,"리소스를 찾을 수 없습니다."),
     NOT_MATCHED(HttpStatus.NOT_FOUND, "초대한 사용자와 이메일이 일치하지 않습니다."),
     NOT_FOUND_PARTY(HttpStatus.NOT_FOUND,"파티를 찾을 수 없습니다."),
+    NOT_FOUND_ALLERGY_STUFF(HttpStatus.NOT_FOUND, "등록되지 않은 알러지 원재료입니다."),
 
 
     // 409 CONFLICT
@@ -47,6 +48,7 @@ public enum ErrorCode {
     USER_ALREADY_DELETED(HttpStatus.CONFLICT, "이미 탈퇴한 사용자 아이디입니다."),
     ALREADY_IN_FRIEND(HttpStatus.CONFLICT,"이미 친구로 등록된 사용자입니다."),
     ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 수락 대기 중인 요청 건이 존재합니다."),
+    ALREADY_REGISTERED_ALLERGYSTUFF_IN_MENU(HttpStatus.CONFLICT, "이미 메뉴에 등록된 알러지 원재료입니다."),
 
     ;
 
