@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.review.entity;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.review.dto.ReviewUpdateRequestDto;
 import com.gotcha.earlytable.domain.review.enums.ReviewStatus;
+import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.base.BaseEntity;
@@ -17,6 +18,7 @@ public class Review extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
 
+    @Column(nullable = false)
     private Integer rating;
 
     private String reviewContent;
@@ -36,13 +38,22 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "file_id", nullable = false)
     private File file;
 
-    public Review(int rating, String reviewContent, ReviewStatus reviewStatus, Store store, User user, File file) {
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReviewTarget reviewTarget;
+
+    private Long targetId;
+
+    public Review(int rating, String reviewContent, ReviewStatus reviewStatus, Store store, User user, File file,
+                  ReviewTarget reviewTarget, Long targetId) {
         this.rating = rating;
         this.reviewContent = reviewContent;
         this.reviewStatus = reviewStatus;
         this.store = store;
         this.user = user;
         this.file = file;
+        this.reviewTarget = reviewTarget;
+        this.targetId = targetId;
     }
 
     public Review() {}

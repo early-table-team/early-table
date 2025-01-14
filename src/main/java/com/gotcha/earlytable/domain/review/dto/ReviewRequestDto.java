@@ -1,5 +1,8 @@
 package com.gotcha.earlytable.domain.review.dto;
 
+import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -22,9 +25,18 @@ public class ReviewRequestDto {
 
     private final List<MultipartFile> reviewImageList;
 
-    public ReviewRequestDto(Integer rating, String reviewContent, List<MultipartFile> reviewImageList) {
+    @NotNull
+    private final Long targetId;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private final ReviewTarget targetObject;
+
+    public ReviewRequestDto(Integer rating, String reviewContent, List<MultipartFile> reviewImageList, Long targetId, ReviewTarget targetObject) {
         this.rating = rating;
         this.reviewContent = reviewContent;
         this.reviewImageList = reviewImageList;
+        this.targetId = targetId;
+        this.targetObject = targetObject;
     }
 }
