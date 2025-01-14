@@ -10,10 +10,10 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "image_file")
+@Table(name = "file_detail")
 public class FileDetail extends BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageFileId;
 
     private String fileName;
