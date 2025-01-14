@@ -5,7 +5,10 @@ import com.gotcha.earlytable.domain.review.dto.ReviewResponseDto;
 import com.gotcha.earlytable.domain.review.dto.ReviewTotalResponseDto;
 import com.gotcha.earlytable.domain.review.dto.ReviewUpdateRequestDto;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
+import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,9 +34,10 @@ public class ReviewController {
      * @param userDetails
      * @return ReviewResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/reviews")
     public ResponseEntity<ReviewResponseDto> createReview(@PathVariable Long storeId,
-                                                          @ModelAttribute ReviewRequestDto reviewRequestDto,
+                                                          @Valid @ModelAttribute ReviewRequestDto reviewRequestDto,
                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -51,15 +55,16 @@ public class ReviewController {
      * @param userDetails
      * @return ReviewResponseDto
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PutMapping("/reviews/{reviewId}")
     public ResponseEntity<ReviewResponseDto> updateReview(@PathVariable Long reviewId,
-                                                          @ModelAttribute ReviewUpdateRequestDto requestDto,
+                                                          @Valid @ModelAttribute ReviewUpdateRequestDto requestDto,
                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        ReviewResponseDto updateReviewResponseDto = reviewService.updateReview(reviewId, requestDto);
+        ReviewResponseDto updateReviewResponseDto = reviewService.updateReview(reviewId, requestDto, user.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(updateReviewResponseDto);
     }
@@ -68,12 +73,10 @@ public class ReviewController {
      * 가게 전체 리뷰 조회 API
      *
      * @param storeId
-     * @param reviewRequestDto
      * @return List<ReviewResponseDto>
      */
     @GetMapping("/stores/{storeId}/reviews")
-    public ResponseEntity<List<ReviewResponseDto>> getStoreReviews(@PathVariable Long storeId,
-                                                             @ModelAttribute ReviewRequestDto reviewRequestDto) {
+    public ResponseEntity<List<ReviewResponseDto>> getStoreReviews(@PathVariable Long storeId) {
         List<ReviewResponseDto> storeReviewsResponseDtoList = reviewService.getStoreReviews(storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(storeReviewsResponseDtoList);
@@ -81,14 +84,12 @@ public class ReviewController {
 
     /**
      * 나의 전체 리뷰 조회 API
-     *
-     * @param reviewRequestDto
      * @param userDetails
      * @return List<ReviewResponseDto>
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/reviews")
-    public ResponseEntity<List<ReviewResponseDto>> getMyReviews(@ModelAttribute ReviewRequestDto reviewRequestDto,
-                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<ReviewResponseDto>> getMyReviews(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
@@ -99,14 +100,11 @@ public class ReviewController {
 
     /**
      * 가게 리뷰 평점 조회 API
-     *
      * @param storeId
-     * @param reviewRequestDto
-     * @return ReviewResponseDto
+     * @return ReviewTotalResponseDto
      */
     @GetMapping("/stores/{storeId}/reviews/total")
-    public ResponseEntity<ReviewTotalResponseDto> getStoreReviewTotal(@PathVariable Long storeId,
-                                                                      @ModelAttribute ReviewRequestDto reviewRequestDto) {
+    public ResponseEntity<ReviewTotalResponseDto> getStoreReviewTotal(@PathVariable Long storeId) {
         ReviewTotalResponseDto reviewTotalResponseDto = reviewService.getStoreReviewTotal(storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(reviewTotalResponseDto);
@@ -114,17 +112,15 @@ public class ReviewController {
 
     /**
      * 리뷰 삭제 API
-     *
      * @param reviewId
-     * @param reviewRequestDto
      * @param userDetails
      * @return String
      */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<String> deleteReview(@PathVariable Long reviewId,
-                                                          @ModelAttribute ReviewRequestDto reviewRequestDto,
-                                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        reviewService.deleteReview(reviewId, userDetails.getUser());
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        reviewService.deleteReview(reviewId, userDetails.getUser().getId());
 
         return ResponseEntity.status(HttpStatus.OK).body("리뷰 삭제가 완료되었습니다.");
     }

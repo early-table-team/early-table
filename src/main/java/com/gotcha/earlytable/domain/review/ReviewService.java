@@ -13,11 +13,14 @@ import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
+import com.gotcha.earlytable.global.error.exception.ForbiddenException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReviewService {
@@ -63,9 +66,14 @@ public class ReviewService {
      * 리뷰 수정 서비스 메서드
      */
     @Transactional
-    public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto) {
+    public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto, Long userId) {
 
         Review review = reviewRepository.findByIdOrElseThrow(reviewId);
+
+        //내가 쓴 리뷰인지 확인
+        if(!review.getUser().getId().equals(userId)) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+        }
 
         //리뷰 수정 및 저장
         review.updateReview(reviewUpdateRequestDto);
@@ -102,19 +110,29 @@ public class ReviewService {
      */
     public ReviewTotalResponseDto getStoreReviewTotal(Long storeId) {
 
-        return reviewRepository.findStatisticsByStoreId(storeId);
+        Map<String, Object> result = reviewRepository.findStatisticsByStoreId(storeId);
+
+        return new ReviewTotalResponseDto(
+                ((Long) result.get("ratingStat1")).intValue(),
+                ((Long) result.get("ratingStat2")).intValue(),
+                ((Long) result.get("ratingStat3")).intValue(),
+                ((Long) result.get("ratingStat4")).intValue(),
+                ((Long) result.get("ratingStat5")).intValue(),
+                ((Long) result.get("countTotal")).intValue(),
+                (Double) result.get("ratingAverage")
+        );
     }
 
     /**
      * 리뷰 삭제 서비스 메서드
      */
     @Transactional
-    public void deleteReview(Long reviewId, User user) {
+    public void deleteReview(Long reviewId, Long userId) {
 
         Review review = reviewRepository.findByIdOrElseThrow(reviewId);
 
         // 리뷰가 내가 작성한게 맞나 확인하기
-        if(!review.getUser().equals(user)) {
+        if(!review.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 

@@ -32,7 +32,7 @@ public enum ErrorCode {
     UNAUTHORIZED_PASSWORD(HttpStatus.UNAUTHORIZED, "패스워드가 틀렸습니다."),
     NO_STORE_OWNER(HttpStatus.UNAUTHORIZED, "가게주인이 아닙니다."),
 
-  
+
     // 403 Forbidden
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN,"접근이 거부됐습니다."),
     FORBIDDEN_PERMISSION(HttpStatus.FORBIDDEN, "사용자 권한이 없습니다."),
