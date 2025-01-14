@@ -14,12 +14,16 @@ import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -44,6 +48,25 @@ public class UserService {
         this.fileService = fileService;
     }
 
+    public static boolean isValidateEmail(@NotBlank String email) {
+        // 이메일 형식에 대한 정규식
+        String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+
+        // 정규식 패턴을 사용하여 이메일 검증
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(email);
+
+        return matcher.matches();
+    }
+
+    public static boolean isValidPassword(String password) {
+        // 비밀번호 조건: 최소 8자, 소문자 1자, 숫자 1자, 특수문자 1자 이상
+        String regex = "^(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+
+        // 정규식 패턴 매칭
+        return Pattern.matches(regex, password);
+    }
+
     /**
      * 회원가입 기능
      *
@@ -54,8 +77,22 @@ public class UserService {
     public UserResponseDto registerUser(UserRegisterRequestDto requestDto) {
 
         // 이메일 중복 검사
-        if(userRepository.existsUserByEmail(requestDto.getEmail())) {
+        if (userRepository.existsUserByEmail(requestDto.getEmail())) {
             throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
+
+        if (userRepository.existsUserByPhone(requestDto.getPhone())) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
+
+        // 이메일 형식 검증
+        if (!isValidateEmail(requestDto.getEmail())) {
+            throw new BadRequestException(ErrorCode.INVALID_EMAIL);
+        }
+
+        // 비밀번호 형식 검증
+        if (!isValidPassword(requestDto.getPassword())) {
+            throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
         }
 
         // 패스워드 인코딩
@@ -69,7 +106,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         String imageUrl = null;
-        if(!requestDto.getProfileImage().isEmpty()) {
+        if (!requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
@@ -79,6 +116,7 @@ public class UserService {
 
     /**
      * 로그인 가능
+     *
      * @param requestDto
      * @return JwtAuthResponse
      */
@@ -113,7 +151,7 @@ public class UserService {
      * @param user
      * @return UserResponseDto
      */
-    public UserResponseDto getUser(User user){
+    public UserResponseDto getUser(User user) {
 
         String imageUrl = user.getFile().getFileDetailList().stream()
                 .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
@@ -124,16 +162,16 @@ public class UserService {
     }
 
     /**
-     *  유저 탈퇴 메서드
+     * 유저 탈퇴 메서드
      *
      * @param requestDto
      * @param user
      */
     @Transactional
-    public void deleteUser(UserDeleteRequestDto requestDto, User user){
+    public void deleteUser(UserDeleteRequestDto requestDto, User user) {
 
         // 비밀번호 값이 일치하지 않는경우 BAD_REQUEST 발생
-        if(!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
@@ -143,7 +181,7 @@ public class UserService {
     }
 
     /**
-     *  유저 정보 변경 메서드
+     * 유저 정보 변경 메서드
      *
      * @param user
      * @param requestDto
@@ -181,6 +219,11 @@ public class UserService {
      */
     @Transactional
     public void updateUserPW(User user, UserPWRequestDto requestDto) {
+
+        // 비밀번호 형식 검증
+        if (!isValidPassword(requestDto.getPassword())) {
+            throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
+        }
 
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());

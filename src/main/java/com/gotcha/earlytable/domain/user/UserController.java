@@ -4,6 +4,7 @@ import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class UserController {
      * @return ResponseEntity<UserResponseDto>
      */
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> registerUser (@Valid @ModelAttribute UserRegisterRequestDto requestDto) {
+    public ResponseEntity<UserResponseDto> registerUser(@Valid @ModelAttribute UserRegisterRequestDto requestDto) {
         UserResponseDto registerUser = userService.registerUser(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
@@ -44,7 +45,7 @@ public class UserController {
      * @return ResponseEntity<JwtAuthResponse>
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> loginUser (@Valid @RequestBody UserLoginRequestDto requestDto) {
+    public ResponseEntity<JwtAuthResponse> loginUser(@Valid @RequestBody UserLoginRequestDto requestDto) {
 
         JwtAuthResponse jwtAuthResponse = userService.loginUser(requestDto);
 
@@ -69,7 +70,11 @@ public class UserController {
         if (authentication != null && authentication.isAuthenticated()) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
 
-            request.getSession(false).invalidate();
+            HttpSession session = request.getSession(false);
+
+            if (session != null) {
+                session.invalidate();
+            }
 
             return ResponseEntity.ok("로그아웃 성공.");
         }
@@ -86,7 +91,7 @@ public class UserController {
      * @return ResponseEntity<UserResponseDto>
      */
     @GetMapping
-    public ResponseEntity<UserResponseDto> getUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<UserResponseDto> getUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         UserResponseDto userResponseDto = userService.getUser(userDetails.getUser());
 
@@ -102,7 +107,7 @@ public class UserController {
      */
     @PutMapping
     public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserUpdateRequestDto requestDto,
-                                                      @AuthenticationPrincipal UserDetailsImpl userDetails){
+                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         UserResponseDto userResponseDto = userService.updateUser(userDetails.getUser(), requestDto);
 
@@ -118,7 +123,7 @@ public class UserController {
      */
     @PatchMapping("/pw")
     public ResponseEntity<String> updateUserPW(@Valid @RequestBody UserPWRequestDto requestDto,
-                                               @AuthenticationPrincipal UserDetailsImpl userDetails){
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         userService.updateUserPW(userDetails.getUser(), requestDto);
 
@@ -126,7 +131,7 @@ public class UserController {
     }
 
     /**
-     *  유저 삭제 API
+     * 유저 삭제 API
      *
      * @param requestDto
      * @param userDetails
@@ -134,7 +139,7 @@ public class UserController {
      */
     @DeleteMapping
     public ResponseEntity<String> deleteUser(@RequestBody UserDeleteRequestDto requestDto,
-                                             @AuthenticationPrincipal UserDetailsImpl userDetails){
+                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         userService.deleteUser(requestDto, userDetails.getUser());
 

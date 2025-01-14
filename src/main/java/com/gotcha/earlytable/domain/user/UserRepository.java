@@ -14,15 +14,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsUserByEmail(String email);
 
+    boolean existsUserByPhone(String phone);
+
     Optional<User> findByEmailAndStatus(String email, Status status);
 
-    default User findByEmailOrElseThrow(String email){
+    default User findByEmailOrElseThrow(String email) {
         return findByEmailAndStatus(email, Status.NORMAL).orElseThrow(
                 () -> new NotFoundException(ErrorCode.NOT_FOUND)
         );
     }
 
-    default User findByIdOrElseThrow(Long id){
+    default User findByIdOrElseThrow(Long id) {
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
