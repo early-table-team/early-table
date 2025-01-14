@@ -22,13 +22,11 @@ public class AllergyService {
     private final AllergyRepository allergyRepository;
     private final AllergyStuffRepository allergyStuffRepository;
     private final MenuRepository menuRepository;
-    private final AllergyCategoryRepository allergyCategoryRepository;
 
-    public AllergyService(AllergyRepository allergyRepository, AllergyStuffRepository allergyStuffRepository, MenuRepository menuRepository, AllergyCategoryRepository allergyCategoryRepository) {
+    public AllergyService(AllergyRepository allergyRepository, AllergyStuffRepository allergyStuffRepository, MenuRepository menuRepository) {
         this.allergyRepository = allergyRepository;
         this.allergyStuffRepository = allergyStuffRepository;
         this.menuRepository = menuRepository;
-        this.allergyCategoryRepository = allergyCategoryRepository;
     }
 
     /**
