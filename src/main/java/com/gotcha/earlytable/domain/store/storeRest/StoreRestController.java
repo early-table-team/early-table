@@ -33,13 +33,13 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<StoreRestResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<StoreRestResponseDto> createStoreRest(@PathVariable Long storeId,
                                                                 @Valid @RequestBody StoreRestRequestDto requestDto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        StoreRestResponseDto responseDto = storeRestService.createStoreRest(storeId, userDetails.getUser().getId(), requestDto);
+        StoreRestResponseDto responseDto = storeRestService.createStoreRest(storeId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -82,13 +82,13 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<StoreRestResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PatchMapping("/{restId}")
     public ResponseEntity<StoreRestResponseDto> updateStoreRest(@PathVariable Long restId,
                                                                 @Valid @RequestBody StoreRestUpdateRequestDto requestDto,
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        StoreRestResponseDto responseDto = storeRestService.updateStoreRest(restId, userDetails.getUser().getId(), requestDto);
+        StoreRestResponseDto responseDto = storeRestService.updateStoreRest(restId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -100,12 +100,12 @@ public class StoreRestController {
      * @param userDetails
      * @return ResponseEntity<Void>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping("/{restId}")
     public ResponseEntity<Void> deleteStoreRest(@PathVariable Long restId,
                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        storeRestService.deleteStoreRest(restId, userDetails.getUser().getId());
+        storeRestService.deleteStoreRest(restId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

@@ -1,6 +1,6 @@
 package com.gotcha.earlytable.domain.store.entity;
 
-import com.gotcha.earlytable.domain.store.dto.StoreHourRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreHourUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.enums.DayOfWeek;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.global.base.BaseEntity;
@@ -55,11 +55,7 @@ public class StoreHour extends BaseEntity {
         store.getStoreHourList().add(this);
     }
 
-    public void updateStoreHour(StoreHourRequestDto requestDto) {
-
-        if (requestDto.getDayOfWeek() != null) {
-            this.dayOfWeek = requestDto.getDayOfWeek();
-        }
+    public void updateStoreHour(StoreHourUpdateRequestDto requestDto) {
         if (requestDto.getOpenTime() != null) {
             this.openTime = requestDto.getOpenTime();
         }

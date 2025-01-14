@@ -31,7 +31,7 @@ public class StoreTimeSlotController {
      * @param userDetails
      * @return ResponseEntity<ReservationMasterResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping
     public ResponseEntity<TimeSlotResponseDto> createStoreTimeSlot(@PathVariable Long storeId,
                                                                    @Valid @RequestBody TimeSlotRequestDto requestDto,
@@ -48,7 +48,6 @@ public class StoreTimeSlotController {
      * @param storeId
      * @return ResponseEntity<List < TimeSlotResponseDto>>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping
     public ResponseEntity<List<TimeSlotResponseDto>> getAllTimeSlots(@PathVariable Long storeId) {
 
@@ -63,7 +62,6 @@ public class StoreTimeSlotController {
      * @param storeTimeSlotId
      * @return ResponseEntity<TimeSlotResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/{storeTimeSlotId}")
     public ResponseEntity<TimeSlotResponseDto> getOneTimeSlot(@PathVariable Long storeTimeSlotId,
                                                               @PathVariable Long storeId) {
@@ -83,7 +81,7 @@ public class StoreTimeSlotController {
      * @param userDetails
      * @return ResponseEntity<TimeSlotResponseDto>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PutMapping("/{storeTimeSlotId}")
     public ResponseEntity<TimeSlotResponseDto> modifyTimeSlot(@PathVariable Long storeId,
                                                               @PathVariable Long storeTimeSlotId,
@@ -104,7 +102,7 @@ public class StoreTimeSlotController {
      * @param userDetails
      * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping("/{storeTimeSlotId}")
     public ResponseEntity<Void> deleteTimeSlot(@PathVariable Long storeId,
                                                  @PathVariable Long storeTimeSlotId,
