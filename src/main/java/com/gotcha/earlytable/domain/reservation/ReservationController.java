@@ -100,5 +100,22 @@ public class ReservationController {
     }
 
 
+    /**
+     *   가게 오너 입장에서 예약 조회 API
+     * @param userDetails
+     * @param requestDto
+     * @return  ResponseEntity<List<OwnerReservationResponseDto>>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("/owner/reservations")
+    public ResponseEntity<List<OwnerReservationResponseDto>> getStoreReservations(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody OwnerReservationRequestDto requestDto){
+
+        List<OwnerReservationResponseDto> responseDto =reservationService.getStoreReservations(userDetails.getUser(), requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+
+
 
 }

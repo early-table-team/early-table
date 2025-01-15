@@ -3,6 +3,9 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.keyword.StoreKeywordRepository;
+import com.gotcha.earlytable.domain.keyword.entity.Keyword;
+import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -15,6 +18,7 @@ import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,15 +28,17 @@ public class StoreService {
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
+    private final StoreKeywordRepository storeKeywordRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
-                        FileRepository fileRepository, FileDetailService fileDetailService) {
+                        FileRepository fileRepository, FileDetailService fileDetailService, StoreKeywordRepository storeKeywordRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
+        this.storeKeywordRepository = storeKeywordRepository;
     }
 
     /**
@@ -242,8 +248,29 @@ public class StoreService {
      * @param requestDto
      * @return
      */
-    public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
+    public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto) {
 
         return storeRepository.searchStoreQuery(requestDto);
+    }
+
+
+
+    public List<StoreSearchResponseDto> searchKeywordStore(FindStoreKeywordRequestDto requestDto) {
+
+        String keyword = requestDto.getKeyword();
+
+        // 스토어 키워드가 일치하는 것들을 리스트 타입으로 가져옴
+        List<StoreKeyword> storeKeyword = storeKeywordRepository.findAllByKeywordKeyword(keyword);
+
+
+        // 해당 가게들로 DTO를 생성 후 반환
+        List<StoreSearchResponseDto> dtos = new ArrayList<>();
+        for(StoreKeyword storeKeywordDto : storeKeyword) {
+            StoreSearchResponseDto dto = new StoreSearchResponseDto(storeKeywordDto.getStore());
+            dtos.add(dto);
+        }
+
+        return dtos;
+
     }
 }

@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
 
@@ -288,4 +289,27 @@ public class ReservationService {
     }
 
 
+    /**
+     *  가게 오너 입장에서 예약 조회 메서드
+     * @param user
+     * @param requestDto
+     * @return List<OwnerReservationResponseDto>
+     */
+    public List<OwnerReservationResponseDto> getStoreReservations(User user, OwnerReservationRequestDto requestDto) {
+
+        LocalDate reservationDate = requestDto.getReservationDate();
+        Long storeId = requestDto.getStoreId();
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+
+        List<Reservation> reservations = reservationRepository.findAllByReservationDateAndStore(reservationDate,store);
+        List<OwnerReservationResponseDto> responseDtos = new ArrayList<>();
+        // TODO : 얘는 보여야 할게 예약 날짜, 예약시간, 예약자 대표, 인원수 정도만 보이면 되겟다
+        for(Reservation reservation : reservations){
+            OwnerReservationResponseDto ownerReservationResponseDto = new OwnerReservationResponseDto(reservation);
+            responseDtos.add(ownerReservationResponseDto);
+        }
+
+        return responseDtos;
+    }
 }

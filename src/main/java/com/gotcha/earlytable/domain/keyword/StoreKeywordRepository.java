@@ -14,4 +14,6 @@ public interface StoreKeywordRepository extends JpaRepository<StoreKeyword, Long
     Integer deleteByKeywordKeywordIdAndStoreStoreIdIn(Long keywordId, List<Long> storeIds);
 
     boolean existsByStore(Store store);
+
+    List<StoreKeyword> findAllByKeywordKeyword(String keyword);
 }
