@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.waitingsetting;
 
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
+import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +18,9 @@ public class WaitingSettingScheduler {
         this.waitingSettingRepository = waitingSettingRepository;
     }
 
-    @Scheduled(cron = "0 * * * * *") // 매 분 0초마다 실행
+    @Scheduled(cron = "0 0 4 * * *")
     public void updateWaitingSettingStatus() {
-        List<WaitingSetting> waitingSettings = waitingSettingRepository.findAll();
+        List<WaitingSetting> waitingSettings = waitingSettingRepository.findAllByWaitingSettingStatus(WaitingSettingStatus.CLOSE);
         for (WaitingSetting waitingSetting : waitingSettings) {
             waitingSettingService.updateWaitingSettingStatus(waitingSetting.getWaitingSettingId());
         }

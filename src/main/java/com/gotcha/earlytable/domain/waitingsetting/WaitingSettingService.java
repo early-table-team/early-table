@@ -118,33 +118,15 @@ public class WaitingSettingService {
     }
 
     /**
-     * 웨이팅 시간대 기준 자동 상태 변경 메서드
+     * 웨이팅 상태 자동 상태 변경(to OPEN) 메서드
      *
      * @param waitingSettingId
      */
     public void updateWaitingSettingStatus(Long waitingSettingId) {
         WaitingSetting waitingSetting = waitingSettingRepository.findByIdOrElseThrow(waitingSettingId);
 
-        LocalTime openTime = waitingSetting.getWaitingOpenTime();
-        LocalTime closedTime = waitingSetting.getWaitingClosedTime();
-        LocalTime now = LocalTime.now();
-
-        if(isWithinOperatingHours(now, openTime, closedTime)) {
-            waitingSetting.updateStatus(WaitingSettingStatus.OPEN);
-        } else {
-            waitingSetting.updateStatus(WaitingSettingStatus.CLOSE);
-        }
+        waitingSetting.updateStatus(WaitingSettingStatus.OPEN);
 
         waitingSettingRepository.save(waitingSetting);
-    }
-
-    private boolean isWithinOperatingHours(LocalTime now, LocalTime openTime, LocalTime closeTime) {
-        if (openTime.isBefore(closeTime)) {
-            // 같은 날 오픈/마감
-            return now.isAfter(openTime) && now.isBefore(closeTime);
-        } else {
-            // 오픈이 전날이고 마감이 다음날
-            return now.isAfter(openTime) || now.isBefore(closeTime);
-        }
     }
 }
