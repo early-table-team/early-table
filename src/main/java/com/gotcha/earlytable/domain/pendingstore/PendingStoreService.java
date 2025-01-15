@@ -182,4 +182,43 @@ public class PendingStoreService {
         // 상태 승인 변경
         pendingStore.updateStoreStatus(StoreStatus.APPROVED);
     }
+
+    /**
+     * 나의 가게 요청 전체 목록 조회 메서드
+     *
+     * @param pageable
+     * @param user
+     * @return List<PendingStoreResponseListDto>
+     */
+    public List<PendingStoreResponseListDto> getPendingStoresForOwner(Pageable pageable, User user) {
+
+        List<PendingStore> pendingStores = pendingStoreRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
+
+        return pendingStores.stream().map(PendingStoreResponseListDto::toDto).toList();
+    }
+
+    /**
+     * 나의 가게 요청 단건 조회 메서드
+     *
+     * @param pendingStoreId
+     * @param user
+     * @return PendingStoreResponseDto
+     */
+    public PendingStoreResponseDto getPendingStoreForOwner(Long pendingStoreId, User user) {
+
+        // 팬딩 가게 정보 가져오기
+        PendingStore pendingStore = pendingStoreRepository.findByIdOrElseThrow(pendingStoreId);
+
+        // 본인 가게 아니면 조회 불가능
+        if(!pendingStore.getUser().getId().equals(user.getId())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 가게 파일 정보 가져오기
+        File file = fileService.getFile(pendingStore.getFileId());
+
+        return PendingStoreResponseDto.toDto(pendingStore, file);
+
+
+    }
 }
