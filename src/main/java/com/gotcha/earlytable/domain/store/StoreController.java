@@ -94,8 +94,8 @@ public class StoreController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PatchMapping("/{storeId}/status/rest")
-    public ResponseEntity<String> storeStatusRest( @PathVariable Long storeId,
-                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<String> storeStatusRest(@PathVariable Long storeId,
+                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         String message = storeService.updateStoreStatus(storeId, userDetails.getUser().getId());
 
@@ -110,8 +110,8 @@ public class StoreController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PatchMapping("/{storeId}/status")
-    public ResponseEntity<String> updateStoreStatus( @PathVariable Long storeId,
-                                                     @Valid @RequestBody StoreStatusRequestDto requestDto) {
+    public ResponseEntity<String> updateStoreStatus(@PathVariable Long storeId,
+                                                    @Valid @RequestBody StoreStatusRequestDto requestDto) {
 
         storeService.updateStoreStatus(storeId, requestDto.getStoreStatus());
 
@@ -131,5 +131,18 @@ public class StoreController {
         List<StoreListResponseDto> responseDtoList = storeService.searchStore(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
+    }
+
+    /**
+     *
+     *
+     * @return FiltersResponseDto
+     */
+    @GetMapping("/search/filter")
+    public ResponseEntity<FiltersResponseDto> getFilters() {
+
+        FiltersResponseDto responseDto = storeService.getFilters();
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
