@@ -49,7 +49,7 @@ public class StoreService {
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
-                        AllergyCategoryRepository allergyCategoryRepository, AllergyStuffRepository allergyStuffRepository) {
+                        AllergyCategoryRepository allergyCategoryRepository, AllergyStuffRepository allergyStuffRepository, ReservationRepository reservationRepository, StoreKeywordRepository storeKeywordRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
@@ -57,6 +57,8 @@ public class StoreService {
         this.fileDetailService = fileDetailService;
         this.allergyCategoryRepository = allergyCategoryRepository;
         this.allergyStuffRepository = allergyStuffRepository;
+        this.reservationRepository = reservationRepository;
+        this.storeKeywordRepository = storeKeywordRepository;
     }
 
     /**
