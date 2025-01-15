@@ -5,6 +5,8 @@ import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface StoreReservationTypeRepository extends JpaRepository<StoreReservationType, Long> {
 
@@ -12,5 +14,5 @@ public interface StoreReservationTypeRepository extends JpaRepository<StoreReser
 
     void deleteByStoreReservationTypeIdAndReservationType(Long storeReservationTypeId, ReservationType reservationType);
 
-    StoreReservationType findByStoreStoreId(Long storeId);
+    Optional<StoreReservationType> findByStoreStoreId(Long storeId);
 }

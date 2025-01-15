@@ -11,7 +11,6 @@ import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
-import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import com.gotcha.earlytable.global.enums.RegionBottom;
 import com.gotcha.earlytable.global.enums.RegionTop;
@@ -118,16 +117,16 @@ public class Store extends BaseEntity {
 
     public void updateStore(StoreUpdateRequestDto requestDto) {
 
-        if (requestDto.getStoreName() != null) {
+        if (requestDto.getStoreName() != null && !requestDto.getStoreName().isEmpty()) {
             this.storeName = requestDto.getStoreName();
         }
-        if (requestDto.getStoreTel() != null) {
+        if (requestDto.getStoreTel() != null && !requestDto.getStoreTel().isEmpty()) {
             this.storeTel = requestDto.getStoreTel();
         }
-        if (requestDto.getStoreContents() != null) {
+        if (requestDto.getStoreContents() != null && !requestDto.getStoreContents().isEmpty()) {
             this.storeContents = requestDto.getStoreContents();
         }
-        if (requestDto.getStoreAddress() != null) {
+        if (requestDto.getStoreAddress() != null && !requestDto.getStoreAddress().isEmpty()) {
             this.storeAddress = requestDto.getStoreAddress();
         }
         if (requestDto.getStoreCategory() != null) {
@@ -143,16 +142,16 @@ public class Store extends BaseEntity {
 
     public void updateStoreFromPendingStore(PendingStore pendingStore, File file) {
 
-        if (pendingStore.getStoreName() != null) {
+        if (pendingStore.getStoreName() != null && !pendingStore.getStoreName().isEmpty()) {
             this.storeName = pendingStore.getStoreName();
         }
-        if (pendingStore.getStoreTel() != null) {
+        if (pendingStore.getStoreTel() != null && !pendingStore.getStoreTel().isEmpty()) {
             this.storeTel = pendingStore.getStoreTel();
         }
-        if (pendingStore.getStoreContents() != null) {
+        if (pendingStore.getStoreContents() != null && !pendingStore.getStoreContents().isEmpty()) {
             this.storeContents = pendingStore.getStoreContents();
         }
-        if (pendingStore.getStoreAddress() != null) {
+        if (pendingStore.getStoreAddress() != null && !pendingStore.getStoreAddress().isEmpty()) {
             this.storeAddress = pendingStore.getStoreAddress();
         }
         if (pendingStore.getStoreCategory() != null) {

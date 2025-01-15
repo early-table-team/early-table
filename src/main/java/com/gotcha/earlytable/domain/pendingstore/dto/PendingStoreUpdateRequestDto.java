@@ -5,6 +5,7 @@ import com.gotcha.earlytable.global.enums.RegionBottom;
 import com.gotcha.earlytable.global.enums.RegionTop;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +16,7 @@ public class PendingStoreUpdateRequestDto {
 
     private final String storeName;
 
+    @Pattern(regexp = "^\\d{2,3}-\\d{4}-\\d{4}$", message = "유효한 핸드폰 번호를 입력하세요.")
     private final String storeTel;
 
     private final String storeAddress;

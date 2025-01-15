@@ -13,6 +13,7 @@ import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -156,6 +157,10 @@ public class PendingStoreService {
 
         // 팬딩 가게 정보 가져오기
         PendingStore pendingStore = pendingStoreRepository.findByIdOrElseThrow(pendingStoreId);
+
+        if(pendingStore.getStoreStatus() != StoreStatus.PENDING) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
 
         // 거절시
         if(requestDto.getPendingStoreStatus() == PendingStoreStatus.REJECT) {
