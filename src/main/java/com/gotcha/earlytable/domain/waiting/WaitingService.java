@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
@@ -96,6 +97,12 @@ public class WaitingService {
             throw new BadRequestException(ErrorCode.WAITING_ERROR);
         }
 
+        // 웨이팅 가능 시간 확인
+        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
+
         // 일행 그룹 생성
         Party party = partyRepository.save(new Party());
 
@@ -107,8 +114,8 @@ public class WaitingService {
         LocalDate date = LocalDate.now();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
+        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59), requestDto.getWaitingType());
 
         waitingNumber++;
 
@@ -134,28 +141,34 @@ public class WaitingService {
         // 가게 확인
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-//        // 가게 예약 타입 확인
-//        boolean dontReservation = store.getStoreReservationTypeList().stream()
-//                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
-//
-//        if (dontReservation) {
-//            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
-//        }
-//
-//        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
-//        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
-//                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
-//                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
-//        if (holiday) {
-//            throw new CustomException(ErrorCode.STORE_HOLIDAY);
-//        }
-//
-//
-//        // 웨이팅 가능 여부 확인
-//        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
-//        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
-//            throw new BadRequestException(ErrorCode.WAITING_ERROR);
-//        }
+        // 가게 예약 타입 확인
+        boolean dontReservation = store.getStoreReservationTypeList().stream()
+                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
+
+        if (dontReservation) {
+            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
+        }
+
+        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
+        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
+                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
+                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
+        if (holiday) {
+            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+        }
+
+
+        // 웨이팅 가능 여부 확인
+        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
+        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
+        // 웨이팅 가능 시간 확인
+        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
 
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
@@ -175,8 +188,8 @@ public class WaitingService {
         LocalDate date = LocalDate.now();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
+        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59), requestDto.getWaitingType());
 
         waitingNumber++;
 
@@ -237,8 +250,8 @@ public class WaitingService {
         LocalDate waitingDate = waiting.getCreatedAt().toLocalDate();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(waiting.getStore(),
-                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59));
+        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(waiting.getStore(),
+                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59), waiting.getWaitingType());
 
         waitingNumber++;
 

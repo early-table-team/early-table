@@ -6,6 +6,7 @@ import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.enums.WaitingType;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,8 +20,6 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
-    int countByStoreAndCreatedAtBetween(Store store, LocalDateTime from, LocalDateTime to);
-
     int countByStoreAndWaitingStatusAndCreatedAtBetweenAndWaitingNumberLessThanEqual(Store store,
                                                                                      WaitingStatus waitingStatus,
                                                                                      LocalDateTime from,
@@ -28,4 +27,6 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
                                                                                      Integer waitingNumber);
 
     List<Waiting> findByStoreAndWaitingTypeAndWaitingStatus(Store store, WaitingType waitingType, WaitingStatus waitingStatus);
+
+    int countByStoreAndCreatedAtBetweenAndWaitingType(Store store, LocalDateTime localDateTime, LocalDateTime localDateTime1, @NotNull WaitingType waitingType);
 }
