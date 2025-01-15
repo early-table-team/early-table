@@ -15,6 +15,8 @@ import java.util.Map;
 @Getter
 public class PendingStoreResponseDto {
 
+    private final Long pendingStoreId;
+
     private final Long storeId;
 
     private final Long userId;
@@ -39,11 +41,12 @@ public class PendingStoreResponseDto {
 
     private final PendingStoreType pendingStoreType;
 
-    public PendingStoreResponseDto(Long storeId, Long userId, String userName, String storeName, String storeTel,
+    public PendingStoreResponseDto(Long pendingStoreId,Long storeId, Long userId, String userName, String storeName, String storeTel,
                                    String storeAddress, StoreCategory storeCategory,
                                    LocalDateTime createdAt, LocalDateTime modifiedAt,
                                    StoreStatus storeStatus, PendingStoreType pendingStoreType,
                                    Map<Integer, String> storeImageUrlMap) {
+        this.pendingStoreId = pendingStoreId;
         this.storeId = storeId;
         this.userId = userId;
         this.userName = userName;
@@ -62,10 +65,10 @@ public class PendingStoreResponseDto {
         Map<Integer, String> imageFileUrlMap = new HashMap<>();
 
         for (FileDetail fileDetail : file.getFileDetailList()) {
-            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUniqueName());
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUrl());
         }
 
-        return new PendingStoreResponseDto(pendingStore.getStoreId(),
+        return new PendingStoreResponseDto(pendingStore.getPendingStoreId(),pendingStore.getStoreId(),
                 pendingStore.getUser().getId(), pendingStore.getUser().getNickName(),
                 pendingStore.getStoreName(), pendingStore.getStoreTel(),
                 pendingStore.getStoreAddress(), pendingStore.getStoreCategory(),
