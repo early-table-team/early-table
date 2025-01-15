@@ -41,6 +41,7 @@ public class StoreService {
                         FileRepository fileRepository, FileDetailService fileDetailService,
                         ReservationRepository reservationRepository,StoreKeywordRepository storeKeywordRepository) {
 
+
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
@@ -294,8 +295,8 @@ public class StoreService {
                 int tableMinNumber = tableMaxNumber - 1;
                 // 잔여 개수
                 int remainTableCount = storeTable.getTableCount() - reservationRepository
-                        .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
-                                date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
+                                .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
+                                        date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
 
                 totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
             }
@@ -303,8 +304,6 @@ public class StoreService {
 
         return totalDtoList;
     }
-
-
 
     public List<StoreSearchResponseDto> searchKeywordStore(String keyword) {
 
