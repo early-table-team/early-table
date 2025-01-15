@@ -123,7 +123,11 @@ public class ReservationService {
         Integer tablesize = Math.toIntExact(store.getReservationList().stream().filter(reservation ->
                 reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
                 reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
-                reservation.getTableSize() == requestDto.getPersonnelCount()).count());
+                reservation.getTableSize() == requestDto.getPersonnelCount() &&
+                !reservation.getReservationStatus().equals(ReservationStatus.CANCELED)).count()
+                );
+
+
 
         // 인원수에 맞는 테이블로 예약 가능한지 확인하기, 안된다면 +1까지 검토
         boolean canSeat = store.getStoreTableList().stream()
@@ -151,6 +155,7 @@ public class ReservationService {
         partyPeopleRepository.save(partyPeople);
         List<ReturnMenuListDto> returnMenuListDtos = new ArrayList<>();
         for (int i = 0; i < menuIds.size(); i++) {
+            if(menuCounts.get(i) <= 0){continue;}
             Menu menuItem = menuRepository.findById(menuIds.get(i)).orElse(null);
             ReservationMenu reservationMenu = new ReservationMenu(menuItem, reservation, menuCounts.get(i));
             reservationMenuRepository.save(reservationMenu);
@@ -238,11 +243,14 @@ public class ReservationService {
             Long menuId = menu.get("menuId"); // 예약한 메뉴의 아이디값을 가져옴
             Long menuCount = menu.get("menuCount");
 
+            if(menuCount <= 0){return;}
+
             boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
 
             if (!isMenuExist) {
                 throw new BadRequestException(ErrorCode.NOT_FOUND_MENU);
             }
+
             Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
             menus.add(addMenu);
             menuCounts.add(menuCount);

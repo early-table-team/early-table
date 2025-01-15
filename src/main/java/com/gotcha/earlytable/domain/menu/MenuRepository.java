@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Long> {
@@ -20,7 +21,9 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     List<Menu> findAllByStoreStoreId(Long storeId);
 
-    Menu findByStoreStoreIdAndMenuStatus(Long storeId, MenuStatus menuStatus);
+    Optional<Menu> findByStoreStoreIdAndMenuStatus(Long storeId, MenuStatus menuStatus);
 
     boolean existsByMenuIdAndStore(Long menuId, Store store);
+
+
 }

@@ -36,8 +36,12 @@ public class PartyPeopleService {
         //초대 가져오기
         Invitation invitation = invitationRepository.findByInvitationIdOrThrow(invitationId);
 
-        // 예약을 초대로 받은 기억이 있는지 확인
-        if(!invitation.getReceiveUser().getId().equals(user.getId())){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
+        // 파티원의 일원인지 조사를 해야함
+        if(invitation.getParty().getPartyPeople().stream().noneMatch(partyPeople -> partyPeople.getUser().getId().equals(user.getId()))){throw new CustomException(ErrorCode. FORBIDDEN_PARTY_PEOPLE);}
+
+        // 파티장인 경우 못떠나게
+        invitation.getParty().getPartyPeople().stream().filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)
+               && partyPeople.getUser().getId().equals(user.getId())).findFirst().ifPresent(partyPeople -> {throw new CustomException(ErrorCode.FORBIDDEN_PARTY_LEADER_LEAVE);});
 
         // 해당 예약의 상태가 수락인지 확인
         if(!invitation.getInvitationStatus().equals(InvitationStatus.ACCEPTED)){

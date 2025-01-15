@@ -40,6 +40,8 @@ public enum ErrorCode {
     FORBIDDEN_PARTY_LEADER(HttpStatus.FORBIDDEN,"파티장이 아닙니다."),
     FORBIDDEN_ACCESS_PTAH(HttpStatus.FORBIDDEN,"잘못된 접근입니다."),
     FORBIDDEN_FRIEND_REQUEST(HttpStatus.FORBIDDEN, "본인의 요청이 아닙니다."),
+    FORBIDDEN_PARTY_LEADER_LEAVE(HttpStatus.FORBIDDEN,"파티장은 탈퇴가 안됩니다."),
+    FORBIDDEN_PARTY_PEOPLE(HttpStatus.FORBIDDEN,"파티일원이 아닙니다"),
 
     // 404 NOT_FOUND
     NOT_FOUND(HttpStatus.NOT_FOUND,"리소스를 찾을 수 없습니다."),
