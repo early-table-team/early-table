@@ -24,10 +24,12 @@ import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.ForbiddenException;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
@@ -95,6 +97,12 @@ public class WaitingService {
             throw new BadRequestException(ErrorCode.WAITING_ERROR);
         }
 
+        // 웨이팅 가능 시간 확인
+        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
+
         // 일행 그룹 생성
         Party party = partyRepository.save(new Party());
 
@@ -106,8 +114,8 @@ public class WaitingService {
         LocalDate date = LocalDate.now();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
+        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59), requestDto.getWaitingType());
 
         waitingNumber++;
 
@@ -156,6 +164,12 @@ public class WaitingService {
             throw new BadRequestException(ErrorCode.WAITING_ERROR);
         }
 
+        // 웨이팅 가능 시간 확인
+        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
+
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
 
@@ -174,8 +188,8 @@ public class WaitingService {
         LocalDate date = LocalDate.now();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(store,
-                date.atTime(0, 0, 0), date.atTime(23, 59, 59));
+        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
+                date.atTime(0, 0, 0), date.atTime(23, 59, 59), requestDto.getWaitingType());
 
         waitingNumber++;
 
@@ -236,8 +250,8 @@ public class WaitingService {
         LocalDate waitingDate = waiting.getCreatedAt().toLocalDate();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetween(waiting.getStore(),
-                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59));
+        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(waiting.getStore(),
+                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59), waiting.getWaitingType());
 
         waitingNumber++;
 
@@ -275,6 +289,27 @@ public class WaitingService {
         }
 
         return new WaitingDetailResponseDto(waiting);
+    }
+
+    /**
+     * 웨이팅 조회 (Owner)
+     *
+     * @param user
+     * @param storeId
+     * @param requestDto
+     * @return WaitingOwnerResponseDto
+     */
+    public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, @Valid WaitingOwnerRequestDto requestDto) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        if (!store.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+        }
+
+        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatus(store, requestDto.getWaitingType(), WaitingStatus.PENDING);
+
+        return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType());
     }
 
     /**
@@ -316,9 +351,13 @@ public class WaitingService {
      * @param waitingStatus
      */
     @Transactional
-    public void changeWaitingStatus(Long waitingId, WaitingStatus waitingStatus) {
+    public void changeWaitingStatus(Long waitingId, WaitingStatus waitingStatus, User user) {
 
         Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        if (user.getAuth() == Auth.OWNER && !waiting.getStore().getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+        }
 
         waiting.updateWaiting(waitingStatus);
 
