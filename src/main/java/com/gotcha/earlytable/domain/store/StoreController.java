@@ -135,7 +135,7 @@ public class StoreController {
     }
 
     /**
-     *
+     * 필터 목록 조회 API
      *
      * @return FiltersResponseDto
      */
