@@ -305,7 +305,11 @@ public class StoreService {
     }
 
 
-
+    /**
+     *  키워드로 가게검색 메서드
+     * @param keyword
+     * @return
+     */
     public List<StoreSearchResponseDto> searchKeywordStore(String keyword) {
 
         // 스토어 키워드가 일치하는 것들을 리스트 타입으로 가져옴
