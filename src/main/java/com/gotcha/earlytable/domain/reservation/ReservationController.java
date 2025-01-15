@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -98,6 +99,24 @@ public class ReservationController {
         //취소는 NO_CONTENT 반환
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+
+    /**
+     *   가게 오너 입장에서 예약 조회 API
+     * @param reservationDate
+     * @param storeId
+     * @return  ResponseEntity<List<OwnerReservationResponseDto>>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("/owner/reservations")
+    public ResponseEntity<List<OwnerReservationResponseDto>> getStoreReservations(@RequestParam("reservationDate") LocalDate reservationDate,
+                                                                                  @RequestParam("storeId") Long storeId){
+
+        List<OwnerReservationResponseDto> responseDto =reservationService.getStoreReservations(reservationDate, storeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
 
 
 

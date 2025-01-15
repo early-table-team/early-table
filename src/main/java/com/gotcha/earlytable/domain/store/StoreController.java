@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -119,16 +120,16 @@ public class StoreController {
     }
 
     /**
-     * 가게 검색 조회
+     * 가게 검색 조회 API
      *
      * @param requestDto
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/search")
-    public ResponseEntity<List<StoreListResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
+    public ResponseEntity<List<StoreSearchResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
 
-        List<StoreListResponseDto> responseDtoList = storeService.searchStore(requestDto);
+        List<StoreSearchResponseDto> responseDtoList = storeService.searchStore(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }
@@ -144,5 +145,37 @@ public class StoreController {
         FiltersResponseDto responseDto = storeService.getFilters();
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+
+    /**
+     * 특정 날짜의 모든 타임과 모든 테이블의 잔여 개수 정보 가져오기 API
+     *
+     * @param storeId
+     * @param date
+     * @return
+     */
+    @GetMapping("/stores/{storeId}/reservations/total")
+    public ResponseEntity<List<StoreReservationTotalDto>> getStoreReservationTotal(@PathVariable Long storeId,
+                                                                                   @RequestParam LocalDate date) {
+
+        List<StoreReservationTotalDto> storeTatalDtoList = storeService.getStoreReservationTotal(storeId, date);
+
+        return ResponseEntity.status(HttpStatus.OK).body(storeTatalDtoList);
+    }
+
+    /**
+     *  키워드로 가게 찾기
+     * @param keyword
+     * @return ResponseEntity<List<StoreSearchResponseDto>>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("/search/keywords")
+    public ResponseEntity<List<StoreSearchResponseDto>> searchKeywordStore(@Valid @RequestParam("keyword") String keyword) {
+
+        List<StoreSearchResponseDto> responseDto = storeService.searchKeywordStore(keyword);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+
     }
 }
