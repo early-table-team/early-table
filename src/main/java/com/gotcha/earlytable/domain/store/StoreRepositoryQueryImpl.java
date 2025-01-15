@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreSearchRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreSearchResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,7 +21,7 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
         this.queryFactory = queryFactory;
     }
 
-    public List<StoreListResponseDto> searchStoreQuery(StoreSearchRequestDto requestDto) {
+    public List<StoreSearchResponseDto> searchStoreQuery(StoreSearchRequestDto requestDto) {
 
         List<Store> storeList = queryFactory.selectFrom(store)
                 .leftJoin(store.menuList, menu).fetchJoin() // Store와 Menu 간의 조인
@@ -39,7 +40,7 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
 
 
         return storeList.stream()
-                .map(StoreListResponseDto::toDto)
+                .map(StoreSearchResponseDto::toDto)
                 .toList();
     }
 

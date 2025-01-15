@@ -18,4 +18,5 @@ public interface PendingStoreRepository extends JpaRepository<PendingStore, Long
 
     List<PendingStore> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    List<PendingStore> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 }

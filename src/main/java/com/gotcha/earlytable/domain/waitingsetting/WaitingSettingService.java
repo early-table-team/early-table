@@ -4,11 +4,15 @@ import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingResponseDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatusResponseDto;
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
+import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalTime;
 
 @Service
 public class WaitingSettingService {
@@ -112,5 +116,44 @@ public class WaitingSettingService {
 
         // 삭제
         waitingSettingRepository.deleteById(waitingSettingId);
+    }
+
+    /**
+     * 웨이팅 상태 자동 상태 변경(to OPEN) 메서드
+     *
+     * @param waitingSettingId
+     */
+    public void updateWaitingSettingStatus(Long waitingSettingId) {
+        WaitingSetting waitingSetting = waitingSettingRepository.findByIdOrElseThrow(waitingSettingId);
+
+        waitingSetting.updateStatus(WaitingSettingStatus.OPEN);
+
+        waitingSettingRepository.save(waitingSetting);
+    }
+
+    /**
+     * 웨이팅 상태 수동 변경
+     *
+     * @param waitingSettingId
+     * @param userId
+     * @return WaitingSettingUpdateStatusResponseDto
+     */
+    public WaitingSettingUpdateStatusResponseDto updateWaitingSettingStatusManually(Long waitingSettingId, Long userId) {
+        boolean isExistSetting = waitingSettingRepository
+                .existsByWaitingSettingIdAndStoreUserId(waitingSettingId, userId);
+
+        // 자신의 가게인지 확인
+        if (!isExistSetting) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
+        }
+
+        //가게 웨이팅 상태 ON<->OFF
+        WaitingSetting waitingSetting = waitingSettingRepository.findByIdOrElseThrow(waitingSettingId);
+
+        waitingSetting.updateStatusManually(waitingSetting);
+
+        waitingSettingRepository.save(waitingSetting);
+
+        return WaitingSettingUpdateStatusResponseDto.toDto(waitingSetting);
     }
 }
