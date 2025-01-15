@@ -17,6 +17,6 @@ public interface StoreKeywordRepository extends JpaRepository<StoreKeyword, Long
 
     boolean existsByStore(Store store);
 
-    @Query("SELECT sk FROM StoreKeyword sk JOIN sk.keyword k WHERE k.keyword = :keyword")
-    List<StoreKeyword> findAllByKeyword_Keyword(@Param("keyword") String keyword);
+
+    List<StoreKeyword> findAllByKeywordKeyword(String keyword);
 }
