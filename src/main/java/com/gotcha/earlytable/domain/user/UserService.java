@@ -14,12 +14,16 @@ import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -54,9 +58,14 @@ public class UserService {
     public UserResponseDto registerUser(UserRegisterRequestDto requestDto) {
 
         // 이메일 중복 검사
-        if(userRepository.existsUserByEmail(requestDto.getEmail())) {
+        if (userRepository.existsUserByEmail(requestDto.getEmail())) {
             throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
         }
+
+        if (userRepository.existsUserByPhone(requestDto.getPhone())) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
+
 
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
@@ -69,7 +78,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         String imageUrl = null;
-        if(!requestDto.getProfileImage().isEmpty()) {
+        if (!requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
@@ -79,6 +88,7 @@ public class UserService {
 
     /**
      * 로그인 가능
+     *
      * @param requestDto
      * @return JwtAuthResponse
      */
@@ -113,7 +123,7 @@ public class UserService {
      * @param user
      * @return UserResponseDto
      */
-    public UserResponseDto getUser(User user){
+    public UserResponseDto getUser(User user) {
 
         String imageUrl = user.getFile().getFileDetailList().stream()
                 .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
@@ -124,16 +134,16 @@ public class UserService {
     }
 
     /**
-     *  유저 탈퇴 메서드
+     * 유저 탈퇴 메서드
      *
      * @param requestDto
      * @param user
      */
     @Transactional
-    public void deleteUser(UserDeleteRequestDto requestDto, User user){
+    public void deleteUser(UserDeleteRequestDto requestDto, User user) {
 
         // 비밀번호 값이 일치하지 않는경우 BAD_REQUEST 발생
-        if(!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
@@ -143,7 +153,7 @@ public class UserService {
     }
 
     /**
-     *  유저 정보 변경 메서드
+     * 유저 정보 변경 메서드
      *
      * @param user
      * @param requestDto
