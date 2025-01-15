@@ -6,6 +6,7 @@ import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatu
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,7 +33,7 @@ public class WaitingSettingController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping("/stores/{storeId}/waiting/settings")
     public ResponseEntity<WaitingSettingResponseDto> createWaitingSetting(@PathVariable Long storeId,
-                                                                          @RequestBody WaitingSettingRequestDto requestDto,
+                                                                          @Valid @RequestBody WaitingSettingRequestDto requestDto,
                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         WaitingSettingResponseDto responseDto = waitingSettingService.createWaitingSetting(storeId,

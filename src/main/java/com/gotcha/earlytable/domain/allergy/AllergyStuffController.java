@@ -30,7 +30,7 @@ public class AllergyStuffController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PostMapping
     public ResponseEntity<AllergyStuffResponseDto> createAllergyStuff(@PathVariable Long categoryId,
-                                                                      @Valid @ModelAttribute AllergyStuffRequestDto allergyStuffRequestDto) {
+                                                                      @Valid @RequestBody AllergyStuffRequestDto allergyStuffRequestDto) {
         AllergyStuffResponseDto createAllergyStuffResponseDto = allergyStuffService.createAllergyStuff(categoryId, allergyStuffRequestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createAllergyStuffResponseDto);
@@ -44,9 +44,9 @@ public class AllergyStuffController {
      * @return AllergyStuffResponseDto
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
-    @PutMapping("/{stuffId}")
+    @PatchMapping("/{stuffId}")
     public ResponseEntity<AllergyStuffResponseDto> updateAllergyStuff(@PathVariable Long categoryId, @PathVariable Long stuffId,
-                                                                      @Valid @ModelAttribute AllergyStuffRequestDto allergyStuffRequestDto) {
+                                                                      @Valid @RequestBody AllergyStuffRequestDto allergyStuffRequestDto) {
         AllergyStuffResponseDto updateAllergyStuffResponseDto = allergyStuffService.updateAllergyStuff(categoryId, stuffId, allergyStuffRequestDto);
 
         return  ResponseEntity.status(HttpStatus.OK).body(updateAllergyStuffResponseDto);

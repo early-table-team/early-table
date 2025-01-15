@@ -14,9 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-
 import java.util.List;
-
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
@@ -28,8 +26,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("select r from Reservation r join r.party p join p.partyPeople pp where pp.user = :user")
     Page<Reservation> findByUser(User user, Pageable pageable);
 
-   int countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(LocalDate date, LocalTime reservationTime, int tableMaxNumber, ReservationStatus reservationStatus);
 
-   List<Reservation> findAllByReservationDateAndStore(LocalDate reservationDate, Store store);
+    int countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(LocalDate date, LocalTime reservationTime, int tableMaxNumber, ReservationStatus reservationStatus);
+
+    List<Reservation> findAllByReservationDateAndStore(LocalDate reservationDate, Store store);
 
 }

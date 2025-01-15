@@ -33,8 +33,4 @@ public class OwnerReservationResponseDto {
                 .findFirst().orElse(null);
 
     }
-
-
-
-
 }

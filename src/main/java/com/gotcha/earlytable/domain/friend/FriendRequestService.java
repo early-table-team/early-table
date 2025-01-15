@@ -93,7 +93,7 @@ public class FriendRequestService {
         User receivedUser = userRepository.findByIdOrElseThrow(friendRequest.getReceivedUser().getId());
 
         //로그인유저 != receivedUser이면 예외처리
-        if(user != receivedUser) {
+        if(!user.getId().equals(receivedUser.getId()) && user.getId().equals(sendUser.getId())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_FRIEND_REQUEST);
         }
 

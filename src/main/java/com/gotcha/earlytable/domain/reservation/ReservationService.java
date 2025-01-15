@@ -281,7 +281,6 @@ public class ReservationService {
 
     }
 
-
     /**
      *  가게 오너 입장에서 예약 조회 메서드
      * @param reservationDate
@@ -302,4 +301,7 @@ public class ReservationService {
 
         return responseDtos;
     }
+
+
+
 }

@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.review;
 
 import com.gotcha.earlytable.domain.review.entity.Review;
+import com.gotcha.earlytable.domain.review.enums.ReviewStatus;
 import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
@@ -26,9 +27,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Long countReviewsByStore(Store store);
 
-    List<Review> findAllByStoreStoreId(Long storeId);
 
-    List<Review> findAllByUserId(Long userId);
 
     // 선택 가게 리뷰들의 리뷰 별점 통계
     @Query("select sum(case when r.rating = 1 then 1 else 0 end) as ratingStat1," +
@@ -44,4 +43,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 
     boolean existsByTargetIdAndReviewTarget(Long targetId, ReviewTarget reviewTarget);
+
+    List<Review> findAllByUserIdAndReviewStatus(Long id, ReviewStatus reviewStatus);
+
+    List<Review> findAllByStoreStoreIdAndReviewStatus(Long storeId, ReviewStatus reviewStatus);
+
 }

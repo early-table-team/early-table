@@ -22,4 +22,7 @@ public interface WaitingSettingRepository extends JpaRepository<WaitingSetting, 
     WaitingSetting findByStore(Store store);
 
     List<WaitingSetting> findAllByWaitingSettingStatus(WaitingSettingStatus waitingSettingStatus);
+
+    boolean existsByStore(Store store);
+
 }
