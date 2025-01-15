@@ -64,4 +64,12 @@ public class WaitingSetting extends BaseEntity {
     public void updateStatus(WaitingSettingStatus waitingSettingStatus) {
         this.waitingSettingStatus = waitingSettingStatus;
     }
+
+    public void updateStatusManually(WaitingSetting waitingSetting) {
+        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.OPEN)) {
+            this.waitingSettingStatus = WaitingSettingStatus.CLOSE;
+        } else {
+            this.waitingSettingStatus = WaitingSettingStatus.OPEN;
+        }
+    }
 }
