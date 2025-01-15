@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.waitingsetting;
 
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingResponseDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatusResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -59,6 +60,21 @@ public class WaitingSettingController {
                 userDetails.getUser().getId(), requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    /**
+     * 웨이팅 상태 수동 변경 API
+     * @param waitingSettingId
+     * @param userDetails
+     * @return WaitingSettingUpdateStatusResponseDto
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @PatchMapping("/waiting/settings/{waitingSettingId}")
+    public ResponseEntity<WaitingSettingUpdateStatusResponseDto> updateWaitingSettingStatus (@PathVariable Long waitingSettingId,
+                                                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        WaitingSettingUpdateStatusResponseDto updateStatusResponseDto = waitingSettingService.updateWaitingSettingStatusManually(waitingSettingId, userDetails.getUser().getId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(updateStatusResponseDto);
     }
 
     /**
