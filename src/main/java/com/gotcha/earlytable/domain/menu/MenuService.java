@@ -11,6 +11,7 @@ import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
@@ -113,7 +114,13 @@ public class MenuService {
      * 메뉴 삭제 서비스 메서드
      */
     @Transactional
-    public void deleteMenu(Long menuId, Long userId) {
+    public void deleteMenu(Long storeId, Long menuId, Long userId) {
+        
+        // TODO : 가게 메뉴 맞는지 확인하기
+        Store store = storeRepository.findById(storeId).orElseThrow();
+        boolean isMenu = store.getMenuList().stream().anyMatch(menu -> menu.getMenuId().equals(menuId));
+        if(!isMenu) {throw new CustomException(ErrorCode.NOT_FOUND_MENU);}
+        
         if(!menuRepository.existsById(menuId)){
             throw new NotFoundException(ErrorCode.NOT_FOUND);
         }

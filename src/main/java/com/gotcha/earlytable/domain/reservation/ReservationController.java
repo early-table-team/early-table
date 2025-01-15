@@ -100,7 +100,6 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-
     /**
      *   가게 오너 입장에서 예약 조회 API
      * @param reservationDate
@@ -116,7 +115,6 @@ public class ReservationController {
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
-
 
 
 

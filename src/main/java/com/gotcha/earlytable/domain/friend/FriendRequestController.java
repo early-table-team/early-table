@@ -33,7 +33,7 @@ public class FriendRequestController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping
-    public ResponseEntity<FriendRequestResponseDto> createFriendRequest(@Valid @ModelAttribute FriendRequestRequestDto friendRequestRequestDto,
+    public ResponseEntity<FriendRequestResponseDto> createFriendRequest(@Valid @RequestBody FriendRequestRequestDto friendRequestRequestDto,
                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -69,7 +69,7 @@ public class FriendRequestController {
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PatchMapping("/{friendRequestId}")
     public ResponseEntity<FriendRequestResponseDto> updateFriendRequestStatus(@PathVariable Long friendRequestId,
-                                                                              @Valid @ModelAttribute FriendRequestUpdateRequestDto friendRequestUpdateRequestDto,
+                                                                              @Valid @RequestBody FriendRequestUpdateRequestDto friendRequestUpdateRequestDto,
                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
@@ -86,7 +86,7 @@ public class FriendRequestController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @DeleteMapping
-    public ResponseEntity<String> deleteFriendRequest(@Valid @ModelAttribute FriendRequestDeleteRequestDto friendRequestDeleteRequestDto) {
+    public ResponseEntity<String> deleteFriendRequest(@Valid @RequestBody FriendRequestDeleteRequestDto friendRequestDeleteRequestDto) {
         friendRequestService.deleteFriendRequest(friendRequestDeleteRequestDto);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("친구 신청 내역이 삭제 완료되었습니다.");

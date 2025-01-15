@@ -17,6 +17,8 @@ import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.WaitingRepository;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.global.enums.PartyRole;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
+import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.*;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,10 @@ public class ReviewService {
             case RESERVATION:
                 Reservation reservation = reservationRepository.findByIdOrElseThrow(reviewRequestDto.getTargetId());
 
+                if(reservation.getReservationStatus() != ReservationStatus.COMPLETED) {
+                    throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+                }
+
                 // 예약 대표자가 본인인지 확인
                 boolean isMineForReservation = reservation.getParty().getPartyPeople().stream()
                         .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE))
@@ -73,6 +79,10 @@ public class ReviewService {
 
             case WAITING:
                 Waiting waiting = waitingRepository.findByIdOrElseThrow(reviewRequestDto.getTargetId());
+
+                if(waiting.getWaitingStatus() != WaitingStatus.COMPLETED) {
+                    throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+                }
 
                 // 웨이팅 대표자가 본인인지 확인
                 boolean isMineForWaiting = waiting.getParty().getPartyPeople().stream()
@@ -143,7 +153,9 @@ public class ReviewService {
      */
     public List<ReviewResponseDto> getStoreReviews(Long storeId) {
 
-        List<Review> reviews = reviewRepository.findAllByStoreStoreId(storeId);
+        storeRepository.findByIdOrElseThrow(storeId);
+
+        List<Review> reviews = reviewRepository.findAllByStoreStoreIdAndReviewStatus(storeId,ReviewStatus.NORMAL);
 
         return reviews.stream().map(ReviewResponseDto::toDto).toList();
     }
@@ -153,7 +165,7 @@ public class ReviewService {
      */
     public List<ReviewResponseDto> getMyReviews(User user) {
 
-        List<Review> reviews = reviewRepository.findAllByUserId(user.getId());
+        List<Review> reviews = reviewRepository.findAllByUserIdAndReviewStatus(user.getId(),ReviewStatus.NORMAL);
 
         return reviews.stream().map(ReviewResponseDto::toDto).toList();
     }
@@ -162,6 +174,8 @@ public class ReviewService {
      * 가게 리뷰 평점 조회 서비스 메서드
      */
     public ReviewTotalResponseDto getStoreReviewTotal(Long storeId) {
+
+        storeRepository.findByIdOrElseThrow(storeId);
 
         Map<String, Number> result = reviewRepository.findStatisticsByStoreId(storeId);
 

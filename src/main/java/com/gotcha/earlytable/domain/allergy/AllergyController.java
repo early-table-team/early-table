@@ -30,7 +30,7 @@ public class AllergyController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping("/menus/{menuId}/allergies")
     public ResponseEntity<String> createAllergyInMenu(@PathVariable Long menuId,
-                                                      @Valid @ModelAttribute AllergyRequestDto allergyRequestDto,
+                                                      @Valid @RequestBody AllergyRequestDto allergyRequestDto,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         allergyService.createAllergyInMenu(menuId, allergyRequestDto, userDetails.getUser().getId());

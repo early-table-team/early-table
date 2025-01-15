@@ -76,10 +76,10 @@ public class MenuController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @DeleteMapping("/{menuId}")
-    public ResponseEntity<String> deleteMenu(@PathVariable Long menuId,
+    public ResponseEntity<String> deleteMenu(@PathVariable Long storeId,@PathVariable Long menuId,
                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        menuService.deleteMenu(menuId, userDetails.getUser().getId());
+        menuService.deleteMenu(storeId, menuId, userDetails.getUser().getId());
 
         return ResponseEntity.status(HttpStatus.OK).body("메뉴 삭제가 완료되었습니다.");
     }

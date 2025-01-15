@@ -8,6 +8,7 @@ import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatu
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
 import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,10 @@ public class WaitingSettingService {
         // 자신의 가게인지 확인
         if (!store.getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
+        }
+        // 이미 존재하면 예외처리
+        if(waitingSettingRepository.existsByStore(store)) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
         }
 
         // 웨이팅 설정 생성
