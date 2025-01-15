@@ -23,6 +23,8 @@ public class StoreResponseDto {
 
     private final StoreCategory storeCategory;
 
+    private final String ownerName;
+
     private final LocalDateTime createdAt;
 
     private final LocalDateTime modifiedAt;
@@ -32,13 +34,14 @@ public class StoreResponseDto {
     private final Map<Integer, String> storeImageUrlMap;
 
     public StoreResponseDto(Long storeId, String storeName, String storeTel, String storeAddress,
-                            StoreCategory storeCategory, LocalDateTime createdAt, LocalDateTime modifiedAt,
+                            StoreCategory storeCategory, String ownerName, LocalDateTime createdAt, LocalDateTime modifiedAt,
                             StoreStatus storeStatus, Map<Integer, String> storeImageUrlMap) {
         this.storeId = storeId;
         this.storeName = storeName;
         this.storeTel = storeTel;
         this.storeAddress = storeAddress;
         this.storeCategory = storeCategory;
+        this.ownerName = ownerName;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.storeStatus = storeStatus;
@@ -53,11 +56,9 @@ public class StoreResponseDto {
             imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUrl());
         }
 
-        return new StoreResponseDto(store.getStoreId(),
-                store.getStoreName(), store.getStoreTel(),
-                store.getStoreAddress(), store.getStoreCategory(),
-                store.getCreatedAt(), store.getModifiedAt(),
-                store.getStoreStatus(), imageFileUrlMap
-                );
+        return new StoreResponseDto(store.getStoreId(), store.getStoreName(), store.getStoreTel(),
+                                    store.getStoreAddress(), store.getStoreCategory(), store.getUser().getNickName(),
+                                    store.getCreatedAt(), store.getModifiedAt(), store.getStoreStatus(),
+                                    imageFileUrlMap);
     }
 }
