@@ -67,6 +67,39 @@ public class PendingStoreController {
     }
 
     /**
+     * 가게 생성 및 수정 요청 전체 조회 API for OWNER
+     *
+     * @param pageable
+     * @return ResponseEntity<PendingStoreResponseDto>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("/mine")
+    public ResponseEntity<List<PendingStoreResponseListDto>> getPendingStoreForOwner(@PageableDefault Pageable pageable,
+                                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        List<PendingStoreResponseListDto> responseDtoList = pendingStoreService.getPendingStoresForOwner(pageable, userDetails.getUser());
+
+        return ResponseEntity.ok(responseDtoList);
+    }
+
+
+    /**
+     * 가게 생성 및 수정 요청 단건 조회 API for OWNER
+     *
+     * @param pendingStoreId
+     * @return ResponseEntity<PendingStoreResponseDto>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("/{pendingStoreId}/mine")
+    public ResponseEntity<PendingStoreResponseDto> getPendingStoreForOwner(@PathVariable Long pendingStoreId,
+                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        PendingStoreResponseDto responseDto = pendingStoreService.getPendingStoreForOwner(pendingStoreId, userDetails.getUser());
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    /**
      * 가게 생성 및 수정 요청 전체 조회 API
      *
      * @param pageable

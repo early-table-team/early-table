@@ -4,17 +4,24 @@ import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
+import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.entity.StoreTable;
+import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,15 +31,17 @@ public class StoreService {
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
+    private final ReservationRepository reservationRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
-                        FileRepository fileRepository, FileDetailService fileDetailService) {
+                        FileRepository fileRepository, FileDetailService fileDetailService, ReservationRepository reservationRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
+        this.reservationRepository = reservationRepository;
     }
 
     /**
@@ -235,7 +244,6 @@ public class StoreService {
 
     }
 
-
     /**
      * 가게 조건 검색 메서드
      *
@@ -245,5 +253,49 @@ public class StoreService {
     public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
 
         return storeRepository.searchStoreQuery(requestDto);
+    }
+
+    /**
+     * 가게 모든 타임, 모든 테이블의 잔여 개수 가져오기 메서드
+     *
+     * @param storeId
+     * @param date
+     * @return
+     */
+    public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        // 현재 시간
+        LocalTime now = LocalTime.now();
+
+        List<StoreReservationTotalDto> totalDtoList = new ArrayList<>();
+
+        // 모든 시간에
+        for(StoreTimeSlot storeTimeSlot : store.getStoreTimeSlotList()) {
+
+            // 현재 시간보다 전에 있던 내역은 제외
+            if(storeTimeSlot.getReservationTime().isBefore(now)) {
+                continue;
+            }
+
+            // 모든 테이블에
+            for(StoreTable storeTable : store.getStoreTableList()) {
+                // 예약 타임
+                LocalTime reservationTime = storeTimeSlot.getReservationTime();
+                // 최대 수용 가능 인원
+                int tableMaxNumber = storeTable.getTableMaxNumber();
+                // 최소 수용 인원
+                int tableMinNumber = tableMaxNumber - 1;
+                // 잔여 개수
+                int remainTableCount = storeTable.getTableCount() - reservationRepository
+                                .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
+                                        date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
+
+                totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
+            }
+        }
+
+        return totalDtoList;
     }
 }
