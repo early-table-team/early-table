@@ -5,10 +5,13 @@ import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingResponseDto;
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
+import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalTime;
 
 @Service
 public class WaitingSettingService {
@@ -112,5 +115,36 @@ public class WaitingSettingService {
 
         // 삭제
         waitingSettingRepository.deleteById(waitingSettingId);
+    }
+
+    /**
+     * 웨이팅 시간대 기준 자동 상태 변경 메서드
+     *
+     * @param waitingSettingId
+     */
+    public void updateWaitingSettingStatus(Long waitingSettingId) {
+        WaitingSetting waitingSetting = waitingSettingRepository.findByIdOrElseThrow(waitingSettingId);
+
+        LocalTime openTime = waitingSetting.getWaitingOpenTime();
+        LocalTime closedTime = waitingSetting.getWaitingClosedTime();
+        LocalTime now = LocalTime.now();
+
+        if(isWithinOperatingHours(now, openTime, closedTime)) {
+            waitingSetting.updateStatus(WaitingSettingStatus.OPEN);
+        } else {
+            waitingSetting.updateStatus(WaitingSettingStatus.CLOSE);
+        }
+
+        waitingSettingRepository.save(waitingSetting);
+    }
+
+    private boolean isWithinOperatingHours(LocalTime now, LocalTime openTime, LocalTime closeTime) {
+        if (openTime.isBefore(closeTime)) {
+            // 같은 날 오픈/마감
+            return now.isAfter(openTime) && now.isBefore(closeTime);
+        } else {
+            // 오픈이 전날이고 마감이 다음날
+            return now.isAfter(openTime) || now.isBefore(closeTime);
+        }
     }
 }

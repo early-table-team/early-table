@@ -60,4 +60,8 @@ public class WaitingSetting extends BaseEntity {
             this.waitingSettingStatus = requestDto.getWaitingSettingStatus();
         }
     }
+
+    public void updateStatus(WaitingSettingStatus waitingSettingStatus) {
+        this.waitingSettingStatus = waitingSettingStatus;
+    }
 }
