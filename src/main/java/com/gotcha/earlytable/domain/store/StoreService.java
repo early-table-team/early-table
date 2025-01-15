@@ -255,12 +255,10 @@ public class StoreService {
 
 
 
-    public List<StoreSearchResponseDto> searchKeywordStore(FindStoreKeywordRequestDto requestDto) {
-
-        String keyword = requestDto.getKeyword();
+    public List<StoreSearchResponseDto> searchKeywordStore(String keyword) {
 
         // 스토어 키워드가 일치하는 것들을 리스트 타입으로 가져옴
-        List<StoreKeyword> storeKeyword = storeKeywordRepository.findAllByKeywordKeyword(keyword);
+        List<StoreKeyword> storeKeyword = storeKeywordRepository.findAllByKeyword_Keyword(keyword);
 
 
         // 해당 가게들로 DTO를 생성 후 반환

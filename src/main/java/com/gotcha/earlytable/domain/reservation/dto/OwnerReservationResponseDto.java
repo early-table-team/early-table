@@ -18,6 +18,8 @@ public class OwnerReservationResponseDto {
 
     private Integer personnelCount;
 
+    private String phoneNumber;
+
     public OwnerReservationResponseDto(Reservation reservation) {
         this.reservationDate = reservation.getReservationDate();
         this.reservationTime = reservation.getReservationTime();
@@ -26,6 +28,9 @@ public class OwnerReservationResponseDto {
                 .findFirst() // 첫 번째 요소 가져오기
                 .orElse(null));
         this.personnelCount = reservation.getPersonnelCount();
+        this.phoneNumber = reservation.getParty().getPartyPeople().stream().filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE))
+                .map(partyPeople -> partyPeople.getUser().getPhone())
+                .findFirst().orElse(null);
 
     }
 

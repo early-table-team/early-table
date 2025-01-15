@@ -13,15 +13,15 @@ import lombok.Getter;
 @Getter
 public class StoreSearchResponseDto {
 
-    private static String storeName;
+    private String storeName;
 
-    private static String imageUrl;
+    private String imageUrl;
 
-    private static Double starPoint;
+    private Double starPoint;
 
-    private static Integer reviewCount;
+    private  Integer reviewCount;
 
-    private static StoreCategory storeCategory;
+    private  StoreCategory storeCategory;
 
     public StoreSearchResponseDto(Store store) {
         this.storeName = store.getStoreName();
@@ -30,7 +30,7 @@ public class StoreSearchResponseDto {
                 .findFirst()
                 .map(FileDetail::getFileUrl)
                 .orElse(null);
-        this.starPoint = store.getReviewList().stream().mapToDouble(Review::getRating).average().orElseThrow(()->new CustomException(ErrorCode.BAD_REQUEST));
+        this.starPoint = store.getReviewList().stream().mapToDouble(Review::getRating).average().orElse(0);
         this.reviewCount = store.getReviewList().size();
         this.storeCategory = store.getStoreCategory();
     }

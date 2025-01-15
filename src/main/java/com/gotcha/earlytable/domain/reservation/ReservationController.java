@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -102,15 +103,16 @@ public class ReservationController {
 
     /**
      *   가게 오너 입장에서 예약 조회 API
-     * @param userDetails
-     * @param requestDto
+     * @param reservationDate
+     * @param storeId
      * @return  ResponseEntity<List<OwnerReservationResponseDto>>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/owner/reservations")
-    public ResponseEntity<List<OwnerReservationResponseDto>> getStoreReservations(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody OwnerReservationRequestDto requestDto){
+    public ResponseEntity<List<OwnerReservationResponseDto>> getStoreReservations(@RequestParam("reservationDate") LocalDate reservationDate,
+                                                                                  @RequestParam("storeId") Long storeId){
 
-        List<OwnerReservationResponseDto> responseDto =reservationService.getStoreReservations(userDetails.getUser(), requestDto);
+        List<OwnerReservationResponseDto> responseDto =reservationService.getStoreReservations(reservationDate, storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
