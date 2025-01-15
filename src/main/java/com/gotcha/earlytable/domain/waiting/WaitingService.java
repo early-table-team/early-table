@@ -291,7 +291,14 @@ public class WaitingService {
         return new WaitingDetailResponseDto(waiting);
     }
 
-
+    /**
+     * 웨이팅 조회 (Owner)
+     *
+     * @param user
+     * @param storeId
+     * @param requestDto
+     * @return WaitingOwnerResponseDto
+     */
     public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, @Valid WaitingOwnerRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
