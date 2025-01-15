@@ -127,9 +127,9 @@ public class StoreController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/search")
-    public ResponseEntity<List<StoreListResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
+    public ResponseEntity<List<StoreSearchResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
 
-        List<StoreListResponseDto> responseDtoList = storeService.searchStore(requestDto);
+        List<StoreSearchResponseDto> responseDtoList = storeService.searchStore(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }
@@ -149,5 +149,20 @@ public class StoreController {
         List<StoreReservationTotalDto> storeTatalDtoList = storeService.getStoreReservationTotal(storeId, date);
 
         return ResponseEntity.status(HttpStatus.OK).body(storeTatalDtoList);
+    }
+
+    /**
+     *  키워드로 가게 찾기
+     * @param keyword
+     * @return ResponseEntity<List<StoreSearchResponseDto>>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("/search/keywords")
+    public ResponseEntity<List<StoreSearchResponseDto>> searchKeywordStore(@Valid @RequestParam("keyword") String keyword) {
+
+        List<StoreSearchResponseDto> responseDto = storeService.searchKeywordStore(keyword);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+
     }
 }

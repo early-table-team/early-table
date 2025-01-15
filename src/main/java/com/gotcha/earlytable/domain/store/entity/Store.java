@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
+import com.gotcha.earlytable.domain.review.entity.Review;
 import com.gotcha.earlytable.domain.store.dto.StoreUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
@@ -88,6 +89,9 @@ public class Store extends BaseEntity {
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Reservation> reservationList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final List<Review> reviewList = new ArrayList<>();
 
     public Store(String storeName, String storeTel, String storeContents, String storeAddress, StoreStatus storeStatus,
                  StoreCategory storeCategory, RegionTop regionTop, RegionBottom regionBottom, User user, File file) {

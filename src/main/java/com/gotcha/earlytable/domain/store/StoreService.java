@@ -3,6 +3,8 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.keyword.StoreKeywordRepository;
+import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
@@ -32,16 +34,20 @@ public class StoreService {
     private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
     private final ReservationRepository reservationRepository;
+    private final StoreKeywordRepository storeKeywordRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
-                        FileRepository fileRepository, FileDetailService fileDetailService, ReservationRepository reservationRepository) {
+                        FileRepository fileRepository, FileDetailService fileDetailService,
+                        ReservationRepository reservationRepository,StoreKeywordRepository storeKeywordRepository) {
+
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
         this.reservationRepository = reservationRepository;
+        this.storeKeywordRepository = storeKeywordRepository;
     }
 
     /**
@@ -250,7 +256,7 @@ public class StoreService {
      * @param requestDto
      * @return
      */
-    public List<StoreListResponseDto> searchStore(StoreSearchRequestDto requestDto) {
+    public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto) {
 
         return storeRepository.searchStoreQuery(requestDto);
     }
@@ -289,13 +295,35 @@ public class StoreService {
                 int tableMinNumber = tableMaxNumber - 1;
                 // 잔여 개수
                 int remainTableCount = storeTable.getTableCount() - reservationRepository
-                                .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
-                                        date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
+                        .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
+                                date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
 
                 totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
             }
         }
 
         return totalDtoList;
+    }
+
+    /**
+     *  키워드로 가게 검색
+     * @param keyword
+     * @return
+     */
+    public List<StoreSearchResponseDto> searchKeywordStore(String keyword) {
+
+        // 스토어 키워드가 일치하는 것들을 리스트 타입으로 가져옴
+        List<StoreKeyword> storeKeyword = storeKeywordRepository.findAllByKeywordKeyword(keyword);
+
+
+        // 해당 가게들로 DTO를 생성 후 반환
+        List<StoreSearchResponseDto> dtos = new ArrayList<>();
+        for(StoreKeyword storeKeywordDto : storeKeyword) {
+            StoreSearchResponseDto dto = new StoreSearchResponseDto(storeKeywordDto.getStore());
+            dtos.add(dto);
+        }
+
+        return dtos;
+
     }
 }

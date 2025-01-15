@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
 
@@ -128,7 +129,6 @@ public class ReservationService {
                 );
 
 
-
         // 인원수에 맞는 테이블로 예약 가능한지 확인하기, 안된다면 +1까지 검토
         boolean canSeat = store.getStoreTableList().stream()
                 .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount) && storeTable.getTableCount() - tablesize >= 1);
@@ -142,9 +142,6 @@ public class ReservationService {
                 throw new CustomException(ErrorCode.NO_SEAT);
             }
         }
-
-
-
 
 
         // TODO : OK 그럼 예약 생성해줄게
@@ -227,9 +224,6 @@ public class ReservationService {
     public ReservationGetOneResponseDto updateReservation(Long reservationId, User user, ReservationUpdateRequestDto requestDto) {
 
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
-        PartyPeople reservationUser = reservation.getParty().getPartyPeople().stream()
-                .filter(partyPeople -> partyPeople.getUser().equals(user) && partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)).findFirst().orElse(null);
-
         Store store = reservation.getStore();
 
         reservationMenuRepository.deleteAllByReservation(reservation);
@@ -288,4 +282,24 @@ public class ReservationService {
     }
 
 
+    /**
+     *  가게 오너 입장에서 예약 조회 메서드
+     * @param reservationDate
+     * @param storeId
+     * @return List<OwnerReservationResponseDto>
+     */
+    public List<OwnerReservationResponseDto> getStoreReservations(LocalDate reservationDate, Long storeId) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        List<Reservation> reservations = reservationRepository.findAllByReservationDateAndStore(reservationDate,store);
+        List<OwnerReservationResponseDto> responseDtos = new ArrayList<>();
+        // TODO : 얘는 보여야 할게 예약 날짜, 예약시간, 예약자 대표, 인원수 정도만 보이면 되겟다
+        for(Reservation reservation : reservations){
+            OwnerReservationResponseDto ownerReservationResponseDto = new OwnerReservationResponseDto(reservation);
+            responseDtos.add(ownerReservationResponseDto);
+        }
+
+        return responseDtos;
+    }
 }
