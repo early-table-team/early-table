@@ -1,7 +1,7 @@
 package com.gotcha.earlytable.domain.review;
 
-import com.gotcha.earlytable.domain.review.dto.ReviewTotalResponseDto;
 import com.gotcha.earlytable.domain.review.entity.Review;
+import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
@@ -40,5 +40,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "      round(avg(r.rating),1) as ratingAverage" +
             "  from Review r" +
             " where r.store.storeId = :storeId ")
-    Map<String,Object> findStatisticsByStoreId(@Param("storeId") Long storeId);
+    Map<String, Number> findStatisticsByStoreId(@Param("storeId") Long storeId);
+
+
+    boolean existsByTargetIdAndReviewTarget(Long targetId, ReviewTarget reviewTarget);
 }

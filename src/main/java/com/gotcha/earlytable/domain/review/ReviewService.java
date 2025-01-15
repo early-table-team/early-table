@@ -3,6 +3,8 @@ package com.gotcha.earlytable.domain.review;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.reservation.ReservationRepository;
+import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.review.dto.ReviewRequestDto;
 import com.gotcha.earlytable.domain.review.dto.ReviewResponseDto;
 import com.gotcha.earlytable.domain.review.dto.ReviewTotalResponseDto;
@@ -12,10 +14,11 @@ import com.gotcha.earlytable.domain.review.enums.ReviewStatus;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.domain.waiting.WaitingRepository;
+import com.gotcha.earlytable.domain.waiting.entity.Waiting;
+import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.error.ErrorCode;
-import com.gotcha.earlytable.global.error.exception.ConflictException;
-import com.gotcha.earlytable.global.error.exception.CustomException;
-import com.gotcha.earlytable.global.error.exception.ForbiddenException;
+import com.gotcha.earlytable.global.error.exception.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +31,16 @@ public class ReviewService {
     private final StoreRepository storeRepository;
     private final FileService fileService;
     private final FileDetailService fileDetailService;
+    private final ReservationRepository reservationRepository;
+    private final WaitingRepository waitingRepository;
 
-    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService, FileDetailService fileDetailService) {
+    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService, FileDetailService fileDetailService, ReservationRepository reservationRepository, WaitingRepository waitingRepository) {
         this.reviewRepository = reviewRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
         this.fileDetailService = fileDetailService;
+        this.reservationRepository = reservationRepository;
+        this.waitingRepository = waitingRepository;
     }
 
 
@@ -43,20 +50,63 @@ public class ReviewService {
     @Transactional
     public ReviewResponseDto createReview(Long storeId, User user, ReviewRequestDto reviewRequestDto){
 
-        Store store = storeRepository.findByIdOrElseThrow(storeId);
+        // 이미 작성한 예약건이면 예외처리
+        boolean isExist = reviewRepository
+                .existsByTargetIdAndReviewTarget(reviewRequestDto.getTargetId(), reviewRequestDto.getTargetObject());
+        if(isExist) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
 
+        // 어떤 예약 및 웨이팅에서 발생된 리뷰 생성인지 확인
+        switch (reviewRequestDto.getTargetObject()) {
+            case RESERVATION:
+                Reservation reservation = reservationRepository.findByIdOrElseThrow(reviewRequestDto.getTargetId());
+
+                // 예약 대표자가 본인인지 확인
+                boolean isMineForReservation = reservation.getParty().getPartyPeople().stream()
+                        .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE))
+                        .anyMatch(partyPeople -> partyPeople.getUser().getId().equals(user.getId()));
+                if(!isMineForReservation) {
+                    throw new UnauthorizedException(ErrorCode.FORBIDDEN_PERMISSION);
+                }
+                break;
+
+            case WAITING:
+                Waiting waiting = waitingRepository.findByIdOrElseThrow(reviewRequestDto.getTargetId());
+
+                // 웨이팅 대표자가 본인인지 확인
+                boolean isMineForWaiting = waiting.getParty().getPartyPeople().stream()
+                        .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE))
+                        .anyMatch(partyPeople -> partyPeople.getUser().getId().equals(user.getId()));
+                if(!isMineForWaiting) {
+                    throw new UnauthorizedException(ErrorCode.FORBIDDEN_PERMISSION);
+                }
+                break;
+
+            default :
+                throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        // 필요한 객체 가져오기
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
         File file = fileService.createFile();
 
         // 이미지 파일들 저장
-        fileDetailService.createImageFiles(reviewRequestDto.getReviewImageList(), file);
+        if(reviewRequestDto.getReviewImageList() != null && !reviewRequestDto.getReviewImageList().get(0).isEmpty()) {
+            // 프로필 이미지 파일 저장
+            fileDetailService.createImageFiles(reviewRequestDto.getReviewImageList(), file);
+        }
 
+        // 리뷰 객체 생성
         Review review = new Review(
                 reviewRequestDto.getRating(),
                 reviewRequestDto.getReviewContent(),
                 ReviewStatus.NORMAL,
-                store, user, file
+                store, user, file,
+                reviewRequestDto.getTargetObject(), reviewRequestDto.getTargetId()
         );
 
+        // 저장
         Review savedReview = reviewRepository.save(review);
 
         return ReviewResponseDto.toDto(savedReview);
@@ -80,7 +130,10 @@ public class ReviewService {
         Review updatedReview = reviewRepository.save(review);
 
         // 이미지 수정
-        fileDetailService.updateFileDetail(reviewUpdateRequestDto.getNewReviewImageList(), reviewUpdateRequestDto.getFileUrlList(), review.getFile());
+        if(reviewUpdateRequestDto.getFileUrlList() != null && !reviewUpdateRequestDto.getFileUrlList().isEmpty()) {
+
+            fileDetailService.updateFileDetail(reviewUpdateRequestDto.getNewReviewImageList(), reviewUpdateRequestDto.getFileUrlList(), review.getFile());
+        }
 
         return ReviewResponseDto.toDto(updatedReview);
     }
@@ -110,15 +163,24 @@ public class ReviewService {
      */
     public ReviewTotalResponseDto getStoreReviewTotal(Long storeId) {
 
-        Map<String, Object> result = reviewRepository.findStatisticsByStoreId(storeId);
+        Map<String, Number> result = reviewRepository.findStatisticsByStoreId(storeId);
+
+        // 리뷰가 존재하지 않으면
+        for(Number number : result.values()) {
+            if(number == null) {
+                return new ReviewTotalResponseDto(
+                        0,0,0,0,0,0, (double) 0
+                );
+            }
+        }
 
         return new ReviewTotalResponseDto(
-                ((Long) result.get("ratingStat1")).intValue(),
-                ((Long) result.get("ratingStat2")).intValue(),
-                ((Long) result.get("ratingStat3")).intValue(),
-                ((Long) result.get("ratingStat4")).intValue(),
-                ((Long) result.get("ratingStat5")).intValue(),
-                ((Long) result.get("countTotal")).intValue(),
+                (result.get("ratingStat1")).intValue(),
+                (result.get("ratingStat2")).intValue(),
+                (result.get("ratingStat3")).intValue(),
+                (result.get("ratingStat4")).intValue(),
+                (result.get("ratingStat5")).intValue(),
+                (result.get("countTotal")).intValue(),
                 (Double) result.get("ratingAverage")
         );
     }
