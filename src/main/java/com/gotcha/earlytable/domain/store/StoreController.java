@@ -151,7 +151,11 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.OK).body(storeTatalDtoList);
     }
 
-
+    /**
+     *  키워드로 가게 찾기
+     * @param keyword
+     * @return ResponseEntity<List<StoreSearchResponseDto>>
+     */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/search/keywords")
     public ResponseEntity<List<StoreSearchResponseDto>> searchKeywordStore(@Valid @RequestParam("keyword") String keyword) {
