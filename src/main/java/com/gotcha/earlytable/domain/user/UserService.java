@@ -48,25 +48,6 @@ public class UserService {
         this.fileService = fileService;
     }
 
-    public static boolean isValidateEmail(@NotBlank String email) {
-        // 이메일 형식에 대한 정규식
-        String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-
-        // 정규식 패턴을 사용하여 이메일 검증
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(email);
-
-        return matcher.matches();
-    }
-
-    public static boolean isValidPassword(String password) {
-        // 비밀번호 조건: 최소 8자, 소문자 1자, 숫자 1자, 특수문자 1자 이상
-        String regex = "^(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
-
-        // 정규식 패턴 매칭
-        return Pattern.matches(regex, password);
-    }
-
     /**
      * 회원가입 기능
      *
@@ -85,15 +66,6 @@ public class UserService {
             throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
         }
 
-        // 이메일 형식 검증
-        if (!isValidateEmail(requestDto.getEmail())) {
-            throw new BadRequestException(ErrorCode.INVALID_EMAIL);
-        }
-
-        // 비밀번호 형식 검증
-        if (!isValidPassword(requestDto.getPassword())) {
-            throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
-        }
 
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
@@ -219,11 +191,6 @@ public class UserService {
      */
     @Transactional
     public void updateUserPW(User user, UserPWRequestDto requestDto) {
-
-        // 비밀번호 형식 검증
-        if (!isValidPassword(requestDto.getPassword())) {
-            throw new BadRequestException(ErrorCode.INVALID_PASSWORD);
-        }
 
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
