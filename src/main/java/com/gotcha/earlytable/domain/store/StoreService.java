@@ -41,6 +41,7 @@ public class StoreService {
                         FileRepository fileRepository, FileDetailService fileDetailService,
                         ReservationRepository reservationRepository,StoreKeywordRepository storeKeywordRepository) {
 
+
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
@@ -304,9 +305,8 @@ public class StoreService {
         return totalDtoList;
     }
 
-
     /**
-     *  키워드로 가게검색 메서드
+     *  키워드로 가게 검색
      * @param keyword
      * @return
      */

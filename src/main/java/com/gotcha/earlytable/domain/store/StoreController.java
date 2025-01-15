@@ -150,4 +150,15 @@ public class StoreController {
 
         return ResponseEntity.status(HttpStatus.OK).body(storeTatalDtoList);
     }
+
+
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("/search/keywords")
+    public ResponseEntity<List<StoreSearchResponseDto>> searchKeywordStore(@Valid @RequestParam("keyword") String keyword) {
+
+        List<StoreSearchResponseDto> responseDto = storeService.searchKeywordStore(keyword);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+
+    }
 }
