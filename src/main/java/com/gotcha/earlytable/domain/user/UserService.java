@@ -14,7 +14,6 @@ import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,8 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 @Service
@@ -170,7 +167,7 @@ public class UserService {
         String imageUrl = user.getFile().getFileDetailList().stream()
                 .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        if (!requestDto.getProfileImage().isEmpty()) {
+        if (requestDto.getProfileImage() != null && !requestDto.getProfileImage().isEmpty()) {
 
             // 기존 이미지 제거
             user.getFile().getFileDetailList().stream()
@@ -194,6 +191,17 @@ public class UserService {
 
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
+        // 기존 패스워드를 알고 있는 지 확인
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        // 새로운 패스워드가 기존과 동일한 지 확인
+        if (passwordEncoder.matches(requestDto.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
         // 정보 수정
         user.updateUserPW(encodedPassword);
 

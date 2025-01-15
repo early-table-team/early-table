@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.user.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,6 +9,7 @@ public class UserUpdateRequestDto {
 
     private final String nickname;
 
+    @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "유효한 핸드폰 번호를 입력하세요.")
     private final String phoneNumber;
 
     private final MultipartFile profileImage;

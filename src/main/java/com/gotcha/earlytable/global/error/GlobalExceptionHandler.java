@@ -49,12 +49,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     protected ResponseEntity<CommonResponseBody<String>> handleMethodValidationExceptions(
             HandlerMethodValidationException e) {
-        String message = e.getParameterValidationResults().get(0).getResolvableErrors().get(0)
-                .getDefaultMessage();
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>(message));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요."));
     }
 
     /**
@@ -66,11 +64,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonResponseBody<String>> handleValidationExceptions(
             MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>(message));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요."));
     }
 
     /**

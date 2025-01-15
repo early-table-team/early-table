@@ -8,9 +8,12 @@ import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
+import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class StoreReservationTypeService {
@@ -66,16 +69,21 @@ public class StoreReservationTypeService {
     @Transactional
     public void deleteStoreReservationType(Long storeId, User user, StoreReservationTypeRequestDto requestDto) {
 
-        StoreReservationType storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
+        Optional<StoreReservationType> storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
+
+        // 존재하지 않으면 예외처리
+        if(storeReservationType.isEmpty()) {
+            throw new NotFoundException(ErrorCode.NOT_FOUND);
+        }
 
         // 본인 가게인지 확인
-        if(user.getAuth().equals(Auth.OWNER) && !storeReservationType.getStore().getUser().getId().equals(user.getId())) {
+        if(user.getAuth().equals(Auth.OWNER) && !storeReservationType.get().getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         // 삭제
         storeReservationTypeRepository
-                .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.getStoreReservationTypeId(),
+                .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.get().getStoreReservationTypeId(),
                         requestDto.getReservationType());
     }
 }

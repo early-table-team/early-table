@@ -75,11 +75,11 @@ public class User extends BaseEntity {
     }
 
     public void updateUser(UserUpdateRequestDto requestDto){
-        if(requestDto.getNickname() != null){
-            this.nickName = requestDto.getNickname();
+        if(requestDto.getNickname() != null && !requestDto.getNickname().isEmpty()){
+            this.nickName = requestDto.getNickname().trim();
         }
-        if(requestDto.getPhoneNumber() != null){
-            this.phone = requestDto.getPhoneNumber();
+        if(requestDto.getPhoneNumber() != null && !requestDto.getPhoneNumber().isEmpty()){
+            this.phone = requestDto.getPhoneNumber().trim();
         }
     }
 

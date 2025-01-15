@@ -3,6 +3,8 @@ package com.gotcha.earlytable.domain.keyword;
 import com.gotcha.earlytable.domain.keyword.dto.KeywordRequestDto;
 import com.gotcha.earlytable.domain.keyword.dto.KeywordResponseDto;
 import com.gotcha.earlytable.domain.keyword.entity.Keyword;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.ConflictException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,11 @@ public class KeywordService {
     @Transactional
     public KeywordResponseDto createKeyword(KeywordRequestDto keywordRequestDto) {
 
+        // 중복 여부 체크
+        if(keywordRepository.existsByKeyword(keywordRequestDto.getKeyword())) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
+
         // 키워드 생성
         Keyword keyword = new Keyword(keywordRequestDto.getKeyword());
 
@@ -42,6 +49,11 @@ public class KeywordService {
      * @return KeywordResponseDto
      */
     public KeywordResponseDto updateKeyword(Long keywordId, KeywordRequestDto requestDto) {
+
+        // 중복 여부 체크
+        if(keywordRepository.existsByKeyword(requestDto.getKeyword())) {
+            throw new ConflictException(ErrorCode.DUPLICATE_VALUE);
+        }
 
         Keyword keyword = keywordRepository.findByIdOrElseThrow(keywordId);
 

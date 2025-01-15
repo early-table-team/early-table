@@ -12,4 +12,6 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     default Keyword findByIdOrElseThrow(Long id){
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
+
+    boolean existsByKeyword(String keyword);
 }

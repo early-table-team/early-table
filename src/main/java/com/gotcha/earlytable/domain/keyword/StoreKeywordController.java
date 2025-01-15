@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.keyword;
 import com.gotcha.earlytable.domain.keyword.dto.StoreKeywordRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class StoreKeywordController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PostMapping("/stores/keywords")
-    public ResponseEntity<String> createStoreKeywords(@RequestBody StoreKeywordRequestDto requestDto) {
+    public ResponseEntity<String> createStoreKeywords(@Valid @RequestBody StoreKeywordRequestDto requestDto) {
 
         storeKeywordService.createStoreKeywords(requestDto);
 
@@ -39,7 +40,7 @@ public class StoreKeywordController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @DeleteMapping("/stores/keywords")
-    public ResponseEntity<String> deleteStoreKeywords(@RequestBody StoreKeywordRequestDto requestDto) {
+    public ResponseEntity<String> deleteStoreKeywords(@Valid @RequestBody StoreKeywordRequestDto requestDto) {
 
         storeKeywordService.deleteStoreKeywords(requestDto);
 
