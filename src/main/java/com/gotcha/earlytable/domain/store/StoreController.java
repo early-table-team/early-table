@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -119,7 +120,7 @@ public class StoreController {
     }
 
     /**
-     * 가게 검색 조회
+     * 가게 검색 조회 API
      *
      * @param requestDto
      * @return
@@ -133,18 +134,20 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }
 
+
     /**
-     *  키워드로 가게 리스트 검색
-     * @param
-     * @return ResponseEntity<List<StoreSearchResponseDto>>
+     * 특정 날짜의 모든 타임과 모든 테이블의 잔여 개수 정보 가져오기 API
+     *
+     * @param storeId
+     * @param date
+     * @return
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @GetMapping("/search/keywords")
-    public ResponseEntity<List<StoreSearchResponseDto>> searchKeywordStore(@Valid @RequestParam("keyword") String keyword){
+    @GetMapping("/stores/{storeId}/reservations/total")
+    public ResponseEntity<List<StoreReservationTotalDto>> getStoreReservationTotal(@PathVariable Long storeId,
+                                                                                   @RequestParam LocalDate date) {
 
-        List<StoreSearchResponseDto> responseDto = storeService.searchKeywordStore(keyword);
+        List<StoreReservationTotalDto> storeTatalDtoList = storeService.getStoreReservationTotal(storeId, date);
 
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(storeTatalDtoList);
     }
-
 }
