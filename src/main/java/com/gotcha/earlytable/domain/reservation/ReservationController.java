@@ -75,7 +75,7 @@ public class ReservationController {
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @PatchMapping("/reseravtions/{reservationId}")
+    @PatchMapping("/reservations/{reservationId}")
     public ResponseEntity<ReservationGetOneResponseDto> updateReservation(@PathVariable Long reservationId, @RequestBody ReservationUpdateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         ReservationGetOneResponseDto resDto = reservationService.updateReservation(reservationId, userDetails.getUser(), requestDto);
@@ -96,7 +96,7 @@ public class ReservationController {
         reservationService.cancelReservation(reservationId, userDetails.getUser());
 
         //취소는 NO_CONTENT 반환
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("예약이 취소되었습니다.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 

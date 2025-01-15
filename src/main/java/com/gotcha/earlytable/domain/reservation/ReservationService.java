@@ -195,7 +195,7 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
         // 지정된 예약에 로그인된 유저가 포함되어 있는지 검사
         reservation.getParty().getPartyPeople().stream()
-                .filter(partyPeople -> partyPeople.getUser().equals(user))
+                .filter(partyPeople -> partyPeople.getUser().getId().equals(user.getId()))
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException(ErrorCode.BAD_REQUEST));
 
@@ -226,7 +226,8 @@ public class ReservationService {
                 .filter(partyPeople -> partyPeople.getUser().equals(user) && partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)).findFirst().orElse(null);
 
         Store store = reservation.getStore();
-        reservationMenuRepository.deleteById(reservationId);
+
+        reservationMenuRepository.deleteAllByReservation(reservation);
         List<HashMap<String, Long>> menuList = requestDto.getMenuList();
         List<ReturnMenuListDto> returnMenuLists = new ArrayList<>();
 
@@ -268,7 +269,7 @@ public class ReservationService {
 
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
         // 예약에 등록된 유저가 아닌경우
-        User userData = reservation.getParty().getPartyPeople().stream().map(PartyPeople::getUser).filter(partyPeopleUser -> partyPeopleUser.equals(user)).findFirst().orElse(null);
+        User userData = reservation.getParty().getPartyPeople().stream().map(PartyPeople::getUser).filter(partyPeopleUser -> partyPeopleUser.getId().equals(user.getId())).findFirst().orElse(null);
         if (userData == null) {
             throw new BadRequestException(ErrorCode.REJECT_CANCEL);
         }
