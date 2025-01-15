@@ -1,5 +1,7 @@
 package com.gotcha.earlytable.domain.store;
 
+import com.gotcha.earlytable.domain.allergy.AllergyCategoryRepository;
+import com.gotcha.earlytable.domain.allergy.AllergyStuffRepository;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
@@ -9,11 +11,14 @@ import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.entity.StoreTable;
 import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
+import com.gotcha.earlytable.global.enums.RegionBottom;
+import com.gotcha.earlytable.global.enums.RegionTop;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
@@ -24,7 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class StoreService {
@@ -33,19 +41,22 @@ public class StoreService {
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
+    private final AllergyCategoryRepository allergyCategoryRepository;
+    private final AllergyStuffRepository allergyStuffRepository;
     private final ReservationRepository reservationRepository;
     private final StoreKeywordRepository storeKeywordRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
-                        ReservationRepository reservationRepository,StoreKeywordRepository storeKeywordRepository) {
-
+                        AllergyCategoryRepository allergyCategoryRepository, AllergyStuffRepository allergyStuffRepository, ReservationRepository reservationRepository, StoreKeywordRepository storeKeywordRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
+        this.allergyCategoryRepository = allergyCategoryRepository;
+        this.allergyStuffRepository = allergyStuffRepository;
         this.reservationRepository = reservationRepository;
         this.storeKeywordRepository = storeKeywordRepository;
     }
@@ -259,6 +270,55 @@ public class StoreService {
     public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto) {
 
         return storeRepository.searchStoreQuery(requestDto);
+    }
+
+    /**
+     * 필터 목록 조회 메서드
+     *
+     * @return FiltersResponseDto
+     */
+    public FiltersResponseDto getFilters() {
+
+        Map<String, List<String>> regionMap = new HashMap<>();
+
+        // RegionTop 별로 RegionBottom을 그룹화
+        for (RegionTop regionTop : RegionTop.values()) {
+            List<String> regionBottomList = new ArrayList<>();
+
+            // RegionBottom enum을 순회하면서 현재 RegionTop에 맞는 값들을 추가
+            for (RegionBottom regionBottom : RegionBottom.values()) {
+                if (regionBottom.getRegionTop() == regionTop) {
+                    regionBottomList.add(regionBottom.getName());
+                }
+            }
+
+            // Map에 RegionTop을 키로 하고 해당하는 RegionBottom 리스트를 값으로 저장
+            regionMap.put(regionTop.getName(), regionBottomList);
+        }
+
+        // 카테고리 리스트 생성
+        List<String> categoryList = new ArrayList<>();
+
+        for (StoreCategory category : StoreCategory.values()) {
+            categoryList.add(category.getCategoryName());
+        }
+
+
+        List<Object[]> results = allergyCategoryRepository.findAllCategoryWithStuff();
+
+        Map<String, List<String>> allergyMap = new HashMap<>();
+
+        for (Object[] row : results) {
+            String categoryName = (String) row[1]; // 대분류 이름
+            String stuffName = (String) row[3];   // 소분류 이름
+
+            allergyMap.computeIfAbsent(categoryName, k -> new ArrayList<>()).add(stuffName);
+        }
+
+
+
+
+        return new FiltersResponseDto(regionMap, categoryList, allergyMap);
     }
 
     /**
