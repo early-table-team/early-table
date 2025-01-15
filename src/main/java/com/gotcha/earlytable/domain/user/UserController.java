@@ -63,15 +63,14 @@ public class UserController {
      */
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request,
-                                         HttpServletResponse response, Authentication authentication)
-            throws UsernameNotFoundException {
+                                         HttpServletResponse response,
+                                         Authentication authentication) throws UsernameNotFoundException {
 
         // 인증 정보가 있다면 로그아웃 처리.
         if (authentication != null && authentication.isAuthenticated()) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
 
             HttpSession session = request.getSession(false);
-
             if (session != null) {
                 session.invalidate();
             }
@@ -106,7 +105,7 @@ public class UserController {
      * @return ResponseEntity<UserResponseDto>
      */
     @PutMapping
-    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserUpdateRequestDto requestDto,
+    public ResponseEntity<UserResponseDto> updateUser(@Valid @ModelAttribute UserUpdateRequestDto requestDto,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         UserResponseDto userResponseDto = userService.updateUser(userDetails.getUser(), requestDto);
