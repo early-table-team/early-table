@@ -6,7 +6,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +28,6 @@ import java.io.IOException;
  * @since 1.0
  */
 @Component
-@Slf4j(topic = "Security::JwtAuthFilter")
 public class JwtAuthFilter extends OncePerRequestFilter {
 
   /**
@@ -53,7 +51,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    log.info("URI: {}", request.getRequestURI());
     this.authenticate(request);
     filterChain.doFilter(request, response);
   }
@@ -64,7 +61,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
    * @param request {@link HttpServletRequest}
    */
   private void authenticate(HttpServletRequest request) {
-    log.info("인증 처리.");
 
     // 토큰 검증.
     String token = this.getTokenFromRequest(request);
@@ -108,7 +104,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
    * @param userDetails 찾아온 사용자 정보
    */
   private void setAuthentication(HttpServletRequest request, UserDetails userDetails) {
-    log.info("SecurityContext에 Authentication 저장.");
 
     // 찾아온 사용자 정보로 인증 객체를 생성.
     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
