@@ -37,17 +37,20 @@ public class PendingStore extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private StoreCategory storeCategory;
 
+    @Enumerated(EnumType.STRING)
     private RegionTop RegionTop;
 
+    @Enumerated(EnumType.STRING)
     private RegionBottom RegionBottom;
 
-    @Column(nullable=false)
     private Long fileId;
 
     private Long storeId;
 
     @Column(nullable=false)
+    @Enumerated(EnumType.STRING)
     private PendingStoreType pendingStoreType;
+
 
 
     public PendingStore(User user, String storeName, String storeTel,

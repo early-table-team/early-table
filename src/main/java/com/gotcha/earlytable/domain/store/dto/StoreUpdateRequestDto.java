@@ -13,10 +13,6 @@ import java.util.List;
 @Getter
 public class StoreUpdateRequestDto {
 
-    private final Long userId;
-
-    private final Long fileId;
-
     private final String storeName;
 
     private final String storeTel;
@@ -39,12 +35,10 @@ public class StoreUpdateRequestDto {
     private final List<String> fileUrlList;
 
 
-    public StoreUpdateRequestDto(Long userId, Long fileId, String storeName, String storeTel, String storeAddress,
+    public StoreUpdateRequestDto(String storeName, String storeTel, String storeAddress,
                                  String storeContents, RegionTop regionTop, RegionBottom regionBottom, StoreCategory storeCategory,
                                  List<MultipartFile> newStoreImageList, List<String> fileUrlList) {
 
-        this.userId = userId;
-        this.fileId = fileId;
         this.storeName = storeName;
         this.storeTel = storeTel;
         this.storeAddress = storeAddress;

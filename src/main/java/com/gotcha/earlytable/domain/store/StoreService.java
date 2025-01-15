@@ -3,7 +3,6 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
-import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -47,7 +46,6 @@ public class StoreService {
 
         // 필요한 객체를 가져오기
         User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
-        File file = fileRepository.findByIdOrElseThrow(requestDto.getFileId());
 
         // 가게 개수 제한 10개 이하 확인
         if (storeRepository.countStoreByUserId(requestDto.getUserId()) >= 10) {
@@ -55,8 +53,10 @@ public class StoreService {
             throw new BadRequestException(ErrorCode.BAD_REQUEST);
         }
 
+        File file = fileRepository.save(new File());
+
         // 이미지 파일들 저장
-        if(requestDto.getStoreImageList() != null && requestDto.getStoreImageList().size() > 1) {
+        if(requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
             // 프로필 이미지 파일 저장
             fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
         }
@@ -120,9 +120,9 @@ public class StoreService {
         store.updateStore(requestDto);
         storeRepository.save(store);
 
-        // 이미지 파일들 저장
+        // 이미지 수정
         if(requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
-            // 이미지 수정
+
             fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
         }
 
@@ -143,9 +143,6 @@ public class StoreService {
 
         // 이미지가 변경되었는지 확인
         if(!store.getFile().getFileId().equals(pendingStore.getFileId())) {
-            // 기존 이미지들 삭제
-            fileDetailService.deleteImageFiles(store.getFile().getFileDetailList().stream().map(FileDetail::getFileUrl).toList());
-
             // 파일 삭제
             fileRepository.deleteById(store.getFile().getFileId());
         }
