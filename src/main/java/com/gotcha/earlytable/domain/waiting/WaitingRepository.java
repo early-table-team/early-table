@@ -3,12 +3,14 @@ package com.gotcha.earlytable.domain.waiting;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
+import com.gotcha.earlytable.global.enums.WaitingType;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface WaitingRepository extends JpaRepository<Waiting, Long> {
@@ -25,4 +27,5 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
                                                                                      LocalDateTime to,
                                                                                      Integer waitingNumber);
 
+    List<Waiting> findByStoreAndWaitingTypeAndWaitingStatus(Store store, WaitingType waitingType, WaitingStatus waitingStatus);
 }
