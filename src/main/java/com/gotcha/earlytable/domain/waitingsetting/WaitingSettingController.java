@@ -54,7 +54,7 @@ public class WaitingSettingController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/waiting/settings/{waitingSettingId}")
     public ResponseEntity<WaitingSettingResponseDto> updateWaitingSetting(@PathVariable Long waitingSettingId,
-                                                                          @RequestBody WaitingSettingRequestDto requestDto,
+                                                                          @Valid @RequestBody WaitingSettingRequestDto requestDto,
                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         WaitingSettingResponseDto responseDto = waitingSettingService.updateWaitingSetting(waitingSettingId,

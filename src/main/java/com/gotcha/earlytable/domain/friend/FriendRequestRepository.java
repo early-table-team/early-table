@@ -1,9 +1,6 @@
 package com.gotcha.earlytable.domain.friend;
 
-import com.gotcha.earlytable.domain.friend.dto.FriendRequestResponseDto;
-import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.friend.entity.FriendRequest;
-import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.InvitationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
@@ -23,9 +20,14 @@ public interface FriendRequestRepository extends JpaRepository <FriendRequest, L
 
     List<FriendRequest> findByReceivedUserIdAndInvitationStatus(Long id, InvitationStatus invitationStatus);
 
+
+    default boolean isExistsFriendRequest(Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus) {
+        return existsBySendUserIdAndReceivedUserIdAndInvitationStatus(sendUserId, receivedUserId, invitationStatus);
+    }
+
     boolean existsBySendUserIdAndReceivedUserIdAndInvitationStatus(Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus);
 
     void deleteBySendUserIdAndReceivedUserIdAndInvitationStatus(Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus);
 
-    FriendRequest findBySendUserIdAndReceivedUserIdAndInvitationStatus(Long id, Long id1, InvitationStatus invitationStatus);
+    FriendRequest findBySendUserIdAndReceivedUserIdAndInvitationStatus(Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus);
 }

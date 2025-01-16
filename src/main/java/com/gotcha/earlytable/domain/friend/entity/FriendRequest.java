@@ -14,14 +14,15 @@ public class FriendRequest extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long friendRequestId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "send_user_id", nullable = false)
     private User sendUser;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "received_user_id", nullable = false)
     private User receivedUser;
 
+    @Enumerated(EnumType.STRING)
     private InvitationStatus invitationStatus;
 
     public FriendRequest(User sendUser, User receivedUser, InvitationStatus invitationStatus) {
