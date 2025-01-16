@@ -85,6 +85,13 @@ public class MenuController {
         return ResponseEntity.status(HttpStatus.OK).body("메뉴 삭제가 완료되었습니다.");
     }
 
+    /**
+     *  대표메뉴 변경 api
+     * @param storeId
+     * @param menuId
+     * @param userDetails
+     * @return
+     */
     @PatchMapping("/{menuId}")
     public ResponseEntity<String> changeRecommend(@PathVariable Long storeId, @PathVariable Long menuId,
                                                                     @AuthenticationPrincipal UserDetailsImpl userDetails){

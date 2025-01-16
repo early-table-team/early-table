@@ -144,6 +144,12 @@ public class MenuService {
         menuRepository.deleteById(menuId);
     }
 
+    /**
+     *  대표메뉴 변경 메서드
+     * @param storeId
+     * @param menuId
+     * @param user
+     */
     @Transactional
     public void changeRecommend(Long storeId, Long menuId, User user) {
         // 가게 가져오기
