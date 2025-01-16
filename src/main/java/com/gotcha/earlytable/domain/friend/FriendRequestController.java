@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/friends/request")
 public class FriendRequestController {
+
     private final FriendRequestService friendRequestService;
 
     public FriendRequestController(FriendRequestService friendRequestService) {
@@ -27,24 +28,26 @@ public class FriendRequestController {
 
     /**
      * 친구 요청 보내기 API
-     * @param friendRequestRequestDto (receivedUserId)
+     *
+     * @param requestDto (receivedUserId)
      * @param userDetails
      * @return FriendRequestResponseDto
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping
-    public ResponseEntity<FriendRequestResponseDto> createFriendRequest(@Valid @RequestBody FriendRequestRequestDto friendRequestRequestDto,
+    public ResponseEntity<String> createFriendRequest(@Valid @RequestBody FriendRequestRequestDto requestDto,
                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        FriendRequestResponseDto createFriendResponseDto = friendRequestService.createFriendRequest(user, friendRequestRequestDto);
+        String message = friendRequestService.createFriendRequest(user, requestDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createFriendResponseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
 
     /**
      * 친구 요청 수신 목록 조회 API
+     *
      * @param userDetails
      * @return List<FriendRequestResponseDto>
      */
@@ -61,33 +64,36 @@ public class FriendRequestController {
 
     /**
      * 친구 요청 상태(수락/거절) 변경 API
+     *
      * @param friendRequestId
-     * @param friendRequestUpdateRequestDto (invitationStatus)
+     * @param requestDto (invitationStatus)
      * @param userDetails
-     * @return
+     * @return ResponseEntity<FriendRequestResponseDto>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PatchMapping("/{friendRequestId}")
-    public ResponseEntity<FriendRequestResponseDto> updateFriendRequestStatus(@PathVariable Long friendRequestId,
-                                                                              @Valid @RequestBody FriendRequestUpdateRequestDto friendRequestUpdateRequestDto,
+    public ResponseEntity<String> updateFriendRequestStatus(@PathVariable Long friendRequestId,
+                                                                              @Valid @RequestBody FriendRequestUpdateRequestDto requestDto,
                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        FriendRequestResponseDto updateFriendRequestResponseDto = friendRequestService.updateFriendRequestStatus(friendRequestId, friendRequestUpdateRequestDto, user);
+        String message = friendRequestService.updateFriendRequestStatus(friendRequestId, requestDto, user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(updateFriendRequestResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
     /**
      * 친구 요청 내역 삭제 API (ADMIN)
-     * @param friendRequestDeleteRequestDto
-     * @return
+     *
+     * @param requestDto
+     * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @DeleteMapping
-    public ResponseEntity<String> deleteFriendRequest(@Valid @RequestBody FriendRequestDeleteRequestDto friendRequestDeleteRequestDto) {
-        friendRequestService.deleteFriendRequest(friendRequestDeleteRequestDto);
+    public ResponseEntity<String> deleteFriendRequest(@Valid @RequestBody FriendRequestDeleteRequestDto requestDto) {
+
+        friendRequestService.deleteFriendRequest(requestDto);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("친구 신청 내역이 삭제 완료되었습니다.");
     }
