@@ -1,7 +1,8 @@
 package com.gotcha.earlytable.domain.friend;
 
 import com.gotcha.earlytable.domain.friend.dto.FriendListResponseDto;
-import com.gotcha.earlytable.domain.friend.dto.FriendResponseDto;
+import com.gotcha.earlytable.domain.user.UserService;
+import com.gotcha.earlytable.domain.user.dto.OtherUserResponseDto;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
@@ -17,9 +18,11 @@ import java.util.List;
 @RequestMapping("/friends")
 public class FriendController {
     private final FriendService friendService;
+    private final UserService userService;
 
-    public FriendController(FriendService friendService) {
+    public FriendController(FriendService friendService, UserService userService) {
         this.friendService = friendService;
+        this.userService = userService;
     }
 
     /**
@@ -47,10 +50,11 @@ public class FriendController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/users/{userId}")
-    public ResponseEntity<FriendResponseDto> GetFriend(@PathVariable Long userId) {
-        FriendResponseDto getFriendResponseDto = friendService.getFriend(userId);
+    public ResponseEntity<OtherUserResponseDto> GetFriend(@PathVariable Long userId,
+                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        OtherUserResponseDto responseDto = userService.getOtherUser(userDetails.getUser(), userId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(getFriendResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     /**

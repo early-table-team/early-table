@@ -89,12 +89,27 @@ public class UserController {
      * @param userDetails
      * @return ResponseEntity<UserResponseDto>
      */
-    @GetMapping
+    @GetMapping("/mine")
     public ResponseEntity<UserResponseDto> getUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         UserResponseDto userResponseDto = userService.getUser(userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+    }
+
+    /**
+     * 타인 유저 단건 조회 API
+     *
+     * @param userDetails
+     * @return ResponseEntity<UserResponseDto>
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<OtherUserResponseDto> getOtherUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        @PathVariable Long userId) {
+
+        OtherUserResponseDto responseDto = userService.getOtherUser(userDetails.getUser(), userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     /**

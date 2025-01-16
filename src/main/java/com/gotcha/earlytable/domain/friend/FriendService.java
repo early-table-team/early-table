@@ -1,7 +1,6 @@
 package com.gotcha.earlytable.domain.friend;
 
 import com.gotcha.earlytable.domain.friend.dto.FriendListResponseDto;
-import com.gotcha.earlytable.domain.friend.dto.FriendResponseDto;
 import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
@@ -32,15 +31,6 @@ public class FriendService {
     }
 
     /**
-     * 친구 단일 조회 서비스 메서드
-     */
-    public FriendResponseDto getFriend(Long userId) {
-        User user = userRepository.findByIdOrElseThrow(userId);
-
-        return new FriendResponseDto(user);
-    }
-
-    /**
      * 친구 삭제 서비스 메서드
      */
     @Transactional
@@ -52,4 +42,6 @@ public class FriendService {
         friendRepository.deleteBySendUserIdAndReceivedUserId(userId, user.getId());
         friendRepository.deleteBySendUserIdAndReceivedUserId(user.getId(), userId);
     }
+
+
 }
