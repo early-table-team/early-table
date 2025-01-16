@@ -7,6 +7,7 @@ import com.gotcha.earlytable.domain.menu.MenuRepository;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.review.ReviewRepository;
+import com.gotcha.earlytable.domain.review.enums.ReviewStatus;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.InterestStoreResponseDto;
 import com.gotcha.earlytable.domain.store.entity.InterestStore;
@@ -78,8 +79,8 @@ public class InterestStoreService {
             Optional<Menu> optionalMenu = menuRepository.findByStoreStoreIdAndMenuStatus(store.getStore().getStoreId(), MenuStatus.RECOMMENDED);
             String presentMenu = optionalMenu.map(Menu::getMenuName)
                     .orElse("대표메뉴 없음");
-            Double averageRating = reviewRepository.findAverageRatingByStore(store.getStore());
-            Long countReview = reviewRepository.countReviewsByStore(store.getStore());
+            Double averageRating = reviewRepository.findAverageRatingByStore(store.getStore(), ReviewStatus.NORMAL);
+            Long countReview = reviewRepository.countReviewsByStoreAndReviewStatus(store.getStore(), ReviewStatus.NORMAL);
             Optional<FileDetail> optionalFileDetail = fileDetailRepository.findByFileStoreStoreIdAndFileStatus(store.getStore().getStoreId(), FileStatus.REPRESENTATIVE);
             String storeImage = optionalFileDetail.map(FileDetail::getFileUrl)
                     .orElse("이미지 없음");
