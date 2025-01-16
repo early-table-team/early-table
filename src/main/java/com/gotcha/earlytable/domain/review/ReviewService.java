@@ -177,7 +177,7 @@ public class ReviewService {
 
         storeRepository.findByIdOrElseThrow(storeId);
 
-        Map<String, Number> result = reviewRepository.findStatisticsByStoreId(storeId);
+        Map<String, Number> result = reviewRepository.findStatisticsByStoreId(storeId, ReviewStatus.NORMAL);
 
         // 리뷰가 존재하지 않으면
         for(Number number : result.values()) {
