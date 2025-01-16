@@ -7,6 +7,7 @@ import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.menu.dto.MenuRequestDto;
 import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
+import com.gotcha.earlytable.domain.menu.dto.MenuSearchRequestDto;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
@@ -165,11 +166,28 @@ public class MenuService {
         if(menu.getMenuStatus().equals(MenuStatus.RECOMMENDED)) {
             throw new UnauthorizedException(ErrorCode.ALREADY_REPRESENTATIVE_MENU);
         }
-        Menu recommendedMenu = store.getMenuList().stream().filter(menu1 -> menu1.getMenuStatus().equals(MenuStatus.RECOMMENDED)).findFirst().orElse(null);
+        Menu recommendedMenu = store.getMenuList().stream()
+                .filter(menu1 -> menu1.getMenuStatus().equals(MenuStatus.RECOMMENDED))
+                .findFirst().orElse(null);
+
         recommendedMenu.changeMenuStatus(MenuStatus.NORMAL);
         menu.changeMenuStatus(MenuStatus.RECOMMENDED);
+
         menuRepository.save(menu);
         menuRepository.save(recommendedMenu);
 
+    }
+
+
+    /**
+     * 메뉴 검색 메서드
+     *
+     * @param storeId
+     * @param requestDto
+     * @return List<MenuResponseDto>
+     */
+    public List<MenuResponseDto> searchMenu(Long storeId, MenuSearchRequestDto requestDto) {
+
+        return menuRepository.searchMenuQuery(storeId, requestDto);
     }
 }
