@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.time.LocalTime;
 
 @Getter
-public class WaitingSettingRequestDto {
+public class WaitingSettingCreateRequestDto {
 
     @NotNull
     private final LocalTime waitingOpenTime;
@@ -18,7 +18,7 @@ public class WaitingSettingRequestDto {
     @NotNull
     private final WaitingSettingStatus waitingSettingStatus;
 
-    public WaitingSettingRequestDto(LocalTime waitingOpenTime, LocalTime waitingClosedTime, WaitingSettingStatus waitingSettingStatus) {
+    public WaitingSettingCreateRequestDto(LocalTime waitingOpenTime, LocalTime waitingClosedTime, WaitingSettingStatus waitingSettingStatus) {
 
         this.waitingOpenTime = waitingOpenTime;
         this.waitingClosedTime = waitingClosedTime;

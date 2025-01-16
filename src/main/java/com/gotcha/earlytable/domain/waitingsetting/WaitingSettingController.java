@@ -1,7 +1,8 @@
 package com.gotcha.earlytable.domain.waitingsetting;
 
-import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingCreateRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingResponseDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatusResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
@@ -33,7 +34,7 @@ public class WaitingSettingController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PostMapping("/stores/{storeId}/waiting/settings")
     public ResponseEntity<WaitingSettingResponseDto> createWaitingSetting(@PathVariable Long storeId,
-                                                                          @Valid @RequestBody WaitingSettingRequestDto requestDto,
+                                                                          @Valid @RequestBody WaitingSettingCreateRequestDto requestDto,
                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         WaitingSettingResponseDto responseDto = waitingSettingService.createWaitingSetting(storeId,
@@ -54,7 +55,7 @@ public class WaitingSettingController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/waiting/settings/{waitingSettingId}")
     public ResponseEntity<WaitingSettingResponseDto> updateWaitingSetting(@PathVariable Long waitingSettingId,
-                                                                          @Valid @RequestBody WaitingSettingRequestDto requestDto,
+                                                                          @Valid @RequestBody WaitingSettingUpdateRequestDto requestDto,
                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         WaitingSettingResponseDto responseDto = waitingSettingService.updateWaitingSetting(waitingSettingId,

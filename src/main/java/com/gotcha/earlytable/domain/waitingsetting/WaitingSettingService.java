@@ -2,8 +2,9 @@ package com.gotcha.earlytable.domain.waitingsetting;
 
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
-import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingCreateRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingResponseDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatusResponseDto;
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
 import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
@@ -12,8 +13,6 @@ import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalTime;
 
 @Service
 public class WaitingSettingService {
@@ -35,7 +34,7 @@ public class WaitingSettingService {
      * @return WaitingSettingResponseDto
      */
     @Transactional
-    public WaitingSettingResponseDto createWaitingSetting(Long storeId, Long userId, WaitingSettingRequestDto requestDto) {
+    public WaitingSettingResponseDto createWaitingSetting(Long storeId, Long userId, WaitingSettingCreateRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
@@ -70,7 +69,7 @@ public class WaitingSettingService {
      * @return WaitingSettingResponseDto
      */
     public WaitingSettingResponseDto updateWaitingSetting(Long waitingSettingId, Long userId,
-                                                          WaitingSettingRequestDto requestDto) {
+                                                          WaitingSettingUpdateRequestDto requestDto) {
 
         WaitingSetting waitingSetting = waitingSettingRepository.findByIdOrElseThrow(waitingSettingId);
 

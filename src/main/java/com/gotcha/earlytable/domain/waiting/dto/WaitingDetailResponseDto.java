@@ -2,30 +2,25 @@ package com.gotcha.earlytable.domain.waiting.dto;
 
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
-import com.gotcha.earlytable.global.enums.WaitingType;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Getter
 public class WaitingDetailResponseDto {
-    private final String storeName;
-    private final WaitingStatus waitingStatus;
-    private final WaitingType waitingType;
-    private final int personnelCount;
-    private List<String> partyPeople = new ArrayList<>();
+    Long waitingId;
+    Integer waitingNumber;
+    Integer personnelCount;
+    String phoneNumber;
+    WaitingStatus waitingStatus;
+    LocalDateTime cratedAt;
 
-    public WaitingDetailResponseDto (Waiting waiting) {
-        this.storeName = waiting.getStore().getStoreName();
-        this.waitingStatus = waiting.getWaitingStatus();
-        this.waitingType = waiting.getWaitingType();
+    public WaitingDetailResponseDto(Waiting waiting) {
+        this.waitingId = waiting.getWaitingId();
+        this.waitingNumber = waiting.getWaitingNumber();
         this.personnelCount = waiting.getPersonnelCount();
-        if (waiting.getParty() != null) {
-            this.partyPeople = waiting.getParty().getPartyPeople().stream()
-                    .map(partyPeople -> partyPeople.getUser().getNickName())
-                    .collect(Collectors.toList());
-        }
+        this.phoneNumber = waiting.getPhone();
+        this.waitingStatus = waiting.getWaitingStatus();
+        this.cratedAt = waiting.getCreatedAt();
     }
 }

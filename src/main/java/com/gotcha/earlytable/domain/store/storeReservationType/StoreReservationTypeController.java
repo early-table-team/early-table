@@ -1,6 +1,8 @@
 package com.gotcha.earlytable.domain.store.storeReservationType;
 
-import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeCreateRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -30,7 +32,7 @@ public class StoreReservationTypeController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PostMapping
     public ResponseEntity<String> createStoreReservationType(@PathVariable Long storeId,
-                                                             @Valid @RequestBody StoreReservationTypeRequestDto requestDto,
+                                                             @Valid @RequestBody StoreReservationTypeCreateRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeReservationTypeService.createStoreReservationType(storeId, userDetails.getUser(), requestDto);
@@ -49,7 +51,7 @@ public class StoreReservationTypeController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @PatchMapping
     public ResponseEntity<String> updateStoreReservationType(@PathVariable Long storeId,
-                                                             @Valid @RequestBody StoreReservationTypeRequestDto requestDto,
+                                                             @Valid @RequestBody StoreReservationTypeUpdateRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeReservationTypeService.updateStoreReservationType(storeId, userDetails.getUser(), requestDto);
@@ -69,7 +71,7 @@ public class StoreReservationTypeController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping
     public ResponseEntity<Void> deleteStoreReservationType(@PathVariable Long storeId,
-                                                             @Valid @RequestBody StoreReservationTypeRequestDto requestDto,
+                                                             @Valid @RequestBody StoreReservationTypeDeleteRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeReservationTypeService.deleteStoreReservationType(storeId, userDetails.getUser(), requestDto);
