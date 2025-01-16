@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.store.storeReservation;
+package com.gotcha.earlytable.domain.store.storeReservationType;
 
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeRequestDto;
@@ -41,7 +41,7 @@ public class StoreReservationTypeService {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 본인 가게인지 확인
-        if(user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
+        if (user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -54,7 +54,34 @@ public class StoreReservationTypeService {
         }
 
         // 예약 타입 설정
-        StoreReservationType storeReservationType = new StoreReservationType(requestDto.getReservationType(), store);
+        StoreReservationType storeReservationType = new StoreReservationType(
+                requestDto.getReservationType(), requestDto.getWaitingType(), store);
+
+        storeReservationTypeRepository.save(storeReservationType);
+    }
+
+    @Transactional
+    public void updateStoreReservationType(Long storeId, User user, StoreReservationTypeRequestDto requestDto) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        // 본인 가게인지 확인
+        if (user.getAuth().equals(Auth.OWNER) && !store.getUser().getId().equals(user.getId())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 이미 해당 타입이 존재하는지 확인
+        boolean isExist = storeReservationTypeRepository
+                .existsByStoreStoreIdAndReservationType(storeId, requestDto.getReservationType());
+
+        if (!isExist) {
+            throw new ConflictException(ErrorCode.NOT_FOUND);
+        }
+
+        // 예약 타입 변경
+        StoreReservationType storeReservationType = storeReservationTypeRepository.findByStoreAndReservationType(store, requestDto.getReservationType());
+
+        storeReservationType.updateReservationType(requestDto.getWaitingType());
 
         storeReservationTypeRepository.save(storeReservationType);
     }
@@ -72,12 +99,12 @@ public class StoreReservationTypeService {
         Optional<StoreReservationType> storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
 
         // 존재하지 않으면 예외처리
-        if(storeReservationType.isEmpty()) {
+        if (storeReservationType.isEmpty()) {
             throw new NotFoundException(ErrorCode.NOT_FOUND);
         }
 
         // 본인 가게인지 확인
-        if(user.getAuth().equals(Auth.OWNER) && !storeReservationType.get().getStore().getUser().getId().equals(user.getId())) {
+        if (user.getAuth().equals(Auth.OWNER) && !storeReservationType.get().getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
