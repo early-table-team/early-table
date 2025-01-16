@@ -24,6 +24,7 @@ public enum ErrorCode {
     NO_MORE_REQUEST_AVAILABLE(HttpStatus.BAD_REQUEST, "더이상 친구 요청이 불가능한 사용자입니다. 관리자에게 문의하세요."),
     FULL_PARTY_PEOPLE(HttpStatus.BAD_REQUEST,"파티가 꽉 찼습니다."),
     NO_INPUT_PHONE(HttpStatus.BAD_REQUEST, "연락처를 입력해주세요."),
+    NOT_FOUND_DAY(HttpStatus.BAD_REQUEST,"요청한 요일에 예약이 불가능합니다."),
 
 
 
@@ -42,6 +43,7 @@ public enum ErrorCode {
     FORBIDDEN_FRIEND_REQUEST(HttpStatus.FORBIDDEN, "본인의 요청이 아닙니다."),
     FORBIDDEN_PARTY_LEADER_LEAVE(HttpStatus.FORBIDDEN,"파티장은 탈퇴가 안됩니다."),
     FORBIDDEN_PARTY_PEOPLE(HttpStatus.FORBIDDEN,"파티일원이 아닙니다"),
+    FORBIDDEN_RESERVATION_END(HttpStatus.FORBIDDEN, "시간 및 취소여부를 확인해주세요."),
 
     // 404 NOT_FOUND
     NOT_FOUND(HttpStatus.NOT_FOUND,"리소스를 찾을 수 없습니다."),

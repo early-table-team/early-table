@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.party;
 
+import com.gotcha.earlytable.domain.party.dto.PartyPeopleResponseDto;
 import com.gotcha.earlytable.domain.party.entity.Invitation;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
@@ -11,6 +12,7 @@ import com.gotcha.earlytable.global.error.exception.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -50,7 +52,8 @@ public class PartyPeopleService {
 
         //초대에서 상태 바꾸기
         invitation.changeStatus(InvitationStatus.LEAVED);
-        invitationRepository.save(invitation);
+        invitationRepository.delete(invitation);
+
 
         // 탈퇴하면 파티피플에서 제외
         partyPeopleRepository.deleteByUser(user);
@@ -84,7 +87,7 @@ public class PartyPeopleService {
         // 파티피플에서 추방 후 초대장 정보를 떠남으로 변경
         partyPeopleRepository.deleteByUserId(userId);
         userInvitation.changeStatus(InvitationStatus.EXILE);
-        invitationRepository.save(userInvitation);
+        invitationRepository.delete(userInvitation);
 
     }
 
@@ -117,7 +120,25 @@ public class PartyPeopleService {
             //해당 초대의 상태를 추방으로 변경
             Invitation invitation = invitationRepository.findByReceiveUserAndParty(partyPeople.getUser(),party);
             invitation.changeStatus(InvitationStatus.EXILE);
-            invitationRepository.save(invitation);
+            invitationRepository.delete(invitation);
         }
+    }
+
+    public List<PartyPeopleResponseDto> getPartyPeople(Long partyId, User user) {
+        //파티를 가져오기
+        Party party = partyRepository.findByPartyIdOrThrow(partyId);
+
+        // 일단 로그인한 유저가 파티의 일원인 검증을 하는 부분
+        boolean isPartyPeople = party.getPartyPeople().stream().anyMatch(partyPeople -> partyPeople.getUser().getId().equals(user.getId()));
+        if(!isPartyPeople){throw new CustomException(ErrorCode.FORBIDDEN_PARTY_PEOPLE);}
+
+        List<PartyPeopleResponseDto> dtos = new ArrayList<>();
+        party.getPartyPeople().forEach(partyPeople -> {
+            PartyPeopleResponseDto dto = new PartyPeopleResponseDto(partyPeople);
+            dtos.add(dto);
+        });
+
+        return dtos;
+
     }
 }

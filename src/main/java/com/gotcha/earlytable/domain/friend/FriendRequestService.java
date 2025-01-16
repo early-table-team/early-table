@@ -141,7 +141,6 @@ public class FriendRequestService {
         if(requestDto.getInvitationStatus().equals(InvitationStatus.REJECTED)) {
             //친구요청상태 요청값으로 변경(수락 또는 거절)
             friendRequest.update(requestDto.getInvitationStatus());
-
             //친구요청상태 변경된내역 저장
             friendRequestRepository.save(friendRequest);
 
@@ -167,5 +166,26 @@ public class FriendRequestService {
         friendRequestRepository.deleteBySendUserIdAndReceivedUserIdAndInvitationStatus(requestDto.getSendUserId(),
                                                                                         requestDto.getReceivedUserId(),
                                                                                         InvitationStatus.REJECTED);
+    }
+
+    /**
+     *  친구 요청 취소 서비스 메서드
+     * @param friendRequestId
+     */
+    public void cancelFriendRequest(Long friendRequestId, User user) {
+
+        FriendRequest friendRequest = friendRequestRepository.findByIdOrElseThrow(friendRequestId);
+
+        // 이미 거절된 요청이면 취소 안됨
+        if(friendRequest.getInvitationStatus().equals(InvitationStatus.REJECTED)) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        // 내가 보낸 요청이 맞는지 확인
+        if(!friendRequest.getSendUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_FRIEND_REQUEST);
+        }
+
+        friendRequestRepository.delete(friendRequest);
     }
 }

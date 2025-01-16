@@ -89,6 +89,11 @@ public class ReservationService {
         // TODO : 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
         String dayOff = requestDto.getReservationDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN); //월, 화, 수 .. 이런식
         // 정기 휴무일을 체크 -> 받아온 값의 요일과 동일한 요일의 status값이 closed인지 체크
+
+        boolean isDayData = store.getStoreHourList().stream().noneMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff));
+        if(isDayData){throw new CustomException(ErrorCode.NOT_FOUND_DAY);}
+
+
         boolean regularHoliday = store.getStoreHourList().stream().anyMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
         if (regularHoliday) {
             throw new CustomException(ErrorCode.STORE_HOLIDAY);
@@ -128,13 +133,22 @@ public class ReservationService {
                 !reservation.getReservationStatus().equals(ReservationStatus.CANCELED)).count()
                 );
 
+        Integer tablesizeLarge = Math.toIntExact(
+                store.getReservationList().stream()
+                        .filter(reservation ->
+                                reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
+                                        reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
+                                        reservation.getTableSize() == requestCount + 1 &&
+                                        !reservation.getReservationStatus().equals(ReservationStatus.CANCELED))
+                        .count()
+        );
 
         // 인원수에 맞는 테이블로 예약 가능한지 확인하기, 안된다면 +1까지 검토
         boolean canSeat = store.getStoreTableList().stream()
                 .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount) && storeTable.getTableCount() - tablesize >= 1);
 
         boolean canSeat2 = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount + 1) && storeTable.getTableCount() - tablesize >= 1);
+                .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount + 1) && storeTable.getTableCount() - tablesizeLarge >= 1);
         if (!canSeat) {
             if(canSeat2){
                 requestTableSize = requestTableSize + 1; // 3인으로 왔는데 3인이 없는경우 4인을 검사해서 4인이 있다? -> 4인테이블로 예약하기 위해 4인을 잠깐 저장
@@ -161,7 +175,7 @@ public class ReservationService {
         }
 
 
-        return new ReservationCreateResponseDto(reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
+        return new ReservationCreateResponseDto(user.getId(),reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
                 , requestDto.getReservationDate().toLocalTime(), requestCount, returnMenuListDtos);
     }
 
@@ -226,40 +240,61 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
         Store store = reservation.getStore();
 
-        reservationMenuRepository.deleteAllByReservation(reservation);
+        if(!reservation.getReservationStatus().equals(ReservationStatus.PENDING)){throw new CustomException(ErrorCode.FORBIDDEN_RESERVATION_END);}
+
+        // 요청 DTO에서 menuList를 가져옴
         List<HashMap<String, Long>> menuList = requestDto.getMenuList();
         List<ReturnMenuListDto> returnMenuLists = new ArrayList<>();
 
-        List<Menu> menus = new ArrayList<>();
-        List<Long> menuCounts = new ArrayList<>();
+        if (menuList != null && !menuList.isEmpty() &&
+                menuList.stream().anyMatch(menu -> menu.get("menuCount") != null && menu.get("menuCount") > 0)) {
 
-        menuList.forEach(menu -> {
-            Long menuId = menu.get("menuId"); // 예약한 메뉴의 아이디값을 가져옴
-            Long menuCount = menu.get("menuCount");
+            reservationMenuRepository.deleteAllByReservation(reservation);
 
-            if(menuCount <= 0){return;}
+            List<Menu> menus = new ArrayList<>();
+            List<Long> menuCounts = new ArrayList<>();
 
-            boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
+            menuList.forEach(menu -> {
+                Long menuId = menu.get("menuId"); // 예약한 메뉴의 아이디값
+                Long menuCount = menu.get("menuCount");
 
-            if (!isMenuExist) {
-                throw new BadRequestException(ErrorCode.NOT_FOUND_MENU);
+                if (menuCount <= 0) {
+                    return;
+                }
+
+                // 메뉴가 존재하는지 확인
+                boolean isMenuExist = menuRepository.existsByMenuIdAndStore(menuId, store);
+                if (!isMenuExist) {
+                    throw new BadRequestException(ErrorCode.NOT_FOUND_MENU);
+                }
+
+                // 메뉴를 추가하고 반환 리스트를 구성
+                Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
+                menus.add(addMenu);
+                menuCounts.add(menuCount);
+                ReturnMenuListDto returnMenuList = new ReturnMenuListDto(menuId, menuCount, addMenu.getMenuName());
+                returnMenuLists.add(returnMenuList);
+            });
+
+            // 메뉴와 수량을 저장
+            for (int i = 0; i < menus.size(); i++) {
+                ReservationMenu reservationMenu = new ReservationMenu(menus.get(i), reservation, menuCounts.get(i));
+                reservationMenuRepository.save(reservationMenu);
             }
-
-            Menu addMenu = menuRepository.findByIdOrElseThrow(menuId);
-            menus.add(addMenu);
-            menuCounts.add(menuCount);
-            ReturnMenuListDto returnMenuList = new ReturnMenuListDto(menuId, menuCount, addMenu.getMenuName());
-            returnMenuLists.add(returnMenuList);
-
-        });
-
-        for (int i = 0; i < menus.size(); i++) {
-            ReservationMenu reservationMenu = new ReservationMenu(menus.get(i), reservation, menuCounts.get(i));
-            reservationMenuRepository.save(reservationMenu);
+        } else {
+            reservation.getReservationMenuList().forEach(reservationMenu -> {
+                ReturnMenuListDto returnMenuList = new ReturnMenuListDto(
+                        reservationMenu.getMenu().getMenuId(),
+                        reservationMenu.getMenuCount(),
+                        reservationMenu.getMenu().getMenuName()
+                );
+                returnMenuLists.add(returnMenuList);
+            });
         }
 
         return new ReservationGetOneResponseDto(reservation, user, returnMenuLists);
     }
+
 
     /**
      * 예약 취소 메서드

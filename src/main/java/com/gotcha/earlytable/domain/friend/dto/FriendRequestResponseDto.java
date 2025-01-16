@@ -6,10 +6,10 @@ import lombok.Getter;
 
 @Getter
 public class FriendRequestResponseDto {
-    private Long friendRequestId;
-    private Long sendUserId;
-    private Long receivedUserId;
-    private InvitationStatus invitationStatus;
+    private final Long friendRequestId;
+    private final Long sendUserId;
+    private final Long receivedUserId;
+    private final InvitationStatus invitationStatus;
 
     public FriendRequestResponseDto(Long friendRequestId, Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus) {
         this.friendRequestId = friendRequestId;

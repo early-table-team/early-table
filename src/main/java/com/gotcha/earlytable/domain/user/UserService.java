@@ -5,6 +5,7 @@ import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.file.enums.FileStatus;
+import com.gotcha.earlytable.domain.friend.FriendRepository;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
@@ -32,17 +33,19 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final FriendRepository friendRepository;
 
     public UserService(UserRepository userRepository, FileDetailService fileDetailService,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider, FileService fileService) {
+                       JwtProvider jwtProvider, FileService fileService, FriendRepository friendRepository) {
         this.userRepository = userRepository;
         this.fileDetailService = fileDetailService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.fileService = fileService;
+        this.friendRepository = friendRepository;
     }
 
     /**
@@ -75,7 +78,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         String imageUrl = null;
-        if (!requestDto.getProfileImage().isEmpty()) {
+        if (requestDto.getProfileImage() != null &&!requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
@@ -128,6 +131,36 @@ public class UserService {
                 .orElse(null);
 
         return UserResponseDto.toDto(user, imageUrl);
+    }
+
+    /**
+     * 유저 단건 조회(타인) 메서드
+     *
+     * @param user
+     * @return UserResponseDto
+     */
+    public OtherUserResponseDto getOtherUser(User user, Long otherUserId) {
+
+        String relationship = "other";
+
+        if(user.getId().equals(otherUserId)) {
+            relationship = "mine";
+        }
+
+        boolean isFriend = friendRepository.findBySendUserId(user.getId()).stream()
+                .anyMatch(friend -> friend.getReceivedUser().getId().equals(otherUserId));
+        if(isFriend) {
+            relationship = "friend";
+        }
+
+        User OtherUser = userRepository.findByIdOrElseThrow(otherUserId);
+
+        String imageUrl = OtherUser.getFile().getFileDetailList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
+                .map(FileDetail::getFileUrl)
+                .orElse(null);
+
+        return OtherUserResponseDto.toDto(OtherUser, imageUrl, relationship);
     }
 
     /**

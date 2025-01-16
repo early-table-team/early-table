@@ -125,7 +125,6 @@ public class StoreController {
      * @param requestDto
      * @return
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/search")
     public ResponseEntity<List<StoreSearchResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
 

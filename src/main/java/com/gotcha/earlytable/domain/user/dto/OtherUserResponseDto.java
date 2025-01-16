@@ -5,7 +5,7 @@ import com.gotcha.earlytable.global.enums.Auth;
 import lombok.Getter;
 
 @Getter
-public class UserResponseDto {
+public class OtherUserResponseDto {
 
     private final Long id;
 
@@ -19,23 +19,26 @@ public class UserResponseDto {
 
     private final String imageUrl;
 
-    public UserResponseDto(Long id, String nickname, String email, String phoneNumber, Auth auth, String imageUrl) {
+    private final String relationship;
+
+    public OtherUserResponseDto(Long id, String nickname, String email, String phoneNumber, Auth auth, String imageUrl, String relationship) {
         this.id = id;
         this.nickname = nickname;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.auth = auth;
         this.imageUrl = imageUrl;
+        this.relationship = relationship;
     }
 
-    public static UserResponseDto toDto(User user, String imageUrl) {
-        return new UserResponseDto(
+    public static OtherUserResponseDto toDto(User user, String imageUrl, String relationship) {
+        return new OtherUserResponseDto(
                 user.getId(),
                 user.getNickName(),
-                user.getEmail(),
-                user.getPhone(),
+                user.getEmail(), user.getPhone().substring(0, user.getPhone().length() - 4) + "****",
                 user.getAuth(),
-                imageUrl
+                imageUrl,
+                relationship
         );
     }
 }
