@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.List;
@@ -204,8 +205,14 @@ public class WaitingService {
                 waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59), waiting.getWaitingType());
 
         waitingNumber++;
+        // 일행 그룹 생성
+        Party party = partyRepository.save(new Party());
 
-        Waiting newWaiting = new Waiting(waiting.getStore(), waiting.getParty(), waiting.getWaitingType(), waiting.getPersonnelCount(),
+        // 일행 인원 등록
+        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
+        partyPeopleRepository.save(partyPeople);
+
+        Waiting newWaiting = new Waiting(waiting.getStore(), party, waiting.getWaitingType(), waiting.getPersonnelCount(),
                 WaitingStatus.PENDING, RemoteStatus.REMOTE, waitingNumber, user.getPhone());
 
         waitingRepository.save(newWaiting);
@@ -264,14 +271,24 @@ public class WaitingService {
         return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "now");
     }
 
+    /**
+     * 웨이팅 목록 상세 조회 (Owner)
+     *
+     * @param user
+     * @param storeId
+     * @param requestDto
+     * @return
+     */
     public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, @Valid WaitingOwnerRequestDto requestDto) {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         if (!store.getUser().getId().equals(user.getId())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
-
-        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatusNot(store, requestDto.getWaitingType(), WaitingStatus.DELAY);
+        LocalDate targetDate = requestDto.getDate();
+        LocalDateTime startOfDay = targetDate.atStartOfDay(); // 시작 시간
+        LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
+        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatusNotAndCreatedAtBetween(store, requestDto.getWaitingType(), WaitingStatus.DELAY, startOfDay, endOfDay);
 
         return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "detail");
     }

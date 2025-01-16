@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.store.storeReservationType;
 
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeCreateRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreReservationType;
@@ -14,7 +15,6 @@ import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -104,7 +104,7 @@ public class StoreReservationTypeService {
      * @param requestDto
      */
     @Transactional
-    public void deleteStoreReservationType(Long storeId, User user, StoreReservationTypeCreateRequestDto requestDto) {
+    public void deleteStoreReservationType(Long storeId, User user, StoreReservationTypeDeleteRequestDto requestDto) {
 
         Optional<StoreReservationType> storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
 

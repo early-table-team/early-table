@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.store.storeReservationType;
 
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeCreateRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
@@ -70,7 +71,7 @@ public class StoreReservationTypeController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
     @DeleteMapping
     public ResponseEntity<Void> deleteStoreReservationType(@PathVariable Long storeId,
-                                                             @Valid @RequestBody StoreReservationTypeCreateRequestDto requestDto,
+                                                             @Valid @RequestBody StoreReservationTypeDeleteRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         storeReservationTypeService.deleteStoreReservationType(storeId, userDetails.getUser(), requestDto);
