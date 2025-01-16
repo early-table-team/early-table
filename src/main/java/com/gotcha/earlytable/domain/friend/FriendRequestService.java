@@ -168,4 +168,25 @@ public class FriendRequestService {
                                                                                         requestDto.getReceivedUserId(),
                                                                                         InvitationStatus.REJECTED);
     }
+
+    /**
+     *  친구 요청 취소 서비스 메서드
+     * @param friendRequestId
+     */
+    public void cancelFriendRequest(Long friendRequestId, User user) {
+
+        FriendRequest friendRequest = friendRequestRepository.findByIdOrElseThrow(friendRequestId);
+
+        // 이미 거절된 요청이면 취소 안됨
+        if(friendRequest.getInvitationStatus().equals(InvitationStatus.REJECTED)) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        // 내가 보낸 요청이 맞는지 확인
+        if(!friendRequest.getSendUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_FRIEND_REQUEST);
+        }
+
+        friendRequestRepository.delete(friendRequest);
+    }
 }

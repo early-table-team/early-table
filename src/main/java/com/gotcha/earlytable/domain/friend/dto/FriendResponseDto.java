@@ -16,14 +16,17 @@ public class FriendResponseDto {
 
     private final String profileImageUrl;
 
+    private final String relationship;
 
-    public FriendResponseDto(User user) {
+
+    public FriendResponseDto(User user, String relationship) {
         this.userId = user.getId();
         this.nickName = user.getNickName();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhone().substring(0, user.getPhone().length() - 4) + "****";
         this.profileImageUrl = user.getFile().getFileDetailList().stream().findFirst()
                 .map(FileDetail::getFileUrl).orElse(null);
+        this.relationship = relationship;
     }
 
 }

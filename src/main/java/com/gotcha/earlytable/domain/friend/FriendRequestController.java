@@ -83,6 +83,23 @@ public class FriendRequestController {
         return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
+
+    /**
+     * 친구 요청 취소 API
+     *
+     * @param friendRequestId
+     * @return ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @DeleteMapping("/{friendRequestId}/cancel")
+    public ResponseEntity<String> cancelFriendRequest(@PathVariable Long friendRequestId,
+                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        friendRequestService.cancelFriendRequest(friendRequestId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("친구 신청 취소 완료되었습니다.");
+    }
+
     /**
      * 친구 요청 내역 삭제 API (ADMIN)
      *
