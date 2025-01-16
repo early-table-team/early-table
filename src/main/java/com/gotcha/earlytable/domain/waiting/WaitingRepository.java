@@ -28,7 +28,7 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
 
     List<Waiting> findByStoreAndWaitingTypeAndWaitingStatus(Store store, WaitingType waitingType, WaitingStatus waitingStatus);
 
-    int countByStoreAndCreatedAtBetweenAndWaitingType(Store store, LocalDateTime localDateTime, LocalDateTime localDateTime1, @NotNull WaitingType waitingType);
+    int countByStoreAndCreatedAtBetweenAndWaitingType(Store store, LocalDateTime localDateTime, LocalDateTime localDateTime1, WaitingType waitingType);
 
     List<Waiting> findByStoreAndWaitingTypeAndWaitingStatusNotAndCreatedAtBetween(Store store, WaitingType waitingType, WaitingStatus waitingStatus, LocalDateTime startOfDay, LocalDateTime endOfDay);
 }
