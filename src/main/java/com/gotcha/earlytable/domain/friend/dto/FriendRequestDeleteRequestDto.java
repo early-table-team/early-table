@@ -1,18 +1,18 @@
 package com.gotcha.earlytable.domain.friend.dto;
 
-import com.gotcha.earlytable.global.enums.InvitationStatus;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
 public class FriendRequestDeleteRequestDto {
-    @NotBlank
+
+    @NotNull
     private final Long sendUserId;
 
-    @NotBlank
+    @NotNull
     private final Long receivedUserId;
 
-    public FriendRequestDeleteRequestDto(Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus) {
+    public FriendRequestDeleteRequestDto(Long sendUserId, Long receivedUserId) {
         this.sendUserId = sendUserId;
         this.receivedUserId = receivedUserId;
     }
