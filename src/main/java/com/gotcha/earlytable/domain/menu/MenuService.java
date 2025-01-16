@@ -51,8 +51,11 @@ public class MenuService {
         // 파일 생성
         File file = fileService.createFile();
 
+        String imageUrl = null;
         // 프로필 이미지 파일 저장
-        String imageUrl = fileDetailService.createImageFile(requestDto.getImage(), file);
+        if(requestDto.getImage() != null && !requestDto.getImage().isEmpty()) {
+            imageUrl = fileDetailService.createImageFile(requestDto.getImage(), file);
+        }
 
         //메뉴 생성
         Menu menu = new Menu(requestDto.getMenuName(),
@@ -72,7 +75,7 @@ public class MenuService {
      * 메뉴 수정 서비스 메서드
      */
     @Transactional
-    public MenuResponseDto updateMenu(Long menuId, Long userId, MenuRequestDto menuRequestDto) {
+    public MenuResponseDto updateMenu(Long menuId, Long userId, MenuRequestDto requestDto) {
 
         Menu menu = menuRepository.findByIdOrElseThrow(menuId);
 
@@ -82,20 +85,20 @@ public class MenuService {
         }
 
         //메뉴 수정 및 저장
-        menu.updateMenu(menuRequestDto);
+        menu.updateMenu(requestDto);
         Menu savedMenu = menuRepository.save(menu);
 
         String imageUrl = menu.getFile().getFileDetailList().stream()
                 .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        if(menuRequestDto.getImage() != null) {
+        if(requestDto.getImage() != null && !requestDto.getImage().isEmpty()) {
 
             // 기존 이미지 제거
             menu.getFile().getFileDetailList().stream()
                     .findAny().ifPresent(fileDetail -> fileDetailService.deleteImageFile(fileDetail.getFileUrl()));
 
             // 새로 생성
-            imageUrl = fileDetailService.createImageFile(menuRequestDto.getImage(), menu.getFile());
+            imageUrl = fileDetailService.createImageFile(requestDto.getImage(), menu.getFile());
         }
 
         return MenuResponseDto.toDto(savedMenu, imageUrl);

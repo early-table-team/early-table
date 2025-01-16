@@ -1,7 +1,6 @@
 package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.allergy.AllergyCategoryRepository;
-import com.gotcha.earlytable.domain.allergy.AllergyStuffRepository;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.entity.File;
@@ -29,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,21 +40,20 @@ public class StoreService {
     private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
     private final AllergyCategoryRepository allergyCategoryRepository;
-    private final AllergyStuffRepository allergyStuffRepository;
     private final ReservationRepository reservationRepository;
     private final StoreKeywordRepository storeKeywordRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
-                        AllergyCategoryRepository allergyCategoryRepository, AllergyStuffRepository allergyStuffRepository, ReservationRepository reservationRepository, StoreKeywordRepository storeKeywordRepository) {
+                        AllergyCategoryRepository allergyCategoryRepository, ReservationRepository reservationRepository,
+                        StoreKeywordRepository storeKeywordRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
         this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
         this.allergyCategoryRepository = allergyCategoryRepository;
-        this.allergyStuffRepository = allergyStuffRepository;
         this.reservationRepository = reservationRepository;
         this.storeKeywordRepository = storeKeywordRepository;
     }

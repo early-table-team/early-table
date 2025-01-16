@@ -78,7 +78,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         String imageUrl = null;
-        if (!requestDto.getProfileImage().isEmpty()) {
+        if (requestDto.getProfileImage() != null &&!requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
