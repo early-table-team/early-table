@@ -11,6 +11,8 @@ import java.util.List;
 @Getter
 public class ReservationCreateResponseDto {
 
+    private final Long userId;
+
     private final Long reservationId;
 
     private final LocalDate reservationDate;
@@ -21,7 +23,8 @@ public class ReservationCreateResponseDto {
 
     private final List<ReturnMenuListDto> menuList;
 
-    public ReservationCreateResponseDto(Long reservationId, LocalDate reservation, LocalTime reservationTime, Integer personnelCount, List<ReturnMenuListDto> menuList) {
+    public ReservationCreateResponseDto(Long userId, Long reservationId, LocalDate reservation, LocalTime reservationTime, Integer personnelCount, List<ReturnMenuListDto> menuList) {
+        this.userId = userId;
         this.reservationId = reservationId;
         this.reservationDate = reservation;
         this.reservationTime = reservationTime;

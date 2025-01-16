@@ -1,11 +1,14 @@
 package com.gotcha.earlytable.domain.reservation.dto;
 
+import com.gotcha.earlytable.domain.file.entity.FileDetail;
+import com.gotcha.earlytable.domain.file.enums.FileStatus;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +25,7 @@ public class ReservationGetOneResponseDto {
 
     private final Integer personnelCount;
 
-    private final List<String> invitationPeople;
+    private final List<HashMap<String, Object>> invitationPeople;
 
     private final String phoneNumber;
 
@@ -35,7 +38,14 @@ public class ReservationGetOneResponseDto {
         this.reservationStatus = reservation.getReservationStatus();
         this.personnelCount = reservation.getPersonnelCount();
         this.invitationPeople = reservation.getParty().getPartyPeople().stream()
-                .map(partyPeople -> partyPeople.getUser().getNickName())
+                .map(partyPeople -> {
+                    HashMap<String, Object> userMap = new HashMap<>();
+                    userMap.put("userName", partyPeople.getUser().getNickName());
+                    userMap.put("userId", partyPeople.getUser().getId());
+                    userMap.put("userImage",partyPeople.getUser().getFile().getFileDetailList().stream()
+                            .filter(fileDetail->fileDetail.getFileStatus().equals(FileStatus.REPRESENTATIVE)).map(FileDetail::getFileUrl).findFirst().orElse(null));
+                    return userMap;
+                })
                 .collect(Collectors.toList());
         this.phoneNumber = user.getPhone();
         this.menuList = menuList;
