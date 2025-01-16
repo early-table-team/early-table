@@ -1,7 +1,8 @@
 package com.gotcha.earlytable.domain.waitingsetting.entity;
 
 import com.gotcha.earlytable.domain.store.entity.Store;
-import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingCreateRequestDto;
+import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.base.BaseEntity;
 import jakarta.persistence.*;
@@ -48,7 +49,7 @@ public class WaitingSetting extends BaseEntity {
 //        store.getWaitingSettingList().add(this);
     }
 
-    public void updateWaitingSetting(WaitingSettingRequestDto requestDto) {
+    public void updateWaitingSetting(WaitingSettingUpdateRequestDto requestDto) {
 
         if(requestDto.getWaitingOpenTime() != null) {
             this.waitingOpenTime = requestDto.getWaitingOpenTime();

@@ -64,10 +64,10 @@ public class WaitingService {
      *
      * @param requestDto
      * @param storeId
-     * @return WaitingOnlineResponseDto
+     * @return WaitingResponseDto
      */
     @Transactional
-    public WaitingOnlineResponseDto createWaitingOnline(WaitingOnlineRequestDto requestDto, Long storeId, User user) {
+    public WaitingResponseDto createWaitingOnline(WaitingOnlineRequestDto requestDto, Long storeId, User user) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
@@ -97,7 +97,7 @@ public class WaitingService {
         // 저장
         Waiting savedWaiting = waitingRepository.save(waiting);
 
-        return new WaitingOnlineResponseDto(waitingNumber, savedWaiting);
+        return new WaitingResponseDto(savedWaiting);
     }
 
     /**
@@ -154,7 +154,7 @@ public class WaitingService {
      * @return List<WaitingListResponseDto>
      */
     @Transactional
-    public List<WaitingListResponseDto> getWaitingList(User user) {
+    public List<WaitingResponseDto> getWaitingList(User user) {
 
         // 로그인 된 사용자로 PartyPeople 리스트 조회
         List<PartyPeople> partyPeopleList = partyPeopleRepository.findByUser(user);
@@ -164,10 +164,11 @@ public class WaitingService {
                 .map(PartyPeople::getParty)        // Party 추출
                 .map(Party::getWaiting)           // Party에서 Waiting 추출
                 .filter(Objects::nonNull)         // null 값 제외
+                .filter(waiting -> waiting.getWaitingStatus() != WaitingStatus.DELAY) // waitingStatus가 "delay"인 항목 제외
                 .toList();
 
         return waitingList.stream()
-                .map(WaitingListResponseDto::new)
+                .map(WaitingResponseDto::new)
                 .collect(Collectors.toList());
     }
 
@@ -191,6 +192,10 @@ public class WaitingService {
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
 
+        waiting.updateWaiting(WaitingStatus.DELAY);
+        waitingRepository.save(waiting);
+
+
         // 웨이팅 날짜만 가져오기
         LocalDate waitingDate = waiting.getCreatedAt().toLocalDate();
 
@@ -200,10 +205,10 @@ public class WaitingService {
 
         waitingNumber++;
 
-        // 웨이팅 번호 변경
-        waiting.updateWaitingNumber(waitingNumber);
+        Waiting newWaiting = new Waiting(waiting.getStore(), waiting.getParty(), waiting.getWaitingType(), waiting.getPersonnelCount(),
+                WaitingStatus.PENDING, RemoteStatus.REMOTE, waitingNumber, user.getPhone());
 
-        waitingRepository.save(waiting);
+        waitingRepository.save(newWaiting);
 
         return new WaitingNumberResponseDto(waitingNumber);
     }
@@ -216,7 +221,7 @@ public class WaitingService {
      * @return WaitingDetailResponseDto
      */
     @Transactional
-    public WaitingDetailResponseDto getWaitingDetail(Long waitingId, User user) {
+    public WaitingGetOneResponseDto getWaitingDetail(Long waitingId, User user) {
 
         Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
 
@@ -235,7 +240,7 @@ public class WaitingService {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 
-        return new WaitingDetailResponseDto(waiting);
+        return new WaitingGetOneResponseDto(waiting);
     }
 
     /**
@@ -246,7 +251,7 @@ public class WaitingService {
      * @param requestDto
      * @return WaitingOwnerResponseDto
      */
-    public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, @Valid WaitingOwnerRequestDto requestDto) {
+    public WaitingOwnerResponseDto getOwnerNowWaitingList(User user, Long storeId, @Valid WaitingSimpleOwnerRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
@@ -256,7 +261,19 @@ public class WaitingService {
 
         List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatus(store, requestDto.getWaitingType(), WaitingStatus.PENDING);
 
-        return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType());
+        return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "now");
+    }
+
+    public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, @Valid WaitingOwnerRequestDto requestDto) {
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        if (!store.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+        }
+
+        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatusNot(store, requestDto.getWaitingType(), WaitingStatus.DELAY);
+
+        return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "detail");
     }
 
     /**
@@ -318,7 +335,7 @@ public class WaitingService {
      * @param waitingId
      * @return WaitingNowSeqNumberResponseDto
      */
-    public WaitingNowSeqNumberResponseDto getNowSeqNumber(Long waitingId) {
+    public WaitingNumberResponseDto getNowSeqNumber(Long waitingId) {
 
         Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
 
@@ -333,7 +350,7 @@ public class WaitingService {
                 waiting.getWaitingNumber()
         );
 
-        return new WaitingNowSeqNumberResponseDto(nowSeqNum);
+        return new WaitingNumberResponseDto(nowSeqNum);
     }
 
 
@@ -375,5 +392,6 @@ public class WaitingService {
             throw new BadRequestException(ErrorCode.WAITING_ERROR);
         }
     }
+
 
 }

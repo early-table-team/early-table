@@ -11,11 +11,13 @@ import java.util.List;
 
 @Getter
 public class WaitingSimpleResponseDto {
+    Long waitingId;
     Integer waitingNumber;
     Integer personnelCount;
     String phoneNumber;
 
     public WaitingSimpleResponseDto(Waiting waiting) {
+        this.waitingId = waiting.getWaitingId();
         this.waitingNumber = waiting.getWaitingNumber();
         this.personnelCount = waiting.getPersonnelCount();
         this.phoneNumber = waiting.getPhone();

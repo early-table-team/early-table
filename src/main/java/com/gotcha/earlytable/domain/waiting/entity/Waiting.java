@@ -74,10 +74,6 @@ public class Waiting extends BaseEntity {
         party.addWaiting(this);
     }
 
-    public void updateWaitingNumber(Integer waitingNumber) {
-        this.waitingNumber = waitingNumber;
-    }
-
     public void updateWaiting(WaitingStatus waitingStatus) {
         this.waitingStatus = waitingStatus;
     }

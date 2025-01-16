@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class StoreReservationTypeRequestDto {
+public class StoreReservationTypeCreateRequestDto {
 
     @NotNull
     private final ReservationType reservationType;
@@ -16,7 +16,7 @@ public class StoreReservationTypeRequestDto {
     @NotNull
     private final List<WaitingType> waitingType;
 
-    public StoreReservationTypeRequestDto(ReservationType reservationType, List<WaitingType> waitingType) {
+    public StoreReservationTypeCreateRequestDto(ReservationType reservationType, List<WaitingType> waitingType) {
 
         this.reservationType = reservationType;
         this.waitingType = waitingType;
