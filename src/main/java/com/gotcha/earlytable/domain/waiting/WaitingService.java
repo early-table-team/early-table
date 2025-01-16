@@ -71,7 +71,9 @@ public class WaitingService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
+        // 예약 가능 여부 확인
         checkWaiting(store, requestDto.getWaitingType(), ReservationType.REMOTE);
+
         // 일행 그룹 생성
         Party party = partyRepository.save(new Party());
 
@@ -110,8 +112,8 @@ public class WaitingService {
         // 가게 확인
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
+        // 예약 가능 여부 확인
         checkWaiting(store, requestDto.getWaitingType(), ReservationType.ONSITE);
-
 
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
@@ -334,6 +336,14 @@ public class WaitingService {
         return new WaitingNowSeqNumberResponseDto(nowSeqNum);
     }
 
+
+    /**
+     * 예약 가능 여부 확인
+     *
+     * @param store
+     * @param waitingType
+     * @param reservationType
+     */
     private void checkWaiting(Store store, WaitingType waitingType, ReservationType reservationType) {
 
         // 가게 예약 타입 확인

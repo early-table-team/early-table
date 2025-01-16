@@ -60,6 +60,14 @@ public class StoreReservationTypeService {
         storeReservationTypeRepository.save(storeReservationType);
     }
 
+
+    /**
+     * 가게 예약 타입 변경 메서드
+     *
+     * @param storeId
+     * @param user
+     * @param requestDto
+     */
     @Transactional
     public void updateStoreReservationType(Long storeId, User user, StoreReservationTypeRequestDto requestDto) {
 
