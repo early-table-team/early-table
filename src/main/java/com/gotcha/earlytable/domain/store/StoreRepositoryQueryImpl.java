@@ -80,30 +80,32 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
     }
 
     private BooleanExpression allergyStuffExclude(List<String> allergyStuff) {
-        if (allergyStuff == null) {
+        if (allergyStuff == null || allergyStuff.isEmpty()) {
             return null;
         }
 
         BooleanExpression condition = null;
         for (String allergyKey : allergyStuff) {
-            BooleanExpression currentCondition = menu.allergyList.any().allergyStuff
+            BooleanExpression currentCondition = store.menuList.any().allergyList.any().allergyStuff
                     .allergyStuff.contains(allergyKey).not();
             condition = (condition == null) ? currentCondition : condition.and(currentCondition);
+
         }
 
         return condition;
     }
 
     private BooleanExpression allergyCategoryExclude(List<String> allergyCategory) {
-        if (allergyCategory == null) {
+        if (allergyCategory == null || allergyCategory.isEmpty()) {
             return null;
         }
 
         BooleanExpression condition = null;
         for (String allergyKey : allergyCategory) {
-            BooleanExpression currentCondition = menu.allergyList.any().allergyStuff.allergyCategory
+            BooleanExpression currentCondition = store.menuList.any().allergyList.any().allergyStuff.allergyCategory
                     .allergyCategory.contains(allergyKey).not();
             condition = (condition == null) ? currentCondition : condition.and(currentCondition);
+
         }
 
         return condition;

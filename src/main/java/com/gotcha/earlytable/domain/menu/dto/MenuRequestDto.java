@@ -20,17 +20,14 @@ public class MenuRequestDto {
     @Min(value = 1000, message = "메뉴 최소 금액은 1000원입니다.")
     private final Integer menuPrice;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private final MenuStatus menuStatus;
+
 
     private final MultipartFile image;
 
-    public MenuRequestDto(String menuName, String menuContents, Integer menuPrice, MenuStatus menuStatus, MultipartFile image) {
+    public MenuRequestDto(String menuName, String menuContents, Integer menuPrice,  MultipartFile image) {
         this.menuName = menuName;
         this.menuContents = menuContents;
         this.menuPrice = menuPrice;
-        this.menuStatus = menuStatus;
         this.image = image;
     }
 }

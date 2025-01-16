@@ -10,6 +10,7 @@ import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
@@ -42,11 +43,17 @@ public class MenuService {
     public MenuResponseDto createMenu(Long storeId, Long userId, MenuRequestDto requestDto) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
-
+        MenuStatus menuStatus = MenuStatus.RECOMMENDED;
         // 가게 주인인지 확인
         if(!store.getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
+
+        // 가게에 대표 메뉴가 없으면 대표메뉴로 생성, 이미 있으면 일반 메뉴로 생성
+        if(!store.getMenuList().isEmpty()){
+            menuStatus = MenuStatus.NORMAL;
+        }
+
 
         // 파일 생성
         File file = fileService.createFile();
@@ -61,7 +68,7 @@ public class MenuService {
         Menu menu = new Menu(requestDto.getMenuName(),
                 requestDto.getMenuContents(),
                 requestDto.getMenuPrice(),
-                requestDto.getMenuStatus(),
+                menuStatus,
                 file, store
         );
 
@@ -135,5 +142,34 @@ public class MenuService {
         }
         
         menuRepository.deleteById(menuId);
+    }
+
+    /**
+     *  대표메뉴 변경 메서드
+     * @param storeId
+     * @param menuId
+     * @param user
+     */
+    @Transactional
+    public void changeRecommend(Long storeId, Long menuId, User user) {
+        // 가게 가져오기
+        Store store = storeRepository.findById(storeId).orElseThrow();
+
+        Menu menu = menuRepository.findByIdOrElseThrow(menuId);
+
+        // 내가 주인인가 확인하기
+        if(!menu.getStore().getUser().getId().equals(user.getId())) {
+            throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
+        }
+        // 이미 대표 메뉴 인지 확인하기
+        if(menu.getMenuStatus().equals(MenuStatus.RECOMMENDED)) {
+            throw new UnauthorizedException(ErrorCode.ALREADY_REPRESENTATIVE_MENU);
+        }
+        Menu recommendedMenu = store.getMenuList().stream().filter(menu1 -> menu1.getMenuStatus().equals(MenuStatus.RECOMMENDED)).findFirst().orElse(null);
+        recommendedMenu.changeMenuStatus(MenuStatus.NORMAL);
+        menu.changeMenuStatus(MenuStatus.RECOMMENDED);
+        menuRepository.save(menu);
+        menuRepository.save(recommendedMenu);
+
     }
 }
