@@ -76,10 +76,10 @@ public class Menu extends BaseEntity {
         if(menuRequestDto.getMenuPrice() != null) {
             this.menuPrice = menuRequestDto.getMenuPrice();
         }
-        if(menuRequestDto.getMenuStatus() != null) {
-            this.menuStatus = menuRequestDto.getMenuStatus();
-        }
     }
 
+    public void changeMenuStatus(MenuStatus menuStatus) {
+        this.menuStatus = menuStatus;
+    }
 
 }
