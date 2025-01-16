@@ -32,7 +32,8 @@ public class UserResponseDto {
         return new UserResponseDto(
                 user.getId(),
                 user.getNickName(),
-                user.getEmail(), user.getPhone().substring(0, user.getPhone().length() - 4) + "****",
+                user.getEmail(),
+                user.getPhone(),
                 user.getAuth(),
                 imageUrl
         );

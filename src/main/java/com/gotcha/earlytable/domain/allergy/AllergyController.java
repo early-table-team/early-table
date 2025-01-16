@@ -17,7 +17,7 @@ import java.util.List;
 public class AllergyController {
     private final AllergyService allergyService;
 
-    public AllergyController(AllergyService allergyService, AllergyRepository allergyRepository) {
+    public AllergyController(AllergyService allergyService) {
         this.allergyService = allergyService;
     }
 
