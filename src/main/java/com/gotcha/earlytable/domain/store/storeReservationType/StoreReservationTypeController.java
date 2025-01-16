@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.store.storeReservation;
+package com.gotcha.earlytable.domain.store.storeReservationType;
 
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
@@ -36,6 +36,25 @@ public class StoreReservationTypeController {
         storeReservationTypeService.createStoreReservationType(storeId, userDetails.getUser(), requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("가게 예약 타입이 설정되었습니다.");
+    }
+
+    /**
+     * 가게 예약 타입 변경 API
+     *
+     * @param storeId
+     * @param requestDto
+     * @param userDetails
+     * @return ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
+    @PatchMapping
+    public ResponseEntity<String> updateStoreReservationType(@PathVariable Long storeId,
+                                                             @Valid @RequestBody StoreReservationTypeRequestDto requestDto,
+                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        storeReservationTypeService.updateStoreReservationType(storeId, userDetails.getUser(), requestDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("가게 예약 타입이 변경되었습니다.");
     }
 
 

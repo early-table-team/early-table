@@ -21,7 +21,7 @@ public class FriendResponseDto {
         this.userId = user.getId();
         this.nickName = user.getNickName();
         this.email = user.getEmail();
-        this.phoneNumber = user.getPhone();
+        this.phoneNumber = user.getPhone().substring(0, user.getPhone().length() - 4) + "****";
         this.profileImageUrl = user.getFile().getFileDetailList().stream().findFirst()
                 .map(FileDetail::getFileUrl).orElse(null);
     }

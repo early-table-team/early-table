@@ -22,11 +22,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     }
 
     // 선택 가게 리뷰들의 평균 별점
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.store = :store")
-    Double findAverageRatingByStore(Store store);
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.store = :store and r.reviewStatus = :reviewStatus")
+    Double findAverageRatingByStore(Store store, ReviewStatus reviewStatus);
 
-    Long countReviewsByStore(Store store);
-
+    Long countReviewsByStoreAndReviewStatus(Store store, ReviewStatus reviewStatus);
 
 
     // 선택 가게 리뷰들의 리뷰 별점 통계
@@ -38,8 +37,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "      count(r.rating) as countTotal," +
             "      round(avg(r.rating),1) as ratingAverage" +
             "  from Review r" +
-            " where r.store.storeId = :storeId ")
-    Map<String, Number> findStatisticsByStoreId(@Param("storeId") Long storeId);
+            " where r.store.storeId = :storeId " +
+            " and r.reviewStatus = :reviewStatus ")
+    Map<String, Number> findStatisticsByStoreId(@Param("storeId") Long storeId, @Param("reviewStatus") ReviewStatus reviewStatus);
 
 
     boolean existsByTargetIdAndReviewTarget(Long targetId, ReviewTarget reviewTarget);
