@@ -83,7 +83,6 @@ public class FriendRequestController {
         return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
-
     /**
      * 친구 요청 취소 API
      *
@@ -98,6 +97,7 @@ public class FriendRequestController {
         friendRequestService.cancelFriendRequest(friendRequestId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("친구 신청 취소 완료되었습니다.");
+
     }
 
     /**

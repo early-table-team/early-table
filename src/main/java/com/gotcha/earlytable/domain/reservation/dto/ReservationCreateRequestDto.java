@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.reservation.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -10,10 +11,13 @@ import java.util.Map;
 @Getter
 public class ReservationCreateRequestDto {
 
+    @NotNull
     private final LocalDateTime reservationDate;
 
+    @NotNull
     private final Integer personnelCount;
 
+    @NotNull
     private final List<HashMap<String, Long>> menuList;
 
     public ReservationCreateRequestDto(LocalDateTime reservationDate, Integer personnelCount, List<HashMap<String, Long>> menuList) {

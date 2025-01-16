@@ -16,10 +16,7 @@ import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.domain.waitingsetting.WaitingSettingRepository;
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
 import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
-import com.gotcha.earlytable.global.enums.Auth;
-import com.gotcha.earlytable.global.enums.PartyRole;
-import com.gotcha.earlytable.global.enums.RemoteStatus;
-import com.gotcha.earlytable.global.enums.WaitingStatus;
+import com.gotcha.earlytable.global.enums.*;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
@@ -74,34 +71,8 @@ public class WaitingService {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // 가게 예약 타입 확인
-        boolean dontReservation = store.getStoreReservationTypeList().stream()
-                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
-
-        if (dontReservation) {
-            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
-        }
-
-        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
-        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
-                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
-                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
-        if (holiday) {
-            throw new CustomException(ErrorCode.STORE_HOLIDAY);
-        }
-
-
-        // 웨이팅 가능 여부 확인
-        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
-        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
-            throw new BadRequestException(ErrorCode.WAITING_ERROR);
-        }
-
-        // 웨이팅 가능 시간 확인
-        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
-            throw new BadRequestException(ErrorCode.WAITING_ERROR);
-        }
-
+        // 예약 가능 여부 확인
+        checkWaiting(store, requestDto.getWaitingType(), ReservationType.REMOTE);
 
         // 일행 그룹 생성
         Party party = partyRepository.save(new Party());
@@ -141,34 +112,8 @@ public class WaitingService {
         // 가게 확인
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // 가게 예약 타입 확인
-        boolean dontReservation = store.getStoreReservationTypeList().stream()
-                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.ONSITE);
-
-        if (dontReservation) {
-            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
-        }
-
-        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
-        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
-                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
-                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
-        if (holiday) {
-            throw new CustomException(ErrorCode.STORE_HOLIDAY);
-        }
-
-
-        // 웨이팅 가능 여부 확인
-        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
-        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
-            throw new BadRequestException(ErrorCode.WAITING_ERROR);
-        }
-
-        // 웨이팅 가능 시간 확인
-        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
-            throw new BadRequestException(ErrorCode.WAITING_ERROR);
-        }
-
+        // 예약 가능 여부 확인
+        checkWaiting(store, requestDto.getWaitingType(), ReservationType.ONSITE);
 
         // 전화번호로 유저 가져오기
         Optional<User> user = userRepository.findByPhone(requestDto.getPhoneNumber());
@@ -277,7 +222,9 @@ public class WaitingService {
 
         // 사용자 권한이 일반 유저이면 해당 웨이팅에 권한이 있는지 확인
         if (user.getAuth() == Auth.USER) {
-            waiting.getParty().getPartyPeople().stream()
+            Optional.ofNullable(waiting.getParty())
+                    .orElseThrow(() -> new BadRequestException(ErrorCode.UNAUTHORIZED))
+                    .getPartyPeople().stream()
                     .filter(partyPeople -> partyPeople.getUser().getId().equals(user.getId()))
                     .findFirst()
                     .orElseThrow(() -> new BadRequestException(ErrorCode.FORBIDDEN_PERMISSION));
@@ -388,4 +335,45 @@ public class WaitingService {
 
         return new WaitingNowSeqNumberResponseDto(nowSeqNum);
     }
+
+
+    /**
+     * 예약 가능 여부 확인
+     *
+     * @param store
+     * @param waitingType
+     * @param reservationType
+     */
+    private void checkWaiting(Store store, WaitingType waitingType, ReservationType reservationType) {
+
+        // 가게 예약 타입 확인
+        boolean dontReservation = store.getStoreReservationTypeList().stream()
+                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == reservationType &&
+                        storeReservationType.canWaiting(waitingType));
+
+        if (dontReservation) {
+            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
+        }
+
+        // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
+        boolean holiday = storeHourRepository.findByStoreAndDayStatus(store, DayStatus.CLOSED).stream()
+                .anyMatch(storeHour -> Objects.equals(storeHour.getDayOfWeek().getDayOfWeekName(), LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))) ||
+                store.getStoreRestList().stream().anyMatch(storeRest -> Objects.equals(storeRest.getStoreOffDay(), LocalDate.now()));
+        if (holiday) {
+            throw new CustomException(ErrorCode.STORE_HOLIDAY);
+        }
+
+
+        // 웨이팅 가능 여부 확인
+        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
+        if (waitingSetting.getWaitingSettingStatus().equals(WaitingSettingStatus.CLOSE)) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+
+        // 웨이팅 가능 시간 확인
+        if (waitingSetting.getWaitingOpenTime().isAfter(LocalTime.now()) || waitingSetting.getWaitingClosedTime().isBefore(LocalTime.now())) {
+            throw new BadRequestException(ErrorCode.WAITING_ERROR);
+        }
+    }
+
 }

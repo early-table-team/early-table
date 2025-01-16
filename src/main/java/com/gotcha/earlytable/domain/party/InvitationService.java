@@ -123,6 +123,10 @@ public class InvitationService {
         //초대 가져오기
         Invitation invitation = invitationRepository.findByInvitationIdOrThrow(invitationId);
 
+        if(!invitation.getInvitationStatus().equals(InvitationStatus.PENDING)){
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
         // 해당 예약이 내것인지 확인
         if(!invitation.getReceiveUser().getId().equals(user.getId())){throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);}
 

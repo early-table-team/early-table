@@ -141,7 +141,6 @@ public class FriendRequestService {
         if(requestDto.getInvitationStatus().equals(InvitationStatus.REJECTED)) {
             //친구요청상태 요청값으로 변경(수락 또는 거절)
             friendRequest.update(requestDto.getInvitationStatus());
-
             //친구요청상태 변경된내역 저장
             friendRequestRepository.save(friendRequest);
 
