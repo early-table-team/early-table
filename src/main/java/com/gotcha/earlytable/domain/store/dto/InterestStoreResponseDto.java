@@ -10,7 +10,7 @@ public class InterestStoreResponseDto {
 
     private final String storeName;
 
-    private final String storeContent;
+    private final String storeContents;
 
     private final StoreCategory storeCategory;
 
@@ -22,11 +22,11 @@ public class InterestStoreResponseDto {
 
     private final String storeImageUrl;
 
-    public InterestStoreResponseDto(Long storeId, String storeName, String storeContent, StoreCategory storeCategory,
+    public InterestStoreResponseDto(Long storeId, String storeName, String storeContents, StoreCategory storeCategory,
                                     String presentMenu, Double averageRating, Long countReview, String storeImageUrl) {
         this.storeId = storeId;
         this.storeName = storeName;
-        this.storeContent = storeContent;
+        this.storeContents = storeContents;
         this.storeCategory = storeCategory;
         this.presentMenu = presentMenu;
         this.averageRating = averageRating;

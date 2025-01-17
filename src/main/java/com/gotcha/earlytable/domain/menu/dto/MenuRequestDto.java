@@ -1,8 +1,5 @@
 package com.gotcha.earlytable.domain.menu.dto;
 
-import com.gotcha.earlytable.domain.menu.MenuStatus;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,8 +16,6 @@ public class MenuRequestDto {
     @NotNull
     @Min(value = 1000, message = "메뉴 최소 금액은 1000원입니다.")
     private final Integer menuPrice;
-
-
 
     private final MultipartFile image;
 
