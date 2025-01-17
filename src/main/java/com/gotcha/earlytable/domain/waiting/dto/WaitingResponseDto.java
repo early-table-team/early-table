@@ -13,6 +13,8 @@ public class WaitingResponseDto {
     String storeName;
     WaitingType waitingType;
     WaitingStatus waitingStatus;
+    Integer personnelCount;
+
 
     public WaitingResponseDto(Waiting waiting) {
 
@@ -20,6 +22,7 @@ public class WaitingResponseDto {
         this.waitingId = waiting.getWaitingId();
         this.waitingNumber = waiting.getWaitingId();
         this.storeName = waiting.getStore().getStoreName();
+        this.personnelCount = waiting.getPersonnelCount();
         this.waitingType = waiting.getWaitingType();
         this.waitingStatus = waiting.getWaitingStatus();
 
