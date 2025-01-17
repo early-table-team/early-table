@@ -13,15 +13,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity // SecurityFilterChain 빈 설정을 위해 필요.
@@ -50,7 +46,7 @@ public class WebSecurityConfig {
     /**
      * 화이트 리스트.
      */
-    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error", "/store/**"};
+    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error"};
 
     public WebSecurityConfig(JwtAuthFilter jwtAuthFilter,
                              AuthenticationProvider authenticationProvider,
