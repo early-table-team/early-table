@@ -25,6 +25,7 @@ public enum ErrorCode {
     FULL_PARTY_PEOPLE(HttpStatus.BAD_REQUEST,"파티가 꽉 찼습니다."),
     NO_INPUT_PHONE(HttpStatus.BAD_REQUEST, "연락처를 입력해주세요."),
     NOT_FOUND_DAY(HttpStatus.BAD_REQUEST,"요청한 요일에 예약이 불가능합니다."),
+    ALREADY_REPRESENTATIVE_MENU(HttpStatus.BAD_REQUEST,"이미 대표메뉴입니다."),
 
 
 

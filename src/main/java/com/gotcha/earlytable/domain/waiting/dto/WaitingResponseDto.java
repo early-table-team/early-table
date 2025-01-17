@@ -14,7 +14,6 @@ public class WaitingResponseDto {
     WaitingType waitingType;
     WaitingStatus waitingStatus;
 
-
     public WaitingResponseDto(Waiting waiting) {
 
         this.storeId = waiting.getStore().getStoreId();
