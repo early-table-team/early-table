@@ -33,7 +33,7 @@ public class FriendController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping
-    public ResponseEntity<List<FriendListResponseDto>> GetFriendList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<FriendListResponseDto>> getFriendList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
@@ -50,8 +50,8 @@ public class FriendController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/users/{userId}")
-    public ResponseEntity<OtherUserResponseDto> GetFriend(@PathVariable Long userId,
-                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<OtherUserResponseDto> getFriend(@PathVariable Long userId,
+                                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
         OtherUserResponseDto responseDto = userService.getOtherUser(userDetails.getUser(), userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
