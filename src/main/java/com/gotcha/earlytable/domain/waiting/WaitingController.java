@@ -77,6 +77,14 @@ public class WaitingController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }
 
+    /**
+     * 현재 남은 웨이팅 목록 조회 (Owner)
+     *
+     * @param userDetails
+     * @param storeId
+     * @param requestDto
+     * @return
+     */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/stores/{storeId}/waiting/now")
     public ResponseEntity<WaitingOwnerResponseDto> getOwnerNowWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -91,7 +99,14 @@ public class WaitingController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-
+    /**
+     * 웨이팅 목록 조회
+     *
+     * @param userDetails
+     * @param storeId
+     * @param requestDto
+     * @return
+     */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/stores/{storeId}/waiting")
     public ResponseEntity<WaitingOwnerResponseDto> getOwnerWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails,

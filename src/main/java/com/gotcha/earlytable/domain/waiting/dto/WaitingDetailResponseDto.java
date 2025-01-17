@@ -13,7 +13,7 @@ public class WaitingDetailResponseDto {
     Integer personnelCount;
     String phoneNumber;
     WaitingStatus waitingStatus;
-    LocalDateTime cratedAt;
+    LocalDateTime createdAt;
 
     public WaitingDetailResponseDto(Waiting waiting) {
         this.waitingId = waiting.getWaitingId();
@@ -21,6 +21,6 @@ public class WaitingDetailResponseDto {
         this.personnelCount = waiting.getPersonnelCount();
         this.phoneNumber = waiting.getPhone();
         this.waitingStatus = waiting.getWaitingStatus();
-        this.cratedAt = waiting.getCreatedAt();
+        this.createdAt = waiting.getCreatedAt();
     }
 }
