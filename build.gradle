@@ -54,6 +54,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     // oauth
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.23.2'
 }
 
 tasks.named('test') {
