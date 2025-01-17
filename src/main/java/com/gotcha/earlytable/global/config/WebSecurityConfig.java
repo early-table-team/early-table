@@ -46,7 +46,7 @@ public class WebSecurityConfig {
     /**
      * 화이트 리스트.
      */
-    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error", "/stores/{storeId}/waiting/offline"};
+    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error"};
 
     public WebSecurityConfig(JwtAuthFilter jwtAuthFilter,
                              AuthenticationProvider authenticationProvider,

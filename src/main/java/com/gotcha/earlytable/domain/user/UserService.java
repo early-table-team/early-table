@@ -153,14 +153,14 @@ public class UserService {
             relationship = "friend";
         }
 
-        User OtherUser = userRepository.findByIdOrElseThrow(otherUserId);
+        User otherUser = userRepository.findByIdOrElseThrow(otherUserId);
 
-        String imageUrl = OtherUser.getFile().getFileDetailList().stream()
+        String imageUrl = otherUser.getFile().getFileDetailList().stream()
                 .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
                 .map(FileDetail::getFileUrl)
                 .orElse(null);
 
-        return OtherUserResponseDto.toDto(OtherUser, imageUrl, relationship);
+        return OtherUserResponseDto.toDto(otherUser, imageUrl, relationship);
     }
 
     /**

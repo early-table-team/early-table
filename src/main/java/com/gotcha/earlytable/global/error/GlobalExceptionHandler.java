@@ -6,10 +6,12 @@ import com.gotcha.earlytable.global.dto.CommonResponseBody;
 import com.gotcha.earlytable.global.error.exception.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -235,6 +237,19 @@ public class GlobalExceptionHandler {
      * @param e 예외 인스턴스
      * @return {@code ResponseEntity<CommonResponseBody<Void>>}
      */
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    protected ResponseEntity<CommonResponseBody<Void>> handleHttpMessageNotWritableExceptions(HttpMessageNotWritableException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(new CommonResponseBody<>(e.getMessage()));
+    }
+
+        /**
+         * 그외의 예외 처리.
+         *
+         * @param e 예외 인스턴스
+         * @return {@code ResponseEntity<CommonResponseBody<Void>>}
+         */
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e) {
         return ResponseEntity
