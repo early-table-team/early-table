@@ -5,6 +5,8 @@ import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class MenuResponseDto {
 
@@ -18,14 +20,20 @@ public class MenuResponseDto {
 
     private final String menuImageUrl;
 
-    public MenuResponseDto(String menuName, String menuContents, Integer menuPrice,
-                           MenuStatus menuStatus, String menuImageUrl) {
+    private final List<String> allergyCategory;
+
+    private final List<String> allergyStuff;
+
+    public MenuResponseDto(String menuName, String menuContents, Integer menuPrice, MenuStatus menuStatus,
+                           String menuImageUrl, List<String> allergyCategory, List<String> allergyStuff) {
 
         this.menuName = menuName;
         this.menuContents = menuContents;
         this.menuPrice = menuPrice;
         this.menuStatus = menuStatus;
         this.menuImageUrl = menuImageUrl;
+        this.allergyCategory = allergyCategory;
+        this.allergyStuff = allergyStuff;
     }
 
     public static MenuResponseDto toDto(Menu menu, String menuImageUrl) {
@@ -34,7 +42,11 @@ public class MenuResponseDto {
                 menu.getMenuContents(),
                 menu.getMenuPrice(),
                 menu.getMenuStatus(),
-                menuImageUrl
+                menuImageUrl,
+                menu.getAllergyList().stream()
+                        .map(allergy -> allergy.getAllergyStuff().getAllergyStuff()).toList(),
+                menu.getAllergyList().stream()
+                        .map((allergy -> allergy.getAllergyStuff().getAllergyCategory().getAllergyCategory())).toList()
         );
     }
 
@@ -48,7 +60,12 @@ public class MenuResponseDto {
                 menu.getMenuContents(),
                 menu.getMenuPrice(),
                 menu.getMenuStatus(),
-                imageUrl
-        );
+                imageUrl,
+                menu.getAllergyList().stream()
+                        .map(allergy -> allergy.getAllergyStuff().getAllergyStuff()).toList(),
+                menu.getAllergyList().stream()
+                        .map((allergy -> allergy.getAllergyStuff().getAllergyCategory().getAllergyCategory())).toList()
+                );
     }
+
 }

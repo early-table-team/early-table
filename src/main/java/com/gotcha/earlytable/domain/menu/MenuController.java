@@ -1,8 +1,8 @@
 package com.gotcha.earlytable.domain.menu;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.gotcha.earlytable.domain.menu.dto.MenuRequestDto;
 import com.gotcha.earlytable.domain.menu.dto.MenuResponseDto;
+import com.gotcha.earlytable.domain.menu.dto.MenuSearchRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -102,5 +102,19 @@ public class MenuController {
     }
 
 
+    /**
+     * 메뉴 검색 조회 API
+     *
+     * @param requestDto
+     * @return
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<MenuResponseDto>> searchMenu(@ModelAttribute MenuSearchRequestDto requestDto,
+                                                            @PathVariable Long storeId) {
+
+        List<MenuResponseDto> responseDtoList = menuService.searchMenu(storeId, requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
+    }
 
 }
