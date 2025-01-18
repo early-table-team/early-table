@@ -1,70 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FCM Token Fetcher</title>
+    <title>실시간 접속자 수</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .count {
+            font-size: 2em;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .stop-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-<h1>FCM Token Fetcher</h1>
-<button id="get-token">Request Notification Permission</button>
-<p id="output"></p>
+<div class="container">
+    <h1>Store 실시간 접속자 수</h1>
+    <div class="count" id="viewCount">0명</div>
+    <div>
+        <button id="startButton" class="start-btn">Start Viewing</button>
+        <button id="stopButton" class="stop-btn" disabled>Stop Viewing</button>
+    </div>
+</div>
 
-<script type="module">
-    // Import Firebase modules
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js";
+<script>
+    let storeId = '3';  // 가게 ID (예시)
+    let isStreaming = false;
+    let viewCount = 0;
+    let intervalId;
 
-    // Firebase configuration (replace with your project's config)
-    const firebaseConfig = {
-        apiKey: "AIzaSyBCHjGjYjeHJ_BfnYr6971MNAmLmedWKa8",
-        authDomain: "early-table-6315a.firebaseapp.com",
-        projectId: "early-table-6315a",
-        storageBucket: "early-table-6315a.appspot.com",
-        messagingSenderId: "531693985268",
-        appId: "1:531693985268:web:404dd20c73d5d90e416da1",
-        measurementId: "G-2K9VLFMZK3"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
-
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/firebase-messaging-sw.js')
-            .then((registration) => {
-                console.log("Service Worker registered successfully:", registration);
-            })
-            .catch((error) => {
-                console.error("Service Worker registration failed:", error);
-            });
-    }
-
-    // Request Notification Permission and Get Token
-    document.getElementById('get-token').addEventListener('click', async () => {
+    // 실시간 접속자 수를 가져오는 함수
+    async function fetchViewCount() {
         try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const vapidKey = "BCblvSlG7R-AcUqBwKPEUyVpo-p--PinoJY6h_gNyqwY9l6uk1WyEetuKA77hwR3M_REhJ0ckgc9Jm3yuHiNmy0"; // Replace with your VAPID key
-                const token = await getToken(messaging, { vapidKey });
-                console.log("FCM Token:", token);
-                document.getElementById('output').textContent = `Your FCM Token: ${token}`;
+            const response = await fetch(`http://localhost:8080/store/${storeId}/view/stream`);
+            if (response.ok) {
+                viewCount = await response.json();
+                document.getElementById('viewCount').innerText = `${viewCount}명`;
             } else {
-                console.error("Notification permission not granted.");
-                document.getElementById('output').textContent = "Permission not granted for notifications.";
+                console.error("Failed to fetch view count");
             }
         } catch (error) {
-            console.error("Error getting FCM token:", error);
-            document.getElementById('output').textContent = `Error: ${error.message}`;
+            console.error("Error fetching view count:", error);
         }
+    }
+
+    // 조회 시작 처리
+    async function startViewing() {
+        try {
+            const response = await fetch(`http://localhost:8080/store/${storeId}/view/start`, {
+                method: 'POST',
+            });
+            if (response.ok) {
+                document.getElementById('startButton').disabled = true;
+                document.getElementById('stopButton').disabled = false;
+                isStreaming = true;
+                console.log("View started");
+            } else {
+                console.error("Failed to start viewing");
+            }
+        } catch (error) {
+            console.error("Error starting viewing:", error);
+        }
+    }
+
+    // 조회 종료 처리
+    async function stopViewing() {
+        try {
+            const response = await fetch(`http://localhost:8080/store/${storeId}/view/stop`, {
+                method: 'POST',
+            });
+            if (response.ok) {
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('stopButton').disabled = true;
+                isStreaming = false;
+                console.log("View stopped");
+            } else {
+                console.error("Failed to stop viewing");
+            }
+        } catch (error) {
+            console.error("Error stopping viewing:", error);
+        }
+    }
+
+    // 실시간으로 조회 수를 업데이트
+    function startStreaming() {
+        if(isStreaming) {
+            intervalId = setInterval(fetchViewCount, 5000);  // 1초마다 조회 수 갱신
+        }
+    }
+
+    // 버튼 클릭 이벤트 처리
+    document.getElementById('startButton').addEventListener('click', async () => {
+        await startViewing();
+        await fetchViewCount();
+        startStreaming();
     });
 
-    // Handle incoming messages
-    onMessage(messaging, (payload) => {
-        console.log("Message received:", payload);
-        alert(`Notification: ${payload.notification.title} - ${payload.notification.body}`);
+    document.getElementById('stopButton').addEventListener('click', () => {
+        stopViewing();
+        clearInterval(intervalId);  // 스트리밍 멈추기
     });
+
 </script>
 </body>
 </html>
