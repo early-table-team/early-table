@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Token Fetcher</title>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js"></script>
+</head>
+<body>
+<h1>Get FCM Token</h1>
+<button id="get-token">Request Notification Permission</button>
+<p id="output"></p>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js";
+
+    // Firebase configuration (replace with your project's config)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBCHjGjYjeHJ_BfnYr6971MNAmLmedWKa8",
+        authDomain: "early-table-6315a.firebaseapp.com",
+        projectId: "early-table-6315a",
+        storageBucket: "early-table-6315a.firebasestorage.app",
+        messagingSenderId: "531693985268",
+        appId: "1:531693985268:web:404dd20c73d5d90e416da1",
+        measurementId: "G-2K9VLFMZK3"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+
+    document.getElementById('get-token').addEventListener('click', async () => {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const token = await getToken(messaging, { vapidKey: "BCblvSlG7R-AcUqBwKPEUyVpo-p--PinoJY6h_gNyqwY9l6uk1WyEetuKA77hwR3M_REhJ0ckgc9Jm3yuHiNmy0" });
+                console.log("FCM Token:", token);
+                document.getElementById('output').textContent = `Your FCM Token: ${token}`;
+            } else {
+                console.error("Permission not granted for notifications.");
+                document.getElementById('output').textContent = "Permission not granted for notifications.";
+            }
+        } catch (err) {
+            console.error("Error getting FCM token:", err);
+            document.getElementById('output').textContent = `Error: ${err.message}`;
+        }
+    });
+
+    // Handle incoming messages
+    onMessage(messaging, (payload) => {
+        console.log("Message received:", payload);
+        alert(`Notification: ${payload.notification.title} - ${payload.notification.body}`);
+    });
+
+    // // Register service worker
+    // if ("serviceWorker" in navigator) {
+    //     navigator.serviceWorker
+    //         .register("/firebase-messaging-sw.js")
+    //         .then((registration) => {
+    //             console.log("Service Worker registered:", registration);
+    //         })
+    //         .catch((err) => {
+    //             console.error("Service Worker registration failed:", err);
+    //         });
+    // }
+</script>
+</body>
+</html>
