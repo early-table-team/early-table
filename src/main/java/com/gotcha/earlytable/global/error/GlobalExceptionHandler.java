@@ -251,7 +251,16 @@ public class GlobalExceptionHandler {
          * @return {@code ResponseEntity<CommonResponseBody<Void>>}
          */
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e) {
+    protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e, HttpServletRequest request) {
+
+        // 요청 헤더에서 Content-Type이 text/event-stream인지 확인
+        if ("text/event-stream".equals(request.getHeader("Accept"))) {
+            // SSE 스트림을 종료하기 위한 별도 로직
+            return ResponseEntity
+                    .status(HttpStatus.BAD_GATEWAY)
+                    .body(new CommonResponseBody<>("SSE stream error"));
+        }
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new CommonResponseBody<>(e.getMessage()));

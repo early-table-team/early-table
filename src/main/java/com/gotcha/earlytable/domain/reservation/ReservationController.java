@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -32,7 +31,9 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PostMapping("/stores/{storeId}/reservations")
-    public ResponseEntity<ReservationCreateResponseDto> createReservation(@PathVariable Long storeId, @Valid @RequestBody ReservationCreateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<ReservationCreateResponseDto> createReservation(@PathVariable Long storeId,
+                                                                          @Valid @RequestBody ReservationCreateRequestDto requestDto,
+                                                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         ReservationCreateResponseDto responseDto = reservationService.createReservation(storeId, requestDto, userDetails.getUser());
 
@@ -78,7 +79,9 @@ public class ReservationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @PatchMapping("/reservations/{reservationId}")
-    public ResponseEntity<ReservationGetOneResponseDto> updateReservation(@PathVariable Long reservationId, @RequestBody ReservationUpdateRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<ReservationGetOneResponseDto> updateReservation(@PathVariable Long reservationId,
+                                                                          @RequestBody ReservationUpdateRequestDto requestDto,
+                                                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         ReservationGetOneResponseDto resDto = reservationService.updateReservation(reservationId, userDetails.getUser(), requestDto);
 
