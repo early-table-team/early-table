@@ -6,9 +6,11 @@ import com.gotcha.earlytable.domain.friend.dto.FriendRequestResponseDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendRequestUpdateRequestDto;
 import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.friend.entity.FriendRequest;
+import com.gotcha.earlytable.domain.notification.SseEmitterService;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.InvitationStatus;
+import com.gotcha.earlytable.global.enums.NotificationType;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
@@ -25,13 +27,15 @@ public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendRepository friendRepository;
     private final UserRepository userRepository;
+    private final SseEmitterService sseEmitterService;
 
     public FriendRequestService(FriendRequestRepository friendRequestRepository, FriendRepository friendRepository,
-                                UserRepository userRepository) {
+                                UserRepository userRepository, SseEmitterService sseEmitterService) {
 
         this.friendRequestRepository = friendRequestRepository;
         this.friendRepository = friendRepository;
         this.userRepository = userRepository;
+        this.sseEmitterService = sseEmitterService;
     }
 
     /**
@@ -82,6 +86,9 @@ public class FriendRequestService {
 
         friendRequestRepository.save(friendRequest);
 
+        // 알림 보내기
+        sseEmitterService.send(receivedUser, user.getNickName() + "님에게 친구 요청이 왔습니다.", NotificationType.FRIEND);
+
         return "친구 요청이 성공하였습니다.";
     }
 
@@ -102,6 +109,7 @@ public class FriendRequestService {
     @Transactional
     public String updateFriendRequestStatus(Long friendRequestId, FriendRequestUpdateRequestDto requestDto, User user) {
 
+
         // 상태 변경할 요청 건, 보내는사람, 받는사람 정보 받아오기
         FriendRequest friendRequest = friendRequestRepository.findByIdOrElseThrow(friendRequestId);
 
@@ -120,8 +128,10 @@ public class FriendRequestService {
 
         String message = "잘못된 요청입니다.";
 
+        InvitationStatus status = requestDto.getInvitationStatus();
+
         //요청값이 수락일 때, 친구 데이터(2건) 추가
-        if(requestDto.getInvitationStatus().equals(InvitationStatus.ACCEPTED)) {
+        if(status.equals(InvitationStatus.ACCEPTED)) {
 
             //친구 데이터 생성
             Friend friend1 = new Friend(sendUser, receivedUser);
@@ -138,7 +148,7 @@ public class FriendRequestService {
         }
 
         // 거절이면 상태 변경
-        if(requestDto.getInvitationStatus().equals(InvitationStatus.REJECTED)) {
+        if(status.equals(InvitationStatus.REJECTED)) {
             //친구요청상태 요청값으로 변경(수락 또는 거절)
             friendRequest.update(requestDto.getInvitationStatus());
             //친구요청상태 변경된내역 저장
@@ -146,6 +156,10 @@ public class FriendRequestService {
 
             message = "친구 요청을 거절했습니다.";
         }
+
+        // 알림 보내기
+        String notificationMessage = user.getNickName() + "님이 친구 요청을 " + status.getValue() + "했습니다.";
+        sseEmitterService.send(sendUser, notificationMessage, NotificationType.FRIEND);
 
         return message;
     }
