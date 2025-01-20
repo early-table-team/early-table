@@ -1,17 +1,15 @@
 package com.gotcha.earlytable.domain.notification;
 
 import com.gotcha.earlytable.domain.notification.entity.Notification;
+import com.gotcha.earlytable.domain.store.storeView.StoreViewRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.NotificationType;
-import org.redisson.api.RTopic;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class SseEmitterService {
@@ -21,20 +19,21 @@ public class SseEmitterService {
     private static final String NOTIFICATION_PREFIX = "notification:user:";
 
 
-    private final RedissonClient redissonClient;
-    private final RTopic redissonTopic;
     private final SseEmitterRepository sseEmitterRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationDao notificationDao;
+    private final NotificationPublisher notificationPublisher;
+    private final StoreViewRepository storeViewRepository;
 
-    public SseEmitterService(RedissonClient redissonClient, SseEmitterRepository sseEmitterRepository,
-                             NotificationRepository notificationRepository, NotificationDao notificationDao) {
-        // Redis Topic 설정
-        this.redissonClient = redissonClient;
-        this.redissonTopic = redissonClient.getTopic("store:view:count");
+    public SseEmitterService(SseEmitterRepository sseEmitterRepository, NotificationRepository notificationRepository,
+                             NotificationDao notificationDao, NotificationPublisher notificationPublisher,
+                             StoreViewRepository storeViewRepository) {
+
         this.sseEmitterRepository = sseEmitterRepository;
         this.notificationRepository = notificationRepository;
         this.notificationDao = notificationDao;
+        this.notificationPublisher = notificationPublisher;
+        this.storeViewRepository = storeViewRepository;
     }
 
     /**
@@ -60,18 +59,22 @@ public class SseEmitterService {
         List<Notification> notifications = notificationDao.getValuesForNotification(NOTIFICATION_PREFIX + userId);
 
         // 없으면 그냥 emitter 전달하고 있으면 알림 보내기
-        if(!notifications.isEmpty()) {
+        if(notifications.isEmpty()) {
+            notificationDao.setValuesForNotification(NOTIFICATION_PREFIX + userId);
 
-            // 있으면 알림 보내기
-            for (Notification notification : notifications) {
-                sendToClient(userId, notification.getContent(), notification.getType());
-                notification.read();
-                notificationRepository.save(notification);
-            }
-
-            // 캐시 비우기
-            notificationDao.deleteValuesForNotification(NOTIFICATION_PREFIX + userId);
+            return sseEmitter;
         }
+
+        // 있으면 알림 보내기
+        for (Notification notification : notifications) {
+            sendToClient(userId, notification.getContent(), notification.getType());
+            notification.read();
+            notificationRepository.save(notification);
+        }
+
+        // 캐시 비우기
+        notificationDao.deleteValuesForNotification(NOTIFICATION_PREFIX + userId);
+
 
         return sseEmitter;
     }
@@ -123,22 +126,7 @@ public class SseEmitterService {
      */
     private void sendToClient(Long userId, Object data, NotificationType notificationType) {
 
-        Optional<SseEmitter> sseEmitter = sseEmitterRepository.findById(userId);
-        if (sseEmitter.isEmpty()) {
-            return;
-        }
-
-        try {
-            sseEmitter.get().send(
-                    SseEmitter.event()
-                            .id(userId.toString())
-                            .name(notificationType.name())
-                            .data(data)
-            );
-        } catch (IOException ex) {
-            sseEmitterRepository.deleteById(userId);
-            throw new RuntimeException("연결 오류 발생");
-        }
+        notificationPublisher.publishNotification(userId, data, notificationType);
     }
 
     /**
@@ -148,7 +136,9 @@ public class SseEmitterService {
      * @param count
      */
     public void sendStoreViewNotification(Long storeId, Long count) {
-        List<Long> userIds = sseEmitterRepository.findUserIdsByStoreId(storeId); // storeId로 연결된 사용자 ID를 찾는 로직
+
+        Set<Long> userIds = storeViewRepository.findUserIdsByStoreId(storeId); // storeId로 연결된 사용자 ID를 찾는 로직
+
         for (Long userId : userIds) {
             sendToClient(userId, count, NotificationType.STORE_VIEW);
         }

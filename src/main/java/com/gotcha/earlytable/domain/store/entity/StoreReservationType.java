@@ -33,14 +33,14 @@ public class StoreReservationType extends BaseEntity {
 
     public StoreReservationType(ReservationType reservationType, List<WaitingType> waitingTypes, Store store) {
         this.reservationType = reservationType;
-        this.toGo = waitingTypes.contains(WaitingType.TOGO);
-        this.dineIn = waitingTypes.contains(WaitingType.DINE);
+        this.toGo = waitingTypes.contains(WaitingType.TO_GO);
+        this.dineIn = waitingTypes.contains(WaitingType.DINE_IN);
         addStore(store);
     }
 
     public void updateReservationType(List<WaitingType> waitingTypes) {
-        this.toGo = waitingTypes.contains(WaitingType.TOGO);
-        this.dineIn = waitingTypes.contains(WaitingType.DINE);
+        this.toGo = waitingTypes.contains(WaitingType.TO_GO);
+        this.dineIn = waitingTypes.contains(WaitingType.DINE_IN);
     }
 
     public StoreReservationType() {
@@ -48,7 +48,7 @@ public class StoreReservationType extends BaseEntity {
     }
 
     public boolean canWaiting(WaitingType waitingType) {
-        if (waitingType == WaitingType.DINE) {
+        if (waitingType == WaitingType.DINE_IN) {
             return dineIn;
         } else {
             return toGo;

@@ -1,4 +1,4 @@
-package com.gotcha.earlytable.domain.store;
+package com.gotcha.earlytable.domain.store.storeView;
 
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import org.springframework.http.MediaType;
@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.*;
 public class StoreViewController {
 
     private final StoreViewService storeViewService;
+    private final StoreViewPublisher storeViewPublisher;
 
-    public StoreViewController(StoreViewService storeViewService) {
+    public StoreViewController(StoreViewService storeViewService, StoreViewPublisher storeViewPublisher) {
         this.storeViewService = storeViewService;
+        this.storeViewPublisher = storeViewPublisher;
     }
 
     /**
@@ -27,7 +29,7 @@ public class StoreViewController {
     public ResponseEntity<String> startViewing(@PathVariable Long storeId,
                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 조회 시작 이벤트 발행
-        storeViewService.publishStartViewingEvent(storeId, userDetails.getUser().getId());
+        storeViewPublisher.publishStartViewingEvent(storeId, userDetails.getUser().getId());
 
         return ResponseEntity.ok("View started for store: " + storeId);
     }
@@ -43,7 +45,7 @@ public class StoreViewController {
     public ResponseEntity<String> stopViewing(@PathVariable Long storeId,
                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
         // 조회 종료 이벤트 발행
-        storeViewService.publishStopViewingEvent(storeId, userDetails.getUser().getId());
+        storeViewPublisher.publishStopViewingEvent(storeId, userDetails.getUser().getId());
 
         return ResponseEntity.ok("View stopped for store: " + storeId);
     }

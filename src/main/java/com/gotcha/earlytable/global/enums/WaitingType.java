@@ -1,11 +1,14 @@
 package com.gotcha.earlytable.global.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum WaitingType {
 
-    DINE("매장"),
-    TOGO("포장");
+    DINE_IN("매장"),
+    TO_GO("포장");
 
-    private String value;
+    private final String value;
 
     WaitingType(String value) {
         this.value = value;
