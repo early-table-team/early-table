@@ -22,6 +22,10 @@ public class RedissonConfig {
     public RedissonClient redissonClient() {
         Config config = new Config();
         config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + redisHost + ":" + redisPort);
+
+        // Jackson 기반의 직렬화 설정
+        config.setCodec(new org.redisson.codec.JsonJacksonCodec());
+
         return Redisson.create(config);
     }
 }

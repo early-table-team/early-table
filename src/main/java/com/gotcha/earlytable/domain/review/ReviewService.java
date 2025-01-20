@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.review;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.notification.SseEmitterService;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.review.dto.ReviewRequestDto;
@@ -16,6 +17,7 @@ import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.WaitingRepository;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
+import com.gotcha.earlytable.global.enums.NotificationType;
 import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
@@ -35,14 +37,18 @@ public class ReviewService {
     private final FileDetailService fileDetailService;
     private final ReservationRepository reservationRepository;
     private final WaitingRepository waitingRepository;
+    private final SseEmitterService sseEmitterService;
 
-    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService, FileDetailService fileDetailService, ReservationRepository reservationRepository, WaitingRepository waitingRepository) {
+    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService,
+                         FileDetailService fileDetailService, ReservationRepository reservationRepository,
+                         WaitingRepository waitingRepository, SseEmitterService sseEmitterService1) {
         this.reviewRepository = reviewRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
         this.fileDetailService = fileDetailService;
         this.reservationRepository = reservationRepository;
         this.waitingRepository = waitingRepository;
+        this.sseEmitterService = sseEmitterService1;
     }
 
 
@@ -118,6 +124,10 @@ public class ReviewService {
 
         // 저장
         Review savedReview = reviewRepository.save(review);
+
+        // 알림 전송
+        String message = store.getStoreName() +"의 가게에 리뷰가 달렸습니다.";
+        sseEmitterService.send(store.getUser(), message, NotificationType.REVIEW);
 
         return ReviewResponseDto.toDto(savedReview);
     }

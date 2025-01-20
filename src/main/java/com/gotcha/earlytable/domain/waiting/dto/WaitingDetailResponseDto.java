@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 public class WaitingDetailResponseDto {
     Long waitingId;
-    Integer waitingNumber;
+    Long waitingNumber;
     Integer personnelCount;
     String phoneNumber;
     WaitingStatus waitingStatus;

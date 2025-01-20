@@ -1,5 +1,8 @@
 package com.gotcha.earlytable.global.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum InvitationStatus {
 
     ACCEPTED("수락"),
@@ -9,7 +12,7 @@ public enum InvitationStatus {
     LEAVED("탈퇴"),
     EXILE("추방");
 
-    private String value;
+    private final String value;
 
     InvitationStatus(String value) {
         this.value = value;
