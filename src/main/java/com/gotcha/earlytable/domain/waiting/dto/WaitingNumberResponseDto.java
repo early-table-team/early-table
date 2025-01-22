@@ -5,9 +5,9 @@ import lombok.Getter;
 @Getter
 public class WaitingNumberResponseDto {
 
-    private final int waitingNumber;
+    private final Long waitingNumber;
 
-    public WaitingNumberResponseDto(int waitingNumber) {
+    public WaitingNumberResponseDto(Long waitingNumber) {
         this.waitingNumber = waitingNumber;
     }
 }

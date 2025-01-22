@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.party;
 
+import com.gotcha.earlytable.domain.notification.SseEmitterService;
 import com.gotcha.earlytable.domain.party.dto.InvitationStatusDto;
 import com.gotcha.earlytable.domain.party.dto.ReceivedInvitationResponseDto;
 import com.gotcha.earlytable.domain.party.entity.Invitation;
@@ -9,13 +10,13 @@ import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.InvitationStatus;
+import com.gotcha.earlytable.global.enums.NotificationType;
 import com.gotcha.earlytable.global.enums.PartyRole;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,12 +27,14 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final PartyPeopleRepository partyPeopleRepository;
+    private final SseEmitterService sseEmitterService;
 
-    public InvitationService(final InvitationRepository invitationRepository, UserRepository userRepository, ReservationRepository reservationRepository, PartyPeopleRepository partyPeopleRepository) {
+    public InvitationService(final InvitationRepository invitationRepository, UserRepository userRepository, ReservationRepository reservationRepository, PartyPeopleRepository partyPeopleRepository, SseEmitterService sseEmitterService) {
         this.invitationRepository = invitationRepository;
         this.userRepository = userRepository;
         this.reservationRepository = reservationRepository;
         this.partyPeopleRepository = partyPeopleRepository;
+        this.sseEmitterService = sseEmitterService;
     }
 
 
@@ -63,6 +66,8 @@ public class InvitationService {
         invitation = new Invitation(user, receiveUser, party);
         invitationRepository.save(invitation);
 
+        // 알림 발송
+        sseEmitterService.send(receiveUser, user.getNickName() + "님이 일행으로 초대하였습니다.", NotificationType.PARTY);
     }
 
 
@@ -148,6 +153,10 @@ public class InvitationService {
 
         invitation.changeStatus(status);
         invitationRepository.save(invitation);
+
+
+        String message = user.getNickName() + "님이 초대를 " + status.getValue() + "하셨습니다.";
+        sseEmitterService.send(invitation.getSendUser(), message, NotificationType.PARTY);
 
         return ReceivedInvitationResponseDto.toDto(invitation);
     }
