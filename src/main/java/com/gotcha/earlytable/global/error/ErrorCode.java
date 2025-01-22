@@ -62,6 +62,11 @@ public enum ErrorCode {
     ALREADY_IN_ALLERGY_STUFF(HttpStatus.CONFLICT, "이미 등록된 원재료입니다."),
     ALREADY_REGISTERED_ALLERGYSTUFF_IN_MENU(HttpStatus.CONFLICT, "이미 메뉴에 등록된 알러지 원재료입니다."),
 
+
+    // 423 LOCKED
+    LOCK_TIMEOUT(HttpStatus.LOCKED, "락을 획득하는데 시간이 초과되었습니다.")
+
+
     ;
 
     private final HttpStatus httpStatus;
