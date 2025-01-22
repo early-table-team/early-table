@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.party;
 
+import com.gotcha.earlytable.domain.notification.FcmService;
 import com.gotcha.earlytable.domain.notification.SseEmitterService;
 import com.gotcha.earlytable.domain.party.dto.InvitationStatusDto;
 import com.gotcha.earlytable.domain.party.dto.ReceivedInvitationResponseDto;
@@ -28,13 +29,15 @@ public class InvitationService {
     private final ReservationRepository reservationRepository;
     private final PartyPeopleRepository partyPeopleRepository;
     private final SseEmitterService sseEmitterService;
+    private final FcmService fcmService;
 
-    public InvitationService(final InvitationRepository invitationRepository, UserRepository userRepository, ReservationRepository reservationRepository, PartyPeopleRepository partyPeopleRepository, SseEmitterService sseEmitterService) {
+    public InvitationService(final InvitationRepository invitationRepository, UserRepository userRepository, ReservationRepository reservationRepository, PartyPeopleRepository partyPeopleRepository, SseEmitterService sseEmitterService, FcmService fcmService) {
         this.invitationRepository = invitationRepository;
         this.userRepository = userRepository;
         this.reservationRepository = reservationRepository;
         this.partyPeopleRepository = partyPeopleRepository;
         this.sseEmitterService = sseEmitterService;
+        this.fcmService = fcmService;
     }
 
 
@@ -68,6 +71,7 @@ public class InvitationService {
 
         // 알림 발송
         sseEmitterService.send(receiveUser, user.getNickName() + "님이 일행으로 초대하였습니다.", NotificationType.PARTY);
+        fcmService.sendNotificationByToken("일행 초대", user.getNickName() + "님이 일행으로 초대하였습니다.", "", receiveUser);
     }
 
 

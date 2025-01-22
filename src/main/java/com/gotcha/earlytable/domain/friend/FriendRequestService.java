@@ -6,7 +6,9 @@ import com.gotcha.earlytable.domain.friend.dto.FriendRequestResponseDto;
 import com.gotcha.earlytable.domain.friend.dto.FriendRequestUpdateRequestDto;
 import com.gotcha.earlytable.domain.friend.entity.Friend;
 import com.gotcha.earlytable.domain.friend.entity.FriendRequest;
+import com.gotcha.earlytable.domain.notification.FcmService;
 import com.gotcha.earlytable.domain.notification.SseEmitterService;
+import com.gotcha.earlytable.domain.notification.dto.TokenNotificationRequestDto;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.InvitationStatus;
@@ -28,14 +30,16 @@ public class FriendRequestService {
     private final FriendRepository friendRepository;
     private final UserRepository userRepository;
     private final SseEmitterService sseEmitterService;
+    private final FcmService fcmService;
 
     public FriendRequestService(FriendRequestRepository friendRequestRepository, FriendRepository friendRepository,
-                                UserRepository userRepository, SseEmitterService sseEmitterService) {
+                                UserRepository userRepository, SseEmitterService sseEmitterService, FcmService fcmService) {
 
         this.friendRequestRepository = friendRequestRepository;
         this.friendRepository = friendRepository;
         this.userRepository = userRepository;
         this.sseEmitterService = sseEmitterService;
+        this.fcmService = fcmService;
     }
 
     /**
@@ -88,6 +92,7 @@ public class FriendRequestService {
 
         // 알림 보내기
         sseEmitterService.send(receivedUser, user.getNickName() + "님에게 친구 요청이 왔습니다.", NotificationType.FRIEND);
+        fcmService.sendNotificationByToken("친구 요청", user.getNickName()+"님에게 친구요청이 왔습니다.", "", receivedUser);
 
         return "친구 요청이 성공하였습니다.";
     }
@@ -160,6 +165,7 @@ public class FriendRequestService {
         // 알림 보내기
         String notificationMessage = user.getNickName() + "님이 친구 요청을 " + status.getValue() + "했습니다.";
         sseEmitterService.send(sendUser, notificationMessage, NotificationType.FRIEND);
+        fcmService.sendNotificationByToken("친구요청 수락", notificationMessage, "", sendUser);
 
         return message;
     }

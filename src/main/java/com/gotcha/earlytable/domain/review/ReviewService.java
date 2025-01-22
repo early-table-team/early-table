@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.review;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.notification.FcmService;
 import com.gotcha.earlytable.domain.notification.SseEmitterService;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
@@ -38,10 +39,11 @@ public class ReviewService {
     private final ReservationRepository reservationRepository;
     private final WaitingRepository waitingRepository;
     private final SseEmitterService sseEmitterService;
+    private final FcmService fcmService;
 
     public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService,
                          FileDetailService fileDetailService, ReservationRepository reservationRepository,
-                         WaitingRepository waitingRepository, SseEmitterService sseEmitterService1) {
+                         WaitingRepository waitingRepository, SseEmitterService sseEmitterService1, FcmService fcmService) {
         this.reviewRepository = reviewRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
@@ -49,6 +51,7 @@ public class ReviewService {
         this.reservationRepository = reservationRepository;
         this.waitingRepository = waitingRepository;
         this.sseEmitterService = sseEmitterService1;
+        this.fcmService = fcmService;
     }
 
 
@@ -128,6 +131,7 @@ public class ReviewService {
         // 알림 전송
         String message = store.getStoreName() +"의 가게에 리뷰가 달렸습니다.";
         sseEmitterService.send(store.getUser(), message, NotificationType.REVIEW);
+        fcmService.sendNotificationByToken("리뷰 등록", message, "", store.getUser());
 
         return ReviewResponseDto.toDto(savedReview);
     }
