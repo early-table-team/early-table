@@ -1,8 +1,6 @@
 package com.gotcha.earlytable.domain.waiting;
 
-import com.gotcha.earlytable.domain.waiting.dto.WaitingNumberResponseDto;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
-import org.redisson.api.RList;
 import org.redisson.api.RMap;
 import org.redisson.api.RScoredSortedSet;
 import org.redisson.api.RedissonClient;
@@ -95,22 +93,24 @@ public class WaitingSequenceService {
     /**
      * 웨이팅 1팀 당 소요시간 저장하는 메서드
      *
-     * @param waiting
+     * @param waitingId
      */
-    public void saveTakenTimeWaiting(Waiting waiting) {
+    public void saveTakenTimeWaiting(Long waitingId) {
+        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
         Integer takenTime = (int) Duration.between(waiting.getCreatedAt(), waiting.getModifiedAt()).toMinutes(); // 등록 - 입장 소요시간
 
         String key = "waiting:store:" + waiting.getStore().getStoreId() + ":" + waiting.getWaitingType() + ":time";
 
-        RScoredSortedSet<Integer> timeQueue = redissonClient.getScoredSortedSet(key);
+        RScoredSortedSet<Long> timeQueue = redissonClient.getScoredSortedSet(key);
 
         String leftKey = "waiting:store:" + waiting.getStore().getStoreId() + ":" + waiting.getWaitingType() + ":left";
 
         RMap<Long, Long> waitingLeftMap = redissonClient.getMap(leftKey);
 
-        Long left = waitingLeftMap.get(waiting.getWaitingNumber());
+        Long left = waitingLeftMap.get(waiting.getWaitingId());
 
-        timeQueue.add(waiting.getWaitingNumber(), (int) (takenTime / left)); // 소요시간 / 등록 시 대기 팀 수 = 1팀 당 소요시간
+        timeQueue.add((int) (takenTime / left), waiting.getWaitingId()); // 소요시간 / 등록 시 대기 팀 수 = 1팀 당 소요시간 , 웨이팅 아이디
 
         if (timeQueue.size() > 150) {
             timeQueue.remove(0);
@@ -125,9 +125,10 @@ public class WaitingSequenceService {
     public void deleteTakenTimeWaiting(Waiting waiting) {
         String key = "waiting:store:" + waiting.getStore().getStoreId() + ":" + waiting.getWaitingType() + ":time";
 
-        RScoredSortedSet<Integer> timeQueue = redissonClient.getScoredSortedSet(key);
+        RScoredSortedSet<Long> timeQueue = redissonClient.getScoredSortedSet(key);
 
-        timeQueue.remove(waiting.getWaitingNumber());
+        timeQueue.remove(waiting.getWaitingId());
+
     }
 
 
@@ -140,23 +141,23 @@ public class WaitingSequenceService {
     public Integer getTakenTimeWaiting(Waiting waiting) {
         String key = "waiting:store:" + waiting.getStore().getStoreId() + ":" + waiting.getWaitingType() + ":time";
 
-        RScoredSortedSet<Integer> timeQueue = redissonClient.getScoredSortedSet(key);
+        RScoredSortedSet<Long> timeQueue = redissonClient.getScoredSortedSet(key);
 
-        int leftNow = (int) getNowSeqNumber(waiting.getWaitingId());
+        long leftNow = getNowSeqNumber(waiting.getWaitingId());
 
         int sum = 0;
         int time;
 
         if (timeQueue.size() < 10) {
-            return 15;
+            time = 15;
         } else {
-            for (int num : timeQueue) {
-                sum += num;
+            for (Long num : timeQueue) {
+                sum += num.intValue();
             }
-
             time = sum / timeQueue.size();
-
-            return time * leftNow;
         }
+
+        return time * (int) leftNow;
+
     }
 }

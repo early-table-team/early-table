@@ -18,9 +18,11 @@ import java.util.List;
 public class WaitingController {
 
     private final WaitingService waitingService;
+    private final WaitingSequenceService waitingSequenceService;
 
-    public WaitingController(WaitingService waitingService) {
+    public WaitingController(WaitingService waitingService, WaitingSequenceService waitingSequenceService) {
         this.waitingService = waitingService;
+        this.waitingSequenceService = waitingSequenceService;
     }
 
     /**
@@ -188,7 +190,7 @@ public class WaitingController {
                                                         @PathVariable Long waitingId) {
 
         waitingService.changeWaitingStatus(waitingId, WaitingStatus.COMPLETED, userDetails.getUser());
-
+        waitingSequenceService.saveTakenTimeWaiting(waitingId);
         return ResponseEntity.status(HttpStatus.OK).body("입장 완료 되었습니다.");
     }
 

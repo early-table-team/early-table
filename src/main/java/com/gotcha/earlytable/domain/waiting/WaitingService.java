@@ -377,7 +377,6 @@ public class WaitingService {
         // 웨이팅 대기일 때, 입장완료 처리
         if(waiting.getWaitingStatus().equals(WaitingStatus.PENDING) && !waitingStatus.equals(WaitingStatus.PENDING)) {
             waitingSequenceService.removeFromWaitingQueue(waiting);
-            waitingSequenceService.saveTakenTimeWaiting(waiting);
         }
 
         // 대기 중이 아닐 때, 다시 입장 대기 처리
