@@ -2,7 +2,6 @@ package com.gotcha.earlytable.domain.allergy;
 
 import com.gotcha.earlytable.domain.allergy.dto.AllergyRequestDto;
 import com.gotcha.earlytable.domain.allergy.dto.AllergyResponseDto;
-import com.gotcha.earlytable.domain.allergy.entity.AllergyCategory;
 import com.gotcha.earlytable.domain.menu.MenuRepository;
 import com.gotcha.earlytable.domain.allergy.entity.Allergy;
 import com.gotcha.earlytable.domain.allergy.entity.AllergyStuff;
@@ -52,7 +51,7 @@ public class AllergyService {
 
         //이미 등록한 원재료 재입력 시, 예외처리
         if(allergyRepository.existsByMenuMenuIdAndAllergyStuffAllergyStuffId(menuId, allergyStuff.getAllergyStuffId())) {
-            throw new ConflictException(ErrorCode.ALREADY_REGISTERED_ALLERGYSTUFF_IN_MENU);
+            throw new ConflictException(ErrorCode.ALREADY_REGISTERED_ALLERGY_STUFF_IN_MENU);
         }
 
         //알러지 생성

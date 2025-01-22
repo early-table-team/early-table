@@ -183,7 +183,7 @@ public class WaitingController {
      * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
-    @PatchMapping("/waiting/{waitingId}/status")
+    @PatchMapping("/waiting/{waitingId}/status/complete")
     public ResponseEntity<String> completeWaitingStatus(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                         @PathVariable Long waitingId) {
 
@@ -192,19 +192,36 @@ public class WaitingController {
         return ResponseEntity.status(HttpStatus.OK).body("입장 완료 되었습니다.");
     }
 
-
     /**
-     * 현재 웨이팅 순서 조회 API
+     * 웨이팅 입장 복구 API
      *
      * @param waitingId
-     * @return ResponseEntity<WaitingNumberResponseDto>
+     * @return ResponseEntity<String>
      */
-    @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @GetMapping("/waiting/{waitingId}/now")
-    public ResponseEntity<WaitingNumberResponseDto> getNowSeqNumber(@PathVariable Long waitingId) {
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @PatchMapping("/waiting/{waitingId}/status/restore")
+    public ResponseEntity<String> restoreWaitingStatus(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        @PathVariable Long waitingId) {
 
-        WaitingNumberResponseDto responseDto = waitingService.getNowSeqNumber(waitingId);
+        waitingService.changeWaitingStatus(waitingId, WaitingStatus.PENDING, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+        return ResponseEntity.status(HttpStatus.OK).body("웨이팅이 복구 되었습니다.");
     }
+
+
+
+//    /**
+//     * 현재 웨이팅 순서 조회 API
+//     *
+//     * @param waitingId
+//     * @return ResponseEntity<WaitingNumberResponseDto>
+//     */
+//    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+//    @GetMapping("/waiting/{waitingId}/now")
+//    public ResponseEntity<WaitingNumberResponseDto> getNowSeqNumber(@PathVariable Long waitingId) {
+//
+//        WaitingNumberResponseDto responseDto = waitingService.getNowSeqNumber(waitingId);
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+//    }
 }

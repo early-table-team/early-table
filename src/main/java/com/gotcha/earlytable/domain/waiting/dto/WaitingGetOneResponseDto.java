@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Getter
 public class WaitingGetOneResponseDto {
     private final Long waitingId;
-    private final Integer waitingNumber;
+    private final Long waitingNumber;
     private final String storeName;
     private final WaitingStatus waitingStatus;
     private final WaitingType waitingType;

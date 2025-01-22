@@ -15,8 +15,8 @@ public enum ErrorCode {
     NO_SEAT(HttpStatus.BAD_REQUEST,"해당 인원에 맞는 자리가 남아있지 않습니다."),
     REJECT_CANCEL(HttpStatus.BAD_REQUEST,"예약을 취소할 수 없습니다."),
     UNAVAILABLE_RESERVATION_TYPE(HttpStatus.BAD_REQUEST, "예약이 불가능한 가게입니다."),
-    UNAVAILABLE_Onsite_Waiting_TYPE(HttpStatus.BAD_REQUEST, "현장 웨이팅이 불가능한 가게입니다."),
-    UNAVAILABLE_Remote_Waiting_TYPE(HttpStatus.BAD_REQUEST, "원격 웨이팅이 불가능한 가게입니다."),
+    UNAVAILABLE_ONSITE_WAITING_TYPE(HttpStatus.BAD_REQUEST, "현장 웨이팅이 불가능한 가게입니다."),
+    UNAVAILABLE_REMOTE_WAITING_TYPE(HttpStatus.BAD_REQUEST, "원격 웨이팅이 불가능한 가게입니다."),
     STORE_HOLIDAY(HttpStatus.BAD_REQUEST,"가게 휴무일 입니다."),
     RESERVATION_TIME_ERROR(HttpStatus.BAD_REQUEST,"예약가능한 시간이 아닙니다."),
     WAITING_ERROR(HttpStatus.BAD_REQUEST,"현재 웨이팅 가능 상태가 아닙니다."),
@@ -60,7 +60,7 @@ public enum ErrorCode {
     ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 수락 대기 중인 요청 건이 존재합니다."),
     ALREADY_IN_ALLERGY_CATEGORY(HttpStatus.CONFLICT, "이미 등록된 카테고리 입니다."),
     ALREADY_IN_ALLERGY_STUFF(HttpStatus.CONFLICT, "이미 등록된 원재료입니다."),
-    ALREADY_REGISTERED_ALLERGYSTUFF_IN_MENU(HttpStatus.CONFLICT, "이미 메뉴에 등록된 알러지 원재료입니다."),
+    ALREADY_REGISTERED_ALLERGY_STUFF_IN_MENU(HttpStatus.CONFLICT, "이미 메뉴에 등록된 알러지 원재료입니다."),
 
 
     // 423 LOCKED

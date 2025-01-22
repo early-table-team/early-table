@@ -45,11 +45,12 @@ public class WaitingService {
     private final UserRepository userRepository;
     private final WaitingSettingRepository waitingSettingRepository;
     private final StoreHourRepository storeHourRepository;
+    private final WaitingSequenceService waitingSequenceService;
 
     public WaitingService(WaitingRepository waitingRepository, StoreRepository storeRepository,
                           PartyRepository partyRepository, PartyPeopleRepository partyPeopleRepository,
                           UserRepository userRepository, WaitingSettingRepository waitingSettingRepository,
-                          StoreHourRepository storeHourRepository) {
+                          StoreHourRepository storeHourRepository, WaitingSequenceService waitingSequenceService) {
 
         this.waitingRepository = waitingRepository;
         this.storeRepository = storeRepository;
@@ -58,6 +59,7 @@ public class WaitingService {
         this.userRepository = userRepository;
         this.waitingSettingRepository = waitingSettingRepository;
         this.storeHourRepository = storeHourRepository;
+        this.waitingSequenceService = waitingSequenceService;
     }
 
     /**
@@ -86,7 +88,7 @@ public class WaitingService {
         LocalDate date = LocalDate.now();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
+        Long waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
                 date.atTime(0, 0, 0), date.atTime(23, 59, 59), requestDto.getWaitingType());
 
         waitingNumber++;
@@ -97,6 +99,9 @@ public class WaitingService {
 
         // 저장
         Waiting savedWaiting = waitingRepository.save(waiting);
+
+        // 웨이팅 순서에 포함
+        waitingSequenceService.addToWaitingQueue(savedWaiting);
 
         return new WaitingResponseDto(savedWaiting);
     }
@@ -134,7 +139,7 @@ public class WaitingService {
         LocalDate date = LocalDate.now();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
+        Long waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(store,
                 date.atTime(0, 0, 0), date.atTime(23, 59, 59), requestDto.getWaitingType());
 
         waitingNumber++;
@@ -143,7 +148,10 @@ public class WaitingService {
         Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(),
                 WaitingStatus.PENDING, RemoteStatus.REMOTE, waitingNumber, requestDto.getPhoneNumber());
 
-        waitingRepository.save(waiting);
+        Waiting savedWaiting =  waitingRepository.save(waiting);
+
+        // 웨이팅 순서에 포함
+        waitingSequenceService.addToWaitingQueue(savedWaiting);
 
         return new WaitingNumberResponseDto(waitingNumber);
     }
@@ -196,12 +204,14 @@ public class WaitingService {
         waiting.updateWaiting(WaitingStatus.DELAY);
         waitingRepository.save(waiting);
 
+        // 웨이팅 순서에서 제거
+        waitingSequenceService.removeFromWaitingQueue(waiting);
 
         // 웨이팅 날짜만 가져오기
         LocalDate waitingDate = waiting.getCreatedAt().toLocalDate();
 
         // 웨이팅 번호
-        int waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(waiting.getStore(),
+        Long waitingNumber = waitingRepository.countByStoreAndCreatedAtBetweenAndWaitingType(waiting.getStore(),
                 waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59), waiting.getWaitingType());
 
         waitingNumber++;
@@ -215,7 +225,11 @@ public class WaitingService {
         Waiting newWaiting = new Waiting(waiting.getStore(), party, waiting.getWaitingType(), waiting.getPersonnelCount(),
                 WaitingStatus.PENDING, RemoteStatus.REMOTE, waitingNumber, user.getPhone());
 
+
         waitingRepository.save(newWaiting);
+
+        // 웨이팅 순서에 포함
+        waitingSequenceService.addToWaitingQueue(newWaiting);
 
         return new WaitingNumberResponseDto(waitingNumber);
     }
@@ -322,6 +336,9 @@ public class WaitingService {
         // 웨이팅 상태 변경
         waiting.cancelWaiting();
 
+        // 웨이팅 순서에서 제거
+        waitingSequenceService.removeFromWaitingQueue(waiting);
+
         waitingRepository.save(waiting);
     }
 
@@ -336,40 +353,31 @@ public class WaitingService {
 
         Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
 
+        // 가게 주인인지 확인
         if (user.getAuth() == Auth.OWNER && !waiting.getStore().getUser().getId().equals(user.getId())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 
+        // 미루기일 때, 상태 변경 거부
+        if(waiting.getWaitingStatus().equals(WaitingStatus.DELAY)) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        // 웨이팅 대기일 때, 입장완료 처리
+        if(waiting.getWaitingStatus().equals(WaitingStatus.PENDING) && !waitingStatus.equals(WaitingStatus.PENDING)) {
+            waitingSequenceService.removeFromWaitingQueue(waiting);
+        }
+
+        // 대기 중이 아닐 때, 다시 입장 대기 처리
+        if (!waiting.getWaitingStatus().equals(WaitingStatus.PENDING) && waitingStatus.equals(WaitingStatus.PENDING)) {
+            waitingSequenceService.addToWaitingQueue(waiting);
+        }
+
+        // 상태 수정
         waiting.updateWaiting(waitingStatus);
 
         waitingRepository.save(waiting);
     }
-
-
-    /**
-     * 실시간 웨이팅 순서 조회 메서드
-     *
-     * @param waitingId
-     * @return WaitingNowSeqNumberResponseDto
-     */
-    public WaitingNumberResponseDto getNowSeqNumber(Long waitingId) {
-
-        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
-
-        // 웨이팅 날짜만 가져오기
-        LocalDate waitingDate = waiting.getCreatedAt().toLocalDate();
-
-        // 앞에 대기중인 웨이팅 개수 가져오기
-        int nowSeqNum = waitingRepository.countByStoreAndWaitingStatusAndCreatedAtBetweenAndWaitingNumberLessThanEqual(
-                waiting.getStore(),
-                WaitingStatus.PENDING,
-                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59),
-                waiting.getWaitingNumber()
-        );
-
-        return new WaitingNumberResponseDto(nowSeqNum);
-    }
-
 
     /**
      * 예약 가능 여부 확인
@@ -386,7 +394,7 @@ public class WaitingService {
                         storeReservationType.canWaiting(waitingType));
 
         if (dontReservation) {
-            throw new CustomException(ErrorCode.UNAVAILABLE_Onsite_Waiting_TYPE);
+            throw new CustomException(ErrorCode.UNAVAILABLE_ONSITE_WAITING_TYPE);
         }
 
         // 휴무 여부 확인 (정기 휴무요일 & 임시 휴일)
@@ -396,7 +404,6 @@ public class WaitingService {
         if (holiday) {
             throw new CustomException(ErrorCode.STORE_HOLIDAY);
         }
-
 
         // 웨이팅 가능 여부 확인
         WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
@@ -410,5 +417,28 @@ public class WaitingService {
         }
     }
 
+//    /**
+//     * 실시간 웨이팅 순서 조회 메서드
+//     *
+//     * @param waitingId
+//     * @return WaitingNowSeqNumberResponseDto
+//     */
+//    public WaitingNumberResponseDto getNowSeqNumber(Long waitingId) {
+//
+//        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+//
+//        // 웨이팅 날짜만 가져오기
+//        LocalDate waitingDate = waiting.getCreatedAt().toLocalDate();
+//
+//        // 앞에 대기중인 웨이팅 개수 가져오기
+//        int nowSeqNum = waitingRepository.countByStoreAndWaitingStatusAndCreatedAtBetweenAndWaitingNumberLessThanEqual(
+//                waiting.getStore(),
+//                WaitingStatus.PENDING,
+//                waitingDate.atTime(0, 0, 0), waitingDate.atTime(23, 59, 59),
+//                waiting.getWaitingNumber()
+//        );
+//
+//        return new WaitingNumberResponseDto(nowSeqNum);
+//    }
 
 }

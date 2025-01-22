@@ -9,6 +9,7 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
@@ -251,7 +252,17 @@ public class GlobalExceptionHandler {
          * @return {@code ResponseEntity<CommonResponseBody<Void>>}
          */
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e) {
+    protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e, HttpServletRequest request) {
+
+        // 요청 헤더에서 Content-Type이 text/event-stream인지 확인
+        if ("text/event-stream".equals(request.getHeader("Accept"))) {
+            // SSE 스트림을 종료하기 위한 별도 로직
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_EVENT_STREAM)
+                    .body(new CommonResponseBody<>("SSE stream error"));
+        }
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new CommonResponseBody<>(e.getMessage()));
