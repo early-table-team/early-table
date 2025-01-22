@@ -51,7 +51,7 @@ public class WebSecurityConfig {
     /**
      * 화이트 리스트.
      */
-    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error", "/store/**"};
+    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error", "/store/**", "/fcm/**"};
 
     public WebSecurityConfig(JwtAuthFilter jwtAuthFilter,
                              AuthenticationProvider authenticationProvider,
@@ -68,7 +68,7 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 허용할 origin을 설정
         configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:63342")); // 클라이언트의 주소
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
         configuration.setAllowedHeaders(List.of("*")); // 모든 헤더를 허용
         configuration.setAllowCredentials(true); // 자격 증명(쿠키, 인증 헤더 등)을 허용
 
@@ -92,6 +92,9 @@ public class WebSecurityConfig {
                         auth.requestMatchers(WHITE_LIST).permitAll()
                                 // static 리소스 경로
                                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                                .requestMatchers("/firebase-messaging-sw.js").permitAll()
+                                .requestMatchers("/firebase/firebase-app.js").permitAll()
+                                .requestMatchers("/firebase/firebase-messaging.js").permitAll()
                                 // 일부 dispatch 타입
                                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
                                         DispatcherType.ERROR).permitAll()

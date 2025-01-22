@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+<h1>Login</h1>
+<form id="loginForm">
+    <label for="email">email:</label>
+    <input type="text" id="email" name="email" required>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <button type="submit">Login</button>
+</form>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+        e.preventDefault(); // 폼 제출 시 페이지 새로 고침 방지
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        alert(email+password);
+
+        // 로그인 요청
+        try {
+            const response = await fetch('/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const jwtToken = data.accessToken; // 서버에서 반환된 JWT
+
+                // JWT를 localStorage에 저장
+                localStorage.setItem('jwtToken', jwtToken);
+
+                alert('Login successful!');
+                alert(jwtToken);
+
+                // 로그인 후 다른 페이지로 리다이렉트
+                window.location.href = '/fcm/auth'; // 예: 대시보드로 리다이렉트
+            } else {
+                alert('Login failed! Please check your credentials.');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('An error occurred while logging in.');
+        }
+    });
+</script>
+</body>
+</html>
