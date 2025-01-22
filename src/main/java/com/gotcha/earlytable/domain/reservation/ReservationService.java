@@ -206,6 +206,8 @@ public class ReservationService {
                     }
                 }
 
+                // TODO : 결제 부분
+
 
                 // TODO : OK 그럼 예약 생성해줄게
                 Party party = partyRepository.save(new Party());
