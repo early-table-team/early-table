@@ -2,6 +2,10 @@ package com.gotcha.earlytable.domain.user;
 
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
+import com.gotcha.earlytable.global.util.AuthenticationScheme;
+import com.gotcha.earlytable.global.util.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -19,10 +23,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtProvider jwtProvider;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RefreshTokenService refreshTokenService, JwtProvider jwtProvider) {
 
         this.userService = userService;
+        this.refreshTokenService = refreshTokenService;
+        this.jwtProvider = jwtProvider;
     }
 
     /**
@@ -45,12 +53,18 @@ public class UserController {
      * @return ResponseEntity<JwtAuthResponse>
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> loginUser(@Valid @RequestBody UserLoginRequestDto requestDto) {
+    public ResponseEntity<JwtAuthResponse> loginUser(@Valid @RequestBody UserLoginRequestDto requestDto,
+                                                     HttpServletResponse response) {
 
-        JwtAuthResponse jwtAuthResponse = userService.loginUser(requestDto);
+        String accessToken = userService.loginUser(requestDto);
 
-        return ResponseEntity.status(HttpStatus.OK).body(jwtAuthResponse);
+        response.addHeader("Authorization", accessToken);
+        response.addCookie(userService.craeteCookie(requestDto.getEmail()));
+
+
+        return ResponseEntity.status(HttpStatus.OK).body(new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), accessToken));
     }
+
 
     /**
      * 로그아웃 기능 API
@@ -75,11 +89,34 @@ public class UserController {
                 session.invalidate();
             }
 
+            refreshTokenService.deleteRefreshToken(authentication.getName());
+
             return ResponseEntity.ok("로그아웃 성공.");
         }
 
         // 인증 정보가 없다면 인증되지 않았기 때문에 로그인 필요.
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
+
+    }
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtAuthResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken,
+                                          HttpServletResponse response) {
+        if (refreshToken == null || !jwtProvider.validToken(refreshToken)) {
+            return null;
+        }
+        String email = jwtProvider.getUsername(refreshToken);
+
+        String newAccessToken = userService.refresh(email, refreshToken);
+
+        if(newAccessToken != null) {
+            response.addHeader("Authorization", newAccessToken);
+            response.addCookie(userService.craeteCookie(email));
+            return ResponseEntity.ok(new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), newAccessToken));
+        }
+
+        throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
 
     }
 
