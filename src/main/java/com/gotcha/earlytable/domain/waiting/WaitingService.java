@@ -103,6 +103,9 @@ public class WaitingService {
         // 웨이팅 순서에 포함
         waitingSequenceService.addToWaitingQueue(savedWaiting);
 
+        // 현재 대기 팀 수 저장
+        waitingSequenceService.saveWaitingLeft(savedWaiting);
+
         return new WaitingResponseDto(savedWaiting);
     }
 
@@ -152,8 +155,12 @@ public class WaitingService {
 
         // 웨이팅 순서에 포함
         waitingSequenceService.addToWaitingQueue(savedWaiting);
+        waitingSequenceService.saveWaitingLeft(savedWaiting);
 
-        return new WaitingNumberResponseDto(waitingNumber);
+        // 예상 대기 시간 조회
+        Integer waitingTime = waitingSequenceService.getTakenTimeWaiting(savedWaiting);
+
+        return new WaitingNumberResponseDto(waitingNumber, waitingTime);
     }
 
     /**
@@ -230,8 +237,9 @@ public class WaitingService {
 
         // 웨이팅 순서에 포함
         waitingSequenceService.addToWaitingQueue(newWaiting);
+        Integer waitingTime = waitingSequenceService.getTakenTimeWaiting(newWaiting);
 
-        return new WaitingNumberResponseDto(waitingNumber);
+        return new WaitingNumberResponseDto(waitingNumber, waitingTime);
     }
 
     /**
@@ -261,7 +269,10 @@ public class WaitingService {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 
-        return new WaitingGetOneResponseDto(waiting);
+        // 예상 대기 시간 조회
+        Integer waitingTime = waitingSequenceService.getTakenTimeWaiting(waiting);
+
+        return new WaitingGetOneResponseDto(waiting, waitingTime);
     }
 
     /**
@@ -371,6 +382,7 @@ public class WaitingService {
         // 대기 중이 아닐 때, 다시 입장 대기 처리
         if (!waiting.getWaitingStatus().equals(WaitingStatus.PENDING) && waitingStatus.equals(WaitingStatus.PENDING)) {
             waitingSequenceService.addToWaitingQueue(waiting);
+            waitingSequenceService.deleteTakenTimeWaiting(waiting);
         }
 
         // 상태 수정

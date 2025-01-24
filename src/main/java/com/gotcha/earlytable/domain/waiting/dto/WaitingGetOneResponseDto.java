@@ -19,8 +19,9 @@ public class WaitingGetOneResponseDto {
     private final int personnelCount;
     private List<String> partyPeople = new ArrayList<>();
     private final String phone;
+    private final String waitingTime;
 
-    public WaitingGetOneResponseDto(Waiting waiting) {
+    public WaitingGetOneResponseDto(Waiting waiting, Integer waitingTime) {
         this.waitingId = waiting.getWaitingId();
         this.waitingNumber = waiting.getWaitingNumber();
         this.storeName = waiting.getStore().getStoreName();
@@ -28,6 +29,11 @@ public class WaitingGetOneResponseDto {
         this.waitingType = waiting.getWaitingType();
         this.personnelCount = waiting.getPersonnelCount();
         this.phone = waiting.getPhone();
+        if (waitingTime <= 5) {
+            this.waitingTime = "곧 입장 가능합니다.";
+        } else {
+            this.waitingTime = String.valueOf(waitingTime);
+        }
         if (waiting.getParty() != null) {
             this.partyPeople = waiting.getParty().getPartyPeople().stream()
                     .map(partyPeople -> partyPeople.getUser().getNickName())
