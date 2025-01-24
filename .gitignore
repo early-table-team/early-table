@@ -37,3 +37,6 @@ out/
 
 ### env ###
 .env
+
+### firebase ###
+./src/main/resources/firebase/

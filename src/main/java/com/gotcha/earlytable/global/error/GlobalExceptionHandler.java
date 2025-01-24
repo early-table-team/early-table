@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요."));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요." + e.getMessage()));
     }
 
     /**
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요."));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요." + e.getMessage()));
     }
 
     /**
@@ -239,7 +239,18 @@ public class GlobalExceptionHandler {
      * @return {@code ResponseEntity<CommonResponseBody<Void>>}
      */
     @ExceptionHandler(HttpMessageNotWritableException.class)
-    protected ResponseEntity<CommonResponseBody<Void>> handleHttpMessageNotWritableExceptions(HttpMessageNotWritableException e) {
+    protected ResponseEntity<CommonResponseBody<Void>> handleHttpMessageNotWritableExceptions(HttpMessageNotWritableException e,
+                                                                                              HttpServletRequest request) {
+
+        // 요청 헤더에서 Content-Type이 text/event-stream인지 확인
+        if ("text/event-stream".equals(request.getHeader("Accept"))) {
+            // SSE 스트림을 종료하기 위한 별도 로직
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_EVENT_STREAM)
+                    .body(new CommonResponseBody<>("SSE stream error"));
+        }
+
         return ResponseEntity
                 .status(HttpStatus.BAD_GATEWAY)
                 .body(new CommonResponseBody<>(e.getMessage()));

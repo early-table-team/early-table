@@ -54,15 +54,18 @@ public class JwtProvider {
 
     /**
    * <p>토큰 생성 후 리턴.</p>
-   * 입력받은 {@link Authentication}에서 추출한 {@code username}으로 {@link #generateTokenBy(String)} 이용한다.
+   * 입력받은 {@link Authentication}에서 추출한 {@code username}으로 {@link #generateAccessTokenBy(String)} 이용한다.
    *
-   * @param authentication 인증 완료된 후 세부 정보
    * @return 생성된 토큰
    * @throws EntityNotFoundException 입력받은 이메일에 해당하는 사용자를 찾지 못했을 경우
    */
-  public String generateToken(Authentication authentication) throws EntityNotFoundException {
-    String username = authentication.getName();
-    return this.generateTokenBy(username);
+  public String generateAccessToken(String email) throws EntityNotFoundException {
+    return this.generateAccessTokenBy(email);
+  }
+
+
+  public String generateRefreshToken(String email) throws EntityNotFoundException {
+    return this.generateRefreshTokenBy(email);
   }
 
   /**
@@ -108,10 +111,11 @@ public class JwtProvider {
    * @return 생성된 토큰
    * @throws EntityNotFoundException 입력받은 이메일에 해당하는 사용자를 찾지 못했을 경우
    */
-  private String generateTokenBy(String email) throws EntityNotFoundException {
+  private String generateAccessTokenBy(String email) throws EntityNotFoundException {
     User user = this.userRepository.findByEmailOrElseThrow(email);
 
     Date currentDate = new Date();
+    // 10분
     Date expireDate = new Date(currentDate.getTime() + this.expiryMillis);
 
     return Jwts.builder()
@@ -121,6 +125,29 @@ public class JwtProvider {
         .claim("auth", user.getAuth())
         .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), Jwts.SIG.HS256)
         .compact();
+  }
+
+  /**
+   * <p>이메일 주소를 이용해 토큰을 생성한 후 리턴.</p>
+   * <p>토큰 생성에는 HS256 알고리즘을 이용.</p>
+   *
+   * @param email 이메일
+   * @return 생성된 토큰
+   * @throws EntityNotFoundException 입력받은 이메일에 해당하는 사용자를 찾지 못했을 경우
+   */
+  private String generateRefreshTokenBy(String email) throws EntityNotFoundException {
+    User user = this.userRepository.findByEmailOrElseThrow(email);
+
+    Date currentDate = new Date();
+    // 일주일
+    Date expireDate = new Date(currentDate.getTime() + this.expiryMillis * 6 * 24 * 7L);
+
+    return Jwts.builder()
+            .subject(user.getEmail())
+            .issuedAt(currentDate)
+            .expiration(expireDate)
+            .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), Jwts.SIG.HS256)
+            .compact();
   }
 
   /**
