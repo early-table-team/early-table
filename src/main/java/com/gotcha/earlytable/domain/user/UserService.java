@@ -9,6 +9,8 @@ import com.gotcha.earlytable.domain.friend.FriendRepository;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
+import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
@@ -21,6 +23,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Service
@@ -277,5 +281,25 @@ public class UserService {
         user.updateUserPW(encodedPassword);
 
         userRepository.save(user);
+    }
+
+    /**
+     * 마이페이지 내 유저 예약 현황 카운트 API
+     */
+    public UserReservationCountResponseDto getUserReservationCount(Long userId) {
+        long reservationCount = userRepository.countPendingReservationsByUserNative("PENDING", userId);
+        long waitingCount = userRepository.countPendingWaitingsByUserNative("PENDING", userId);
+
+
+        return new UserReservationCountResponseDto(reservationCount, waitingCount);
+    }
+
+    /**
+     * 타인 유저 검색 조회 API
+     * @param userSearchRequestDto
+     * @return UserSearchResponseDto
+     */
+    public List<UserSearchResponseDto> searchUser(UserSearchRequestDto userSearchRequestDto) {
+        return userRepository.searchUserQuery(userSearchRequestDto);
     }
 }
