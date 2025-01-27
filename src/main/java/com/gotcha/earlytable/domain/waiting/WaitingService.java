@@ -269,10 +269,7 @@ public class WaitingService {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 
-        // 예상 대기 시간 조회
-        Integer waitingTime = waitingSequenceService.getTakenTimeWaiting(waiting);
-
-        return new WaitingGetOneResponseDto(waiting, waitingTime);
+        return new WaitingGetOneResponseDto(waiting);
     }
 
     /**

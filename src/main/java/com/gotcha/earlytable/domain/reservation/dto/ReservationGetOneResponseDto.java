@@ -17,6 +17,8 @@ public class ReservationGetOneResponseDto {
 
     private final Long reservationId;
 
+    private final Long storeId;
+
     private final LocalDateTime reservationDate;
 
     private final String storeName;
@@ -47,6 +49,7 @@ public class ReservationGetOneResponseDto {
                     return userMap;
                 })
                 .collect(Collectors.toList());
+        this.storeId = reservation.getStore().getStoreId();
         this.phoneNumber = user.getPhone();
         this.menuList = menuList;
     }

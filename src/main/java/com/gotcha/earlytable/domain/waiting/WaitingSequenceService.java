@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.waiting;
 
+import com.gotcha.earlytable.domain.waiting.dto.WaitingSequenceDto;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import org.redisson.api.RMap;
 import org.redisson.api.RScoredSortedSet;
@@ -40,19 +41,19 @@ public class WaitingSequenceService {
     /**
      * 웨이팅 현재 내 순서 가져오는 메서드
      *
-     * @param waitingId
+     * @param waiting
      * @return 현재 내 순서
      */
-    public long getNowSeqNumber(Long waitingId) {
-        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+    public Integer getNowSeqNumber(Waiting waiting) {
         String key = "waiting:store:" + waiting.getWaitingType() + ":" + waiting.getStore().getStoreId();
         RScoredSortedSet<Long> waitingQueue = redissonClient.getScoredSortedSet(key);
 
         // 현재 웨이팅의 번호 조회
         Integer rank = waitingQueue.rank(waiting.getWaitingId());
         if (rank == null) {
-            throw new IllegalArgumentException("해당 웨이팅이 존재하지 않습니다.");
+            return 0;
         }
+
 
         // 현재 웨이팅 번호보다 작은 웨이팅의 수 계산
         return rank + 1;
@@ -68,11 +69,8 @@ public class WaitingSequenceService {
         RScoredSortedSet<Long> waitingQueue = redissonClient.getScoredSortedSet(key);
 
         // Redis 의 대기열에서 해당 웨이팅 ID 제거
-        boolean removed = waitingQueue.remove(waiting.getWaitingId());
+        waitingQueue.remove(waiting.getWaitingId());
 
-        if (!removed) {
-            throw new IllegalStateException("대기열에서 해당 웨이팅이 존재하지 않습니다.");
-        }
     }
 
     /**
@@ -83,9 +81,9 @@ public class WaitingSequenceService {
     public void saveWaitingLeft(Waiting waiting) {
         String key = "waiting:store:" + waiting.getStore().getStoreId() + ":" + waiting.getWaitingType() + ":left";
 
-        RMap<Long, Long> waitingLeftMap = redissonClient.getMap(key);
+        RMap<Long, Integer> waitingLeftMap = redissonClient.getMap(key);
 
-        Long leftNow = getNowSeqNumber(waiting.getWaitingId());
+        Integer leftNow = getNowSeqNumber(waiting);
 
         waitingLeftMap.put(waiting.getWaitingNumber(), leftNow);
     }
@@ -143,7 +141,7 @@ public class WaitingSequenceService {
 
         RScoredSortedSet<Long> timeQueue = redissonClient.getScoredSortedSet(key);
 
-        long leftNow = getNowSeqNumber(waiting.getWaitingId());
+        long leftNow = getNowSeqNumber(waiting);
 
         int sum = 0;
         int time;
@@ -159,5 +157,23 @@ public class WaitingSequenceService {
 
         return time * (int) leftNow;
 
+    }
+
+    /**
+     * 현재 나의 순서와 대기 예상 시간 조회 메서드
+     *
+     * @param waitingId
+     * @return WaitingSequenceDto
+     */
+    public WaitingSequenceDto getNowSequenceAndTime(Long waitingId) {
+        Waiting waiting = waitingRepository.findByIdOrElseThrow(waitingId);
+
+        // 현재 나의 순서 조회
+        Integer nowSeqNumber = getNowSeqNumber(waiting);
+
+        // 예상 대기 시간 조회
+        Integer waitingTime = getTakenTimeWaiting(waiting);
+
+        return new WaitingSequenceDto(nowSeqNumber, waitingTime);
     }
 }
