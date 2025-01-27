@@ -72,7 +72,7 @@ public class InterestStoreService {
         List<InterestStoreResponseDto> responseDtoList = new ArrayList<>();
         for(InterestStore store : stores){
             Long storeId = store.getStore().getStoreId();
-            System.out.println(storeId);
+
             String storeName = store.getStore().getStoreName();
             String storeContent = store.getStore().getStoreContents();
             StoreCategory storeCategory = store.getStore().getStoreCategory();

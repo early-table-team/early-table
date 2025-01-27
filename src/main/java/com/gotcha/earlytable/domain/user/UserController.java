@@ -14,15 +14,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+    private final SearchService searchService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, SearchService searchService) {
 
         this.userService = userService;
+        this.searchService = searchService;
     }
 
     /**
@@ -161,4 +166,24 @@ public class UserController {
     }
 
 
+    /**
+     * 서칭 페이지 init api
+     * @return
+     */
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/search/init")
+    public Map<String, Object> getInit(){
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("regions", searchService.getRegions());
+
+        response.put("storeCategories", searchService.getStoreCategories());
+
+        response.put("allergyStuff", searchService.getAllergyCategoriesAndStuff());
+
+
+
+        return response;
+
+    }
 }
