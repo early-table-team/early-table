@@ -1,7 +1,6 @@
 package com.gotcha.earlytable.domain.waiting;
 
-import com.gotcha.earlytable.domain.waiting.dto.WaitingNumberResponseDto;
-import org.springframework.http.HttpStatus;
+import com.gotcha.earlytable.domain.waiting.dto.WaitingSequenceDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,10 +24,10 @@ public class WaitingSequenceController {
      * @return 현재 내 순서
      */
     @GetMapping("/{waitingId}/now")
-    public ResponseEntity<Long> getNowSeqNumber(@PathVariable Long waitingId) {
+    public ResponseEntity<WaitingSequenceDto> getNowSeqNumber(@PathVariable Long waitingId) {
 
-        long nowSeqNum = waitingSequenceService.getNowSeqNumber(waitingId);
+        WaitingSequenceDto responseDto = waitingSequenceService.getNowSequenceAndTime(waitingId);
 
-        return ResponseEntity.ok(nowSeqNum);
+        return ResponseEntity.ok(responseDto);
     }
 }

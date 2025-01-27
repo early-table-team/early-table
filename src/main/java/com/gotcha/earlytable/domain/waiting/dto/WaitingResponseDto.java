@@ -1,27 +1,24 @@
 package com.gotcha.earlytable.domain.waiting.dto;
 
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
-import com.gotcha.earlytable.global.enums.WaitingStatus;
-import com.gotcha.earlytable.global.enums.WaitingType;
 import lombok.Getter;
 
 @Getter
 public class WaitingResponseDto {
-    Long storeId;
-    Long waitingId;
-    Long waitingNumber;
-    String storeName;
-    WaitingType waitingType;
-    WaitingStatus waitingStatus;
+    private final Long storeId;
+    private final Long waitingId;
+    private final String storeName;
+    private final String waitingType;
+    private final String waitingStatus;
+    private final String datetime;
 
     public WaitingResponseDto(Waiting waiting) {
 
         this.storeId = waiting.getStore().getStoreId();
         this.waitingId = waiting.getWaitingId();
-        this.waitingNumber = waiting.getWaitingId();
         this.storeName = waiting.getStore().getStoreName();
-        this.waitingType = waiting.getWaitingType();
-        this.waitingStatus = waiting.getWaitingStatus();
-
+        this.waitingType = waiting.getWaitingType().getValue();
+        this.waitingStatus = waiting.getWaitingStatus().getValue();
+        this.datetime = waiting.getCreatedAt().toLocalDate().toString() + " " + waiting.getCreatedAt().withNano(0).toLocalTime();
     }
 }
