@@ -18,6 +18,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -150,6 +152,20 @@ public class UserController {
     }
 
     /**
+     * 타인 유저 검색 조회 API
+     * (OWNER, ADMIN 검색결과 제외)
+     * @param userSearchRequestDto
+     * @return ResponseEntity<List<UserSearchResponseDto>>
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSearchResponseDto>> searchUser(@Valid @ModelAttribute UserSearchRequestDto userSearchRequestDto) {
+
+        List<UserSearchResponseDto> responseDto = userService.searchUser(userSearchRequestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    /**
      * 유저 정보 수정 API
      *
      * @param requestDto
@@ -195,6 +211,18 @@ public class UserController {
         userService.deleteUser(requestDto, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("회원 탈퇴가 완료되었습니다.");
+    }
+
+    /**
+     * 마이페이지 내 예약 현황 카운트 API
+     * @param userDetails
+     * @return UserReservationCountResponseDto
+     */
+    @GetMapping("/count")
+    public ResponseEntity<UserReservationCountResponseDto> getUserReservationCount(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UserReservationCountResponseDto userReservationCountResponseDto = userService.getUserReservationCount(userDetails.getUser().getId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(userReservationCountResponseDto);
     }
 
 
