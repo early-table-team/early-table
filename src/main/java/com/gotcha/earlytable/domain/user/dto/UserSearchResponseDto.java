@@ -21,7 +21,7 @@ public class UserSearchResponseDto {
         return new UserSearchResponseDto(
                 user.getId(),
                 user.getNickName(),
-                user.getPhone().substring(9,13),
+                user.getPhone().substring(user.getPhone().length() - 4),
                 user.getEmail()
         );
     }
