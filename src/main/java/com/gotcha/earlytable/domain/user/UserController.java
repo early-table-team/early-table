@@ -158,7 +158,7 @@ public class UserController {
      * @return ResponseEntity<List<UserSearchResponseDto>>
      */
     @GetMapping("/search")
-    public ResponseEntity<List<UserSearchResponseDto>> searchUser(@Valid @ModelAttribute UserSearchRequestDto userSearchRequestDto) {
+    public ResponseEntity<List<UserSearchResponseDto>> searchUser(@ModelAttribute UserSearchRequestDto userSearchRequestDto) {
 
         List<UserSearchResponseDto> responseDto = userService.searchUser(userSearchRequestDto);
 
