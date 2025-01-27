@@ -2,10 +2,6 @@ package com.gotcha.earlytable.domain.user;
 
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
-import com.gotcha.earlytable.global.error.ErrorCode;
-import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
-import com.gotcha.earlytable.global.util.AuthenticationScheme;
-import com.gotcha.earlytable.global.util.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -18,35 +14,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
-<<<<<<< HEAD
-import java.util.HashMap;
-import java.util.Map;
-=======
-import java.util.List;
->>>>>>> 8f9df7bd3e9e816d13389c0399e5fd247efe0a54
-
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
-<<<<<<< HEAD
-    private final SearchService searchService;
 
-    public UserController(UserService userService, SearchService searchService) {
+    public UserController(UserService userService) {
 
         this.userService = userService;
-        this.searchService = searchService;
-=======
-    private final RefreshTokenService refreshTokenService;
-    private final JwtProvider jwtProvider;
-
-    public UserController(UserService userService, RefreshTokenService refreshTokenService, JwtProvider jwtProvider) {
-
-        this.userService = userService;
-        this.refreshTokenService = refreshTokenService;
-        this.jwtProvider = jwtProvider;
->>>>>>> 8f9df7bd3e9e816d13389c0399e5fd247efe0a54
     }
 
     /**
@@ -69,18 +45,12 @@ public class UserController {
      * @return ResponseEntity<JwtAuthResponse>
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> loginUser(@Valid @RequestBody UserLoginRequestDto requestDto,
-                                                     HttpServletResponse response) {
+    public ResponseEntity<JwtAuthResponse> loginUser(@Valid @RequestBody UserLoginRequestDto requestDto) {
 
-        String accessToken = userService.loginUser(requestDto);
+        JwtAuthResponse jwtAuthResponse = userService.loginUser(requestDto);
 
-        response.addHeader("Authorization", accessToken);
-        response.addCookie(userService.craeteCookie(requestDto.getEmail()));
-
-
-        return ResponseEntity.status(HttpStatus.OK).body(new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), accessToken));
+        return ResponseEntity.status(HttpStatus.OK).body(jwtAuthResponse);
     }
-
 
     /**
      * 로그아웃 기능 API
@@ -105,34 +75,11 @@ public class UserController {
                 session.invalidate();
             }
 
-            refreshTokenService.deleteRefreshToken(authentication.getName());
-
             return ResponseEntity.ok("로그아웃 성공.");
         }
 
         // 인증 정보가 없다면 인증되지 않았기 때문에 로그인 필요.
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
-
-    }
-
-
-    @PostMapping("/refresh")
-    public ResponseEntity<JwtAuthResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken,
-                                          HttpServletResponse response) {
-        if (refreshToken == null || !jwtProvider.validToken(refreshToken)) {
-            return null;
-        }
-        String email = jwtProvider.getUsername(refreshToken);
-
-        String newAccessToken = userService.refresh(email, refreshToken);
-
-        if(newAccessToken != null) {
-            response.addHeader("Authorization", newAccessToken);
-            response.addCookie(userService.craeteCookie(email));
-            return ResponseEntity.ok(new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), newAccessToken));
-        }
-
-        throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
 
     }
 
@@ -161,20 +108,6 @@ public class UserController {
                                                         @PathVariable Long userId) {
 
         OtherUserResponseDto responseDto = userService.getOtherUser(userDetails.getUser(), userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
-    }
-
-    /**
-     * 타인 유저 검색 조회 API
-     * (OWNER, ADMIN 검색결과 제외)
-     * @param userSearchRequestDto
-     * @return ResponseEntity<List<UserSearchResponseDto>>
-     */
-    @GetMapping("/search")
-    public ResponseEntity<List<UserSearchResponseDto>> searchUser(@ModelAttribute UserSearchRequestDto userSearchRequestDto) {
-
-        List<UserSearchResponseDto> responseDto = userService.searchUser(userSearchRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -227,37 +160,5 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body("회원 탈퇴가 완료되었습니다.");
     }
 
-    /**
-     * 마이페이지 내 예약 현황 카운트 API
-     * @param userDetails
-     * @return UserReservationCountResponseDto
-     */
-    @GetMapping("/count")
-    public ResponseEntity<UserReservationCountResponseDto> getUserReservationCount(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        UserReservationCountResponseDto userReservationCountResponseDto = userService.getUserReservationCount(userDetails.getUser().getId());
 
-        return ResponseEntity.status(HttpStatus.OK).body(userReservationCountResponseDto);
-    }
-
-
-    /**
-     * 서칭 페이지 init api
-     * @return
-     */
-    @CrossOrigin(origins = "http://localhost:3000")
-    @GetMapping("/search/init")
-    public Map<String, Object> getInit(){
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("regions", searchService.getRegions());
-
-        response.put("storeCategories", searchService.getStoreCategories());
-
-        response.put("allergyStuff", searchService.getAllergyCategoriesAndStuff());
-
-
-
-        return response;
-
-    }
 }
