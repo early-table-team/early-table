@@ -23,7 +23,8 @@ public class FriendResponseDto {
         this.userId = user.getId();
         this.nickName = user.getNickName();
         this.email = user.getEmail();
-        this.phoneNumber = user.getPhone().substring(0, user.getPhone().length() - 4) + "****";
+        this.phoneNumber = user.getPhone().substring(0, 4) + "****-"+
+                user.getPhone().substring(user.getPhone().length() - 4, user.getPhone().length());
         this.profileImageUrl = user.getFile().getFileDetailList().stream().findFirst()
                 .map(FileDetail::getFileUrl).orElse(null);
         this.relationship = relationship;

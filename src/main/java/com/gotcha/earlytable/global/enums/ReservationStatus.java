@@ -1,5 +1,8 @@
 package com.gotcha.earlytable.global.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ReservationStatus {
 
     PENDING("예정"),
@@ -7,7 +10,7 @@ public enum ReservationStatus {
     CANCELED("취소"),
     CASHED("결제완료");
 
-    private String value;
+    private final String value;
 
     ReservationStatus(String value) {
         this.value = value;

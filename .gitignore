@@ -37,5 +37,12 @@ out/
 
 ### env ###
 .env
+<<<<<<< HEAD
 
 src/main/resources/firebase/early-table-6315a-98f76a9f3269.json
+=======
+/src/main/resources/firebase/early-table-6315a-98f76a9f3269.json
+
+### firebase ###
+./src/main/resources/firebase/
+>>>>>>> 8f9df7bd3e9e816d13389c0399e5fd247efe0a54

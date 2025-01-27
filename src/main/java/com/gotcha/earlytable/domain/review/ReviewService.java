@@ -165,13 +165,13 @@ public class ReviewService {
     /**
      * 가게 전체 리뷰 조회 서비스 메서드
      */
-    public List<ReviewResponseDto> getStoreReviews(Long storeId) {
+    public List<StoreReviewResponseDto> getStoreReviews(Long storeId) {
 
         storeRepository.findByIdOrElseThrow(storeId);
 
         List<Review> reviews = reviewRepository.findAllByStoreStoreIdAndReviewStatus(storeId,ReviewStatus.NORMAL);
 
-        return reviews.stream().map(ReviewResponseDto::toDto).toList();
+        return reviews.stream().map(StoreReviewResponseDto::toDto).toList();
     }
 
     /**
