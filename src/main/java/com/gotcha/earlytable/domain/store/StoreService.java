@@ -9,11 +9,11 @@ import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
-import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.entity.*;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
-import com.gotcha.earlytable.domain.store.entity.StoreTable;
-import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
+import com.gotcha.earlytable.domain.store.storeHour.StoreHourRepository;
+import com.gotcha.earlytable.domain.store.storeRest.StoreRestRepository;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.RegionBottom;
@@ -42,12 +42,14 @@ public class StoreService {
     private final AllergyCategoryRepository allergyCategoryRepository;
     private final ReservationRepository reservationRepository;
     private final StoreKeywordRepository storeKeywordRepository;
+    private final StoreRestRepository storeRestRepository;
+    private final StoreHourRepository storeHourRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
                         AllergyCategoryRepository allergyCategoryRepository, ReservationRepository reservationRepository,
-                        StoreKeywordRepository storeKeywordRepository) {
+                        StoreKeywordRepository storeKeywordRepository, StoreRestRepository storeRestRepository, StoreHourRepository storeHourRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
@@ -56,6 +58,8 @@ public class StoreService {
         this.allergyCategoryRepository = allergyCategoryRepository;
         this.reservationRepository = reservationRepository;
         this.storeKeywordRepository = storeKeywordRepository;
+        this.storeRestRepository = storeRestRepository;
+        this.storeHourRepository = storeHourRepository;
     }
 
     /**
@@ -79,7 +83,7 @@ public class StoreService {
         File file = fileRepository.save(new File());
 
         // 이미지 파일들 저장
-        if(requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
+        if (requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
             // 프로필 이미지 파일 저장
             fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
         }
@@ -144,7 +148,7 @@ public class StoreService {
         storeRepository.save(store);
 
         // 이미지 수정
-        if(requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
+        if (requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
 
             fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
         }
@@ -165,7 +169,7 @@ public class StoreService {
         Store store = storeRepository.findByIdOrElseThrow(pendingStore.getStoreId());
 
         // 이미지가 변경되었는지 확인
-        if(!store.getFile().getFileId().equals(pendingStore.getFileId())) {
+        if (!store.getFile().getFileId().equals(pendingStore.getFileId())) {
             // 파일 삭제
             fileRepository.deleteById(store.getFile().getFileId());
         }
@@ -313,8 +317,6 @@ public class StoreService {
         }
 
 
-
-
         return new FiltersResponseDto(regionMap, categoryList, allergyMap);
     }
 
@@ -335,15 +337,15 @@ public class StoreService {
         List<StoreReservationTotalDto> totalDtoList = new ArrayList<>();
 
         // 모든 시간에
-        for(StoreTimeSlot storeTimeSlot : store.getStoreTimeSlotList()) {
+        for (StoreTimeSlot storeTimeSlot : store.getStoreTimeSlotList()) {
 
             // 현재 시간보다 전에 있던 내역은 제외
-            if(storeTimeSlot.getReservationTime().isBefore(now)) {
+            if (storeTimeSlot.getReservationTime().isBefore(now)) {
                 continue;
             }
 
             // 모든 테이블에
-            for(StoreTable storeTable : store.getStoreTableList()) {
+            for (StoreTable storeTable : store.getStoreTableList()) {
                 // 예약 타임
                 LocalTime reservationTime = storeTimeSlot.getReservationTime();
                 // 최대 수용 가능 인원
@@ -363,7 +365,8 @@ public class StoreService {
     }
 
     /**
-     *  키워드로 가게 검색
+     * 키워드로 가게 검색
+     *
      * @param keyword
      * @return
      */
@@ -375,12 +378,52 @@ public class StoreService {
 
         // 해당 가게들로 DTO를 생성 후 반환
         List<StoreSearchResponseDto> dtos = new ArrayList<>();
-        for(StoreKeyword storeKeywordDto : storeKeyword) {
+        for (StoreKeyword storeKeywordDto : storeKeyword) {
             StoreSearchResponseDto dto = new StoreSearchResponseDto(storeKeywordDto.getStore());
             dtos.add(dto);
         }
 
         return dtos;
 
+    }
+
+    /**
+     * 가게 휴일 조회
+     *
+     * @param storeId
+     * @return StoreRestDateResponseDto
+     */
+    public StoreRestDateResponseDto getRestDate(Long storeId) {
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+
+        List<String> restDateList = new ArrayList<>();
+        List<Integer> restWeekdayList = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6)); // 초기화
+
+        // 일정 구간으로 휴무일 조회하기
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusDays(30);
+
+        List<StoreRest> storeRestList = storeRestRepository
+                .findAllByStoreStoreIdAndStoreOffDayBetween(storeId, startDate, endDate);
+
+        for (StoreRest storeRest : storeRestList) {
+            restDateList.add(storeRest.getStoreOffDay().toString());
+        }
+
+        List<StoreHour> storeHourList = storeHourRepository.findByStore(store);
+        for (StoreHour storeHour : storeHourList) {
+            switch (storeHour.getDayOfWeek()) {
+                case SUN -> restWeekdayList.remove(Integer.valueOf(0)); // 0 제거
+                case MON -> restWeekdayList.remove(Integer.valueOf(1)); // 1 제거
+                case TUE -> restWeekdayList.remove(Integer.valueOf(2)); // 2 제거
+                case WED -> restWeekdayList.remove(Integer.valueOf(3)); // 3 제거
+                case THU -> restWeekdayList.remove(Integer.valueOf(4)); // 4 제거
+                case FRI -> restWeekdayList.remove(Integer.valueOf(5)); // 5 제거
+                case SAT -> restWeekdayList.remove(Integer.valueOf(6)); // 6 제거
+            }
+        }
+
+        return new StoreRestDateResponseDto(restDateList, restWeekdayList);
     }
 }

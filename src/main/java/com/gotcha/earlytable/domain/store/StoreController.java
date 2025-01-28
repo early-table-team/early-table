@@ -177,4 +177,14 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
 
     }
+
+
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("/{storeId}/rest-date")
+    public ResponseEntity<StoreRestDateResponseDto> getRestDate(@PathVariable Long storeId) {
+
+        StoreRestDateResponseDto responseDto = storeService.getRestDate(storeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
 }
