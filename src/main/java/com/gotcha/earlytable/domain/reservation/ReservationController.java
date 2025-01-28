@@ -4,6 +4,8 @@ import com.gotcha.earlytable.domain.reservation.dto.*;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
+import com.gotcha.earlytable.global.error.ErrorCode;
+import com.gotcha.earlytable.global.error.exception.CustomException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +19,11 @@ import java.util.List;
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final KakaoPayService kakaoPayService;
 
-    public ReservationController(ReservationService reservationService) {
+    public ReservationController(ReservationService reservationService, KakaoPayService kakaoPayService) {
         this.reservationService = reservationService;
+        this.kakaoPayService = kakaoPayService;
     }
 
     /**
@@ -36,6 +40,16 @@ public class ReservationController {
                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         ReservationCreateResponseDto responseDto = reservationService.createReservation(storeId, requestDto, userDetails.getUser());
+
+        try {
+            String paymentRedirectUrl = kakaoPayService.preparePayment(responseDto);
+            responseDto.setPaymentUrl(paymentRedirectUrl);
+        } catch (Exception e) {
+            // 결제 준비 실패 시 예약 취소 또는 롤백 로직 추가 가능
+            throw new CustomException(ErrorCode.NOT_FOUND);
+        }
+
+
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
