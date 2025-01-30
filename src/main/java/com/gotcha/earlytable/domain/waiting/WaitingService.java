@@ -4,6 +4,8 @@ import com.gotcha.earlytable.domain.party.PartyPeopleRepository;
 import com.gotcha.earlytable.domain.party.PartyRepository;
 import com.gotcha.earlytable.domain.party.entity.Party;
 import com.gotcha.earlytable.domain.party.entity.PartyPeople;
+import com.gotcha.earlytable.domain.review.ReviewRepository;
+import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
@@ -46,11 +48,12 @@ public class WaitingService {
     private final WaitingSettingRepository waitingSettingRepository;
     private final StoreHourRepository storeHourRepository;
     private final WaitingSequenceService waitingSequenceService;
+    private final ReviewRepository reviewRepository;
 
     public WaitingService(WaitingRepository waitingRepository, StoreRepository storeRepository,
                           PartyRepository partyRepository, PartyPeopleRepository partyPeopleRepository,
                           UserRepository userRepository, WaitingSettingRepository waitingSettingRepository,
-                          StoreHourRepository storeHourRepository, WaitingSequenceService waitingSequenceService) {
+                          StoreHourRepository storeHourRepository, WaitingSequenceService waitingSequenceService, ReviewRepository reviewRepository) {
 
         this.waitingRepository = waitingRepository;
         this.storeRepository = storeRepository;
@@ -60,6 +63,7 @@ public class WaitingService {
         this.waitingSettingRepository = waitingSettingRepository;
         this.storeHourRepository = storeHourRepository;
         this.waitingSequenceService = waitingSequenceService;
+        this.reviewRepository = reviewRepository;
     }
 
     /**
@@ -268,8 +272,10 @@ public class WaitingService {
         if (user.getAuth() == Auth.OWNER && !waiting.getStore().getUser().getId().equals(user.getId())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
+        boolean isExist =
+                reviewRepository.existsByUserIdAndTargetIdAndReviewTarget(user.getId(), waitingId, ReviewTarget.WAITING);
 
-        return new WaitingGetOneResponseDto(waiting);
+        return new WaitingGetOneResponseDto(waiting, isExist);
     }
 
     /**
