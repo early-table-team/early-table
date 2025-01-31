@@ -154,11 +154,12 @@ public class StoreController {
      * @param date
      * @return
      */
-    @GetMapping("/stores/{storeId}/reservations/total")
+    @GetMapping("/{storeId}/reservations/total")
     public ResponseEntity<List<StoreReservationTotalDto>> getStoreReservationTotal(@PathVariable Long storeId,
-                                                                                   @RequestParam LocalDate date) {
+                                                                                   @RequestParam LocalDate date,
+                                                                                   @RequestParam(required = false) Integer personnelCount) {
 
-        List<StoreReservationTotalDto> storeTatalDtoList = storeService.getStoreReservationTotal(storeId, date);
+        List<StoreReservationTotalDto> storeTatalDtoList = storeService.getStoreReservationTotal(storeId, date, personnelCount);
 
         return ResponseEntity.status(HttpStatus.OK).body(storeTatalDtoList);
     }

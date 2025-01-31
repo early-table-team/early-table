@@ -325,11 +325,14 @@ public class StoreService {
      *
      * @param storeId
      * @param date
+     * @param personnelCount
      * @return
      */
-    public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date) {
+    public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date, Integer personnelCount) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
+        // 현재 날짜
+        LocalDate today = LocalDate.now();
 
         // 현재 시간
         LocalTime now = LocalTime.now();
@@ -339,8 +342,8 @@ public class StoreService {
         // 모든 시간에
         for (StoreTimeSlot storeTimeSlot : store.getStoreTimeSlotList()) {
 
-            // 현재 시간보다 전에 있던 내역은 제외
-            if (storeTimeSlot.getReservationTime().isBefore(now)) {
+            // 오늘 날짜일 때만 현재 시간보다 이전 예약 시간 제외
+            if (date.equals(today) && storeTimeSlot.getReservationTime().isBefore(now)) {
                 continue;
             }
 
@@ -357,7 +360,10 @@ public class StoreService {
                         .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
                                 date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
 
-                totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
+                // personnelCount 값이 지정되지 않았으면 (null인 경우)
+                if (personnelCount == null || (personnelCount >= tableMinNumber && personnelCount <= tableMaxNumber)) {
+                    totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
+                }
             }
         }
 
