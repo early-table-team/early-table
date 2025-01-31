@@ -20,4 +20,5 @@ public interface StoreHourRepository extends JpaRepository<StoreHour, Long> {
     StoreHour findByStoreAndDayOfWeek(Store store, DayOfWeek dayOfWeek);
     List<StoreHour> findByStoreAndDayStatus(Store store, DayStatus dayStatus);
 
+    List<StoreHour> findByStore(Store store);
 }
