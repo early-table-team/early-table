@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.store.dto;
 
 import com.gotcha.earlytable.domain.file.entity.FileDetail;
+import com.gotcha.earlytable.domain.review.entity.Review;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreReservationType;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
@@ -44,10 +45,16 @@ public class StoreResponseDto {
 
     private final List<WaitingType> waitingTypeList = new ArrayList<>();
 
+
+    private final Double starPoint;
+
+    private final Integer reviewCount;
+
     public StoreResponseDto(Long storeId, String storeName, String storeTel, String storeContents, String storeAddress,
                             StoreCategory storeCategory, String ownerName, LocalDateTime createdAt, LocalDateTime modifiedAt,
                             StoreStatus storeStatus, Map<Integer, String> storeImageUrlMap,
-                            List<WaitingType> waitingTypeList , List<ReservationType> storeTypeList) {
+                            List<WaitingType> waitingTypeList , List<ReservationType> storeTypeList,
+                            Double starPoint, Integer reviewCount) {
         this.storeId = storeId;
         this.storeName = storeName;
         this.storeTel = storeTel;
@@ -59,6 +66,8 @@ public class StoreResponseDto {
         this.modifiedAt = modifiedAt;
         this.storeStatus = storeStatus;
         this.storeImageUrlMap = storeImageUrlMap;
+        this.starPoint = starPoint;
+        this.reviewCount = reviewCount;
         this.waitingTypeList.addAll(waitingTypeList);
         this.storeTypeList.addAll(storeTypeList);
     }
@@ -92,9 +101,12 @@ public class StoreResponseDto {
         List<ReservationType> storeTypeList =
                 store.getStoreReservationTypeList().stream().map(StoreReservationType::getReservationType).toList();
 
+        Double starPoint = store.getReviewList().stream().mapToDouble(Review::getRating).average().orElse(0);
+
         return new StoreResponseDto(store.getStoreId(), store.getStoreName(), store.getStoreTel(),
                                     store.getStoreContents(), store.getStoreAddress(), store.getStoreCategory(),
                                     store.getUser().getNickName(), store.getCreatedAt(), store.getModifiedAt(),
-                                    store.getStoreStatus(), imageFileUrlMap, waitingTypeList, storeTypeList);
+                                    store.getStoreStatus(), imageFileUrlMap, waitingTypeList, storeTypeList,
+                                    starPoint, store.getReviewList().size());
     }
 }

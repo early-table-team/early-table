@@ -22,8 +22,9 @@ public class WaitingGetOneResponseDto {
     private final int personnelCount;
     private List<HashMap<String, Object>>  partyPeople = new ArrayList<>();
     private final String phone;
+    private final boolean isExist;
 
-    public WaitingGetOneResponseDto(Waiting waiting) {
+    public WaitingGetOneResponseDto(Waiting waiting, boolean isExist) {
         this.waitingId = waiting.getWaitingId();
         this.waitingNumber = waiting.getWaitingNumber();
         this.storeName = waiting.getStore().getStoreName();
@@ -32,6 +33,7 @@ public class WaitingGetOneResponseDto {
         this.personnelCount = waiting.getPersonnelCount();
         this.phone = waiting.getPhone();
         this.storeId = waiting.getStore().getStoreId();
+        this.isExist = isExist;
 
         if (waiting.getParty() != null) {
             this.partyPeople = waiting.getParty().getPartyPeople().stream()
