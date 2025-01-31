@@ -5,9 +5,11 @@ import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -125,12 +127,22 @@ public class StoreController {
      * @param requestDto
      * @return
      */
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/search")
     public ResponseEntity<List<StoreSearchResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
 
         List<StoreSearchResponseDto> responseDtoList = storeService.searchStore(requestDto);
-
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
+    }
+
+
+    /**
+     * ModelAttribut타입 설정 -> String 타입의 값이 null 인경우 ""로 빈문자열 처리를 하는 경우가 있었음
+     * @param binder
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     /**
