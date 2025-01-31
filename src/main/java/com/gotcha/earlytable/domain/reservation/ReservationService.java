@@ -9,6 +9,8 @@ import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.reservation.dto.*;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
+import com.gotcha.earlytable.domain.review.ReviewRepository;
+import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
 import com.gotcha.earlytable.domain.store.*;
 import com.gotcha.earlytable.domain.store.entity.*;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
@@ -20,7 +22,6 @@ import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RBlockingQueue;
 import org.redisson.api.RLock;
 import org.redisson.api.RQueue;
 import org.redisson.api.RedissonClient;
@@ -48,11 +49,12 @@ public class ReservationService {
     private final PartyPeopleRepository partyPeopleRepository;
     private final RedissonClient redissonClient;
     private final TransactionTemplate transactionTemplate;
+    private final ReviewRepository reviewRepository;
 
     public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository,
                               MenuRepository menuRepository, PartyRepository partyRepository,
                               ReservationMenuRepository reservationMenuRepository,
-                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate) {
+                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate, ReviewRepository reviewRepository) {
         this.reservationRepository = reservationRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
@@ -61,6 +63,7 @@ public class ReservationService {
         this.partyPeopleRepository = partyPeopleRepository;
         this.redissonClient = redissonClient;
         this.transactionTemplate = transactionTemplate;
+        this.reviewRepository = reviewRepository;
     }
 
     /**
@@ -281,8 +284,10 @@ public class ReservationService {
                     menuList.add(menus);
                 });
 
+        boolean isExist = reviewRepository.existsByUserIdAndTargetIdAndReviewTarget(user.getId(), reservationId, ReviewTarget.RESERVATION);
 
-        return new ReservationGetOneResponseDto(reservation, user, menuList);
+
+        return new ReservationGetOneResponseDto(reservation, menuList, isExist);
     }
 
     /**
@@ -351,7 +356,10 @@ public class ReservationService {
             });
         }
 
-        return new ReservationGetOneResponseDto(reservation, user, returnMenuLists);
+        boolean isExist =
+                reviewRepository.existsByUserIdAndTargetIdAndReviewTarget(user.getId(), reservationId, ReviewTarget.RESERVATION);
+
+        return new ReservationGetOneResponseDto(reservation, returnMenuLists, isExist);
     }
 
 
