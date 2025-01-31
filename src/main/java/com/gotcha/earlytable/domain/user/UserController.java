@@ -18,7 +18,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -27,12 +29,14 @@ public class UserController {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final JwtProvider jwtProvider;
+    private final SearchService searchService;
 
-    public UserController(UserService userService, RefreshTokenService refreshTokenService, JwtProvider jwtProvider) {
+    public UserController(UserService userService, RefreshTokenService refreshTokenService, JwtProvider jwtProvider, SearchService searchService) {
 
         this.userService = userService;
         this.refreshTokenService = refreshTokenService;
         this.jwtProvider = jwtProvider;
+        this.searchService = searchService;
     }
 
     /**
@@ -104,7 +108,7 @@ public class UserController {
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken,
-                                          HttpServletResponse response) {
+                                                   HttpServletResponse response) {
         if (refreshToken == null || !jwtProvider.validToken(refreshToken)) {
             return null;
         }
@@ -144,7 +148,7 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<OtherUserResponseDto> getOtherUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                        @PathVariable Long userId) {
+                                                             @PathVariable Long userId) {
 
         OtherUserResponseDto responseDto = userService.getOtherUser(userDetails.getUser(), userId);
 
@@ -223,6 +227,25 @@ public class UserController {
         UserReservationCountResponseDto userReservationCountResponseDto = userService.getUserReservationCount(userDetails.getUser().getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(userReservationCountResponseDto);
+    }
+
+    @GetMapping("/search/init")
+    public Map<String, Object> getInit() {
+        Map<String, Object> response = new HashMap<>();
+
+        // 상위지역 및 하위지역 데이터 추가
+        response.put("regions", searchService.getRegions());
+
+        // StoreCategory 데이터 추가
+        response.put("storeCategories", searchService.getStoreCategories());
+
+        // AllergyCategory 데이터 추가
+        response.put("allergyCategories", searchService.getStoreCategories());
+
+        // AllergyStuff 데이터 추가
+        response.put("allergyStuff", searchService.getAllergyCategoriesAndStuff());
+
+        return response;
     }
 
 
