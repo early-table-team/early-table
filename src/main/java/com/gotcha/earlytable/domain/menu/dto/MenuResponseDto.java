@@ -10,6 +10,8 @@ import java.util.List;
 @Getter
 public class MenuResponseDto {
 
+    private final Long menuId;
+
     private final String menuName;
 
     private final String menuContents;
@@ -24,9 +26,9 @@ public class MenuResponseDto {
 
     private final List<String> allergyStuff;
 
-    public MenuResponseDto(String menuName, String menuContents, Integer menuPrice, MenuStatus menuStatus,
+    public MenuResponseDto(Long menuId, String menuName, String menuContents, Integer menuPrice, MenuStatus menuStatus,
                            String menuImageUrl, List<String> allergyCategory, List<String> allergyStuff) {
-
+        this.menuId = menuId;
         this.menuName = menuName;
         this.menuContents = menuContents;
         this.menuPrice = menuPrice;
@@ -38,6 +40,7 @@ public class MenuResponseDto {
 
     public static MenuResponseDto toDto(Menu menu, String menuImageUrl) {
         return new MenuResponseDto(
+                menu.getMenuId(),
                 menu.getMenuName(),
                 menu.getMenuContents(),
                 menu.getMenuPrice(),
@@ -56,6 +59,7 @@ public class MenuResponseDto {
                 .findAny().map(FileDetail::getFileUrl).orElse(null);
 
         return new MenuResponseDto(
+                menu.getMenuId(),
                 menu.getMenuName(),
                 menu.getMenuContents(),
                 menu.getMenuPrice(),
