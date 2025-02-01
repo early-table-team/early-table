@@ -9,12 +9,14 @@ import com.gotcha.earlytable.domain.keyword.entity.StoreKeyword;
 import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
-import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.entity.*;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.entity.StoreTable;
 import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
+import com.gotcha.earlytable.domain.store.storeHour.StoreHourRepository;
+import com.gotcha.earlytable.domain.store.storeRest.StoreRestRepository;
 import com.gotcha.earlytable.domain.user.UserRepository;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.RegionBottom;
@@ -43,12 +45,14 @@ public class StoreService {
     private final AllergyCategoryRepository allergyCategoryRepository;
     private final ReservationRepository reservationRepository;
     private final StoreKeywordRepository storeKeywordRepository;
+    private final StoreRestRepository storeRestRepository;
+    private final StoreHourRepository storeHourRepository;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
                         AllergyCategoryRepository allergyCategoryRepository, ReservationRepository reservationRepository,
-                        StoreKeywordRepository storeKeywordRepository) {
+                        StoreKeywordRepository storeKeywordRepository, StoreRestRepository storeRestRepository, StoreHourRepository storeHourRepository) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
@@ -57,6 +61,8 @@ public class StoreService {
         this.allergyCategoryRepository = allergyCategoryRepository;
         this.reservationRepository = reservationRepository;
         this.storeKeywordRepository = storeKeywordRepository;
+        this.storeRestRepository = storeRestRepository;
+        this.storeHourRepository = storeHourRepository;
     }
 
     /**
@@ -393,5 +399,45 @@ public class StoreService {
                 .anyMatch(storeReservationType -> storeReservationType.getReservationType().equals(ReservationType.ONSITE)))
                 .map(StoreListResponseDto::toDto).toList();
 
+    }
+
+    /**
+     * 가게 휴일 조회
+     *
+     * @param storeId
+     * @return StoreRestDateResponseDto
+     */
+    public StoreRestDateResponseDto getRestDate(Long storeId) {
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+
+        List<String> restDateList = new ArrayList<>();
+        List<Integer> restWeekdayList = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6)); // 초기화
+
+        // 일정 구간으로 휴무일 조회하기
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusDays(30);
+
+        List<StoreRest> storeRestList = storeRestRepository
+                .findAllByStoreStoreIdAndStoreOffDayBetween(storeId, startDate, endDate);
+
+        for (StoreRest storeRest : storeRestList) {
+            restDateList.add(storeRest.getStoreOffDay().toString());
+        }
+
+        List<StoreHour> storeHourList = storeHourRepository.findByStore(store);
+        for (StoreHour storeHour : storeHourList) {
+            switch (storeHour.getDayOfWeek()) {
+                case SUN -> restWeekdayList.remove(Integer.valueOf(0)); // 0 제거
+                case MON -> restWeekdayList.remove(Integer.valueOf(1)); // 1 제거
+                case TUE -> restWeekdayList.remove(Integer.valueOf(2)); // 2 제거
+                case WED -> restWeekdayList.remove(Integer.valueOf(3)); // 3 제거
+                case THU -> restWeekdayList.remove(Integer.valueOf(4)); // 4 제거
+                case FRI -> restWeekdayList.remove(Integer.valueOf(5)); // 5 제거
+                case SAT -> restWeekdayList.remove(Integer.valueOf(6)); // 6 제거
+            }
+        }
+
+        return new StoreRestDateResponseDto(restDateList, restWeekdayList);
     }
 }
