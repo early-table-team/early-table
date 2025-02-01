@@ -10,6 +10,7 @@ import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.entity.StoreTable;
 import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
@@ -381,6 +382,16 @@ public class StoreService {
         }
 
         return dtos;
+
+    }
+
+    public List<StoreListResponseDto> getWaitingAbleStores(Long id) {
+        List<StoreListResponseDto> responseDtos = new ArrayList<>();
+        List<Store> storeList = storeRepository.findAllByUserId(id);
+
+        return storeList.stream().filter(store -> store.getStoreReservationTypeList().stream()
+                .anyMatch(storeReservationType -> storeReservationType.getReservationType().equals(ReservationType.ONSITE)))
+                .map(StoreListResponseDto::toDto).toList();
 
     }
 }

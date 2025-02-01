@@ -6,6 +6,7 @@ import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestD
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreReservationType;
+import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
@@ -15,6 +16,7 @@ import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -122,5 +124,20 @@ public class StoreReservationTypeService {
         storeReservationTypeRepository
                 .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.get().getStoreReservationTypeId(),
                         requestDto.getReservationType());
+    }
+
+    public boolean getOnsiteType(Long storeId) {
+        List<StoreReservationType> reservationTypes = storeReservationTypeRepository.findAllByStoreStoreId(storeId);
+
+        // 각 StoreReservationType을 순회하면서 onsite 타입이 있는지 확인합니다.
+        for (StoreReservationType type : reservationTypes) {
+            if (type.getReservationType().equals(ReservationType.ONSITE)) { // getType() 메서드는 실제 타입을 반환해야 합니다.
+                return true; // onsite 타입이 있는 경우 true 반환
+            }
+        }
+        return false;
+
+
+
     }
 }
