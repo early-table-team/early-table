@@ -332,9 +332,11 @@ public class StoreService {
      * @param date
      * @return
      */
-    public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date) {
+    public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date, Integer personnelCount) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
+        // 현재 날짜
+        LocalDate today = LocalDate.now();
 
         // 현재 시간
         LocalTime now = LocalTime.now();
@@ -342,15 +344,15 @@ public class StoreService {
         List<StoreReservationTotalDto> totalDtoList = new ArrayList<>();
 
         // 모든 시간에
-        for(StoreTimeSlot storeTimeSlot : store.getStoreTimeSlotList()) {
+        for (StoreTimeSlot storeTimeSlot : store.getStoreTimeSlotList()) {
 
-            // 현재 시간보다 전에 있던 내역은 제외
-            if(storeTimeSlot.getReservationTime().isBefore(now)) {
+            // 오늘 날짜일 때만 현재 시간보다 이전 예약 시간 제외
+            if (date.equals(today) && storeTimeSlot.getReservationTime().isBefore(now)) {
                 continue;
             }
 
             // 모든 테이블에
-            for(StoreTable storeTable : store.getStoreTableList()) {
+            for (StoreTable storeTable : store.getStoreTableList()) {
                 // 예약 타임
                 LocalTime reservationTime = storeTimeSlot.getReservationTime();
                 // 최대 수용 가능 인원
@@ -362,7 +364,10 @@ public class StoreService {
                         .countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(
                                 date, reservationTime, tableMaxNumber, ReservationStatus.CANCELED);
 
-                totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
+                // personnelCount 값이 지정되지 않았으면 (null인 경우)
+                if (personnelCount == null || (personnelCount >= tableMinNumber && personnelCount <= tableMaxNumber)) {
+                    totalDtoList.add(new StoreReservationTotalDto(reservationTime, tableMaxNumber, tableMinNumber, remainTableCount));
+                }
             }
         }
 
