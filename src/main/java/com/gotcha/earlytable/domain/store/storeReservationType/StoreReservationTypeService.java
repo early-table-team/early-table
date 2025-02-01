@@ -125,19 +125,4 @@ public class StoreReservationTypeService {
                 .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.get().getStoreReservationTypeId(),
                         requestDto.getReservationType());
     }
-
-    public boolean getOnsiteType(Long storeId) {
-        List<StoreReservationType> reservationTypes = storeReservationTypeRepository.findAllByStoreStoreId(storeId);
-
-        // 각 StoreReservationType을 순회하면서 onsite 타입이 있는지 확인합니다.
-        for (StoreReservationType type : reservationTypes) {
-            if (type.getReservationType().equals(ReservationType.ONSITE)) { // getType() 메서드는 실제 타입을 반환해야 합니다.
-                return true; // onsite 타입이 있는 경우 true 반환
-            }
-        }
-        return false;
-
-
-
-    }
 }

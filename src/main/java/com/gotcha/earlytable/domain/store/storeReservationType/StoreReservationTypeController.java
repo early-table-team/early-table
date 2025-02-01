@@ -79,17 +79,5 @@ public class StoreReservationTypeController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping
-    public ResponseEntity<String> getOnsiteType(@PathVariable Long storeId){
-        String answer = "";
-       boolean response = storeReservationTypeService.getOnsiteType(storeId);
-       if(response){
-           answer = "true";
-       }else{
-           answer = "false";
-       }
 
-
-        return ResponseEntity.status(HttpStatus.OK).body(answer);
-    }
 }
