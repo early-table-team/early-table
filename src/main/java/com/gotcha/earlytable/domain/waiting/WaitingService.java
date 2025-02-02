@@ -153,7 +153,7 @@ public class WaitingService {
 
         // 웨이팅 생성
         Waiting waiting = new Waiting(store, party, requestDto.getWaitingType(), requestDto.getPersonnelCount(),
-                WaitingStatus.PENDING, RemoteStatus.REMOTE, waitingNumber, requestDto.getPhoneNumber());
+                WaitingStatus.PENDING, RemoteStatus.SITE, waitingNumber, requestDto.getPhoneNumber());
 
         Waiting savedWaiting =  waitingRepository.save(waiting);
 
@@ -164,7 +164,7 @@ public class WaitingService {
         // 예상 대기 시간 조회
         Integer waitingTime = waitingSequenceService.getTakenTimeWaiting(savedWaiting);
 
-        return new WaitingNumberResponseDto(waitingNumber, waitingTime);
+        return new WaitingNumberResponseDto(waiting.getWaitingId(),waitingNumber, waitingTime);
     }
 
     /**
@@ -243,7 +243,7 @@ public class WaitingService {
         waitingSequenceService.addToWaitingQueue(newWaiting);
         Integer waitingTime = waitingSequenceService.getTakenTimeWaiting(newWaiting);
 
-        return new WaitingNumberResponseDto(waitingNumber, waitingTime);
+        return new WaitingNumberResponseDto(waiting.getWaitingId(),waitingNumber, waitingTime);
     }
 
     /**
@@ -283,10 +283,10 @@ public class WaitingService {
      *
      * @param user
      * @param storeId
-     * @param requestDto
+     * @param waitingType
      * @return WaitingOwnerResponseDto
      */
-    public WaitingOwnerResponseDto getOwnerNowWaitingList(User user, Long storeId, @Valid WaitingSimpleOwnerRequestDto requestDto) {
+    public WaitingOwnerTimeResponseDto getOwnerNowWaitingList(User user, Long storeId, WaitingType waitingType) {
 
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
@@ -294,9 +294,18 @@ public class WaitingService {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
 
-        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatus(store, requestDto.getWaitingType(), WaitingStatus.PENDING);
+        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatus(store, waitingType, WaitingStatus.PENDING);
 
-        return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "now");
+        Integer waitingTime = null;
+        if (!waitingList.isEmpty()) {
+            // 마지막 대기 항목을 가져옵니다.
+            Waiting lastWaiting = waitingList.get(waitingList.size() - 1);
+
+            // 웨이팅 시간을 구합니다.
+            waitingTime = waitingSequenceService.getTakenTimeWaiting(lastWaiting);
+        }
+
+        return new WaitingOwnerTimeResponseDto(waitingList, waitingType, "now", waitingTime);
     }
 
     /**
@@ -317,6 +326,7 @@ public class WaitingService {
         LocalDateTime startOfDay = targetDate.atStartOfDay(); // 시작 시간
         LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
         List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatusNotAndCreatedAtBetween(store, requestDto.getWaitingType(), WaitingStatus.DELAY, startOfDay, endOfDay);
+
 
         return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "detail");
     }

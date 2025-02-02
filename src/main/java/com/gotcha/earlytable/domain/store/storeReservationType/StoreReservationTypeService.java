@@ -6,6 +6,7 @@ import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestD
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreReservationType;
+import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.error.ErrorCode;
@@ -15,6 +16,7 @@ import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service

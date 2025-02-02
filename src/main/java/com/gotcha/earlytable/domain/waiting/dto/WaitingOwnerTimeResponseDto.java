@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-public class WaitingOwnerResponseDto {
+public class WaitingOwnerTimeResponseDto {
     private int waitingCount;
     private WaitingType waitingType;
     private List<Object> waitingList;
+    private final Integer waitingNumber;
 
-
-    public WaitingOwnerResponseDto(List<Waiting> waitingList, WaitingType waitingType, String detail) {
+    public WaitingOwnerTimeResponseDto(List<Waiting> waitingList, WaitingType waitingType, String detail, Integer waitingNumber) {
         this.waitingCount = waitingList.size();
         this.waitingType = waitingType;
         if ("now".equals(detail)) {
@@ -26,5 +26,6 @@ public class WaitingOwnerResponseDto {
                     .map(WaitingDetailResponseDto::new)
                     .collect(Collectors.toList());
         }
+        this.waitingNumber = waitingNumber;
     }
 }

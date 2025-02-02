@@ -10,7 +10,10 @@ import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.*;
+import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
+import com.gotcha.earlytable.domain.store.entity.StoreTable;
+import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.store.storeHour.StoreHourRepository;
 import com.gotcha.earlytable.domain.store.storeRest.StoreRestRepository;
@@ -83,7 +86,7 @@ public class StoreService {
         File file = fileRepository.save(new File());
 
         // 이미지 파일들 저장
-        if (requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
+        if(requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
             // 프로필 이미지 파일 저장
             fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
         }
@@ -148,7 +151,7 @@ public class StoreService {
         storeRepository.save(store);
 
         // 이미지 수정
-        if (requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
+        if(requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
 
             fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
         }
@@ -169,7 +172,7 @@ public class StoreService {
         Store store = storeRepository.findByIdOrElseThrow(pendingStore.getStoreId());
 
         // 이미지가 변경되었는지 확인
-        if (!store.getFile().getFileId().equals(pendingStore.getFileId())) {
+        if(!store.getFile().getFileId().equals(pendingStore.getFileId())) {
             // 파일 삭제
             fileRepository.deleteById(store.getFile().getFileId());
         }
@@ -317,6 +320,8 @@ public class StoreService {
         }
 
 
+
+
         return new FiltersResponseDto(regionMap, categoryList, allergyMap);
     }
 
@@ -325,7 +330,6 @@ public class StoreService {
      *
      * @param storeId
      * @param date
-     * @param personnelCount
      * @return
      */
     public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date, Integer personnelCount) {
@@ -371,8 +375,7 @@ public class StoreService {
     }
 
     /**
-     * 키워드로 가게 검색
-     *
+     *  키워드로 가게 검색
      * @param keyword
      * @return
      */
@@ -384,12 +387,22 @@ public class StoreService {
 
         // 해당 가게들로 DTO를 생성 후 반환
         List<StoreSearchResponseDto> dtos = new ArrayList<>();
-        for (StoreKeyword storeKeywordDto : storeKeyword) {
+        for(StoreKeyword storeKeywordDto : storeKeyword) {
             StoreSearchResponseDto dto = new StoreSearchResponseDto(storeKeywordDto.getStore());
             dtos.add(dto);
         }
 
         return dtos;
+
+    }
+
+    public List<StoreListResponseDto> getWaitingAbleStores(Long id) {
+        List<StoreListResponseDto> responseDtos = new ArrayList<>();
+        List<Store> storeList = storeRepository.findAllByUserId(id);
+
+        return storeList.stream().filter(store -> store.getStoreReservationTypeList().stream()
+                .anyMatch(storeReservationType -> storeReservationType.getReservationType().equals(ReservationType.ONSITE)))
+                .map(StoreListResponseDto::toDto).toList();
 
     }
 

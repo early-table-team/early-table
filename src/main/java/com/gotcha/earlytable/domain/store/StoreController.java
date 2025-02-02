@@ -88,6 +88,17 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.OK).body(storeListResponseDtoList);
     }
 
+
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("/waiting/able")
+    public ResponseEntity<List<StoreListResponseDto>> getWaitingAbleStores(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        List<StoreListResponseDto> storeListResponseDtoList = storeService.getWaitingAbleStores(userDetails.getUser().getId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(storeListResponseDtoList);
+    }
+
+
     /**
      * 가게 휴업 상태 <-> 영업 상태 변경 API
      *
