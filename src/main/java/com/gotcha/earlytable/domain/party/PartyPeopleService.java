@@ -60,6 +60,32 @@ public class PartyPeopleService {
 
     }
 
+    @Transactional
+    public void leaveInvitation2(Long partyId, User user) {
+        //초대 가져오기
+        Invitation invitation = invitationRepository.findByPartyPartyIdAndReceiveUser(partyId, user);
+
+        // 파티원의 일원인지 조사를 해야함
+        if(invitation.getParty().getPartyPeople().stream().noneMatch(partyPeople -> partyPeople.getUser().getId().equals(user.getId()))){throw new CustomException(ErrorCode. FORBIDDEN_PARTY_PEOPLE);}
+
+        // 파티장인 경우 못떠나게
+        invitation.getParty().getPartyPeople().stream().filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE)
+                && partyPeople.getUser().getId().equals(user.getId())).findFirst().ifPresent(partyPeople -> {throw new CustomException(ErrorCode.FORBIDDEN_PARTY_LEADER_LEAVE);});
+
+        // 해당 예약의 상태가 수락인지 확인
+        if(!invitation.getInvitationStatus().equals(InvitationStatus.ACCEPTED)){
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        //초대에서 상태 바꾸기
+        invitation.changeStatus(InvitationStatus.LEAVED);
+        invitationRepository.delete(invitation);
+
+
+        // 탈퇴하면 파티피플에서 제외
+        partyPeopleRepository.deleteByUser(user);
+    }
+
     /**
      *  파티원 1명 추방 메서드
      * @param partyId
@@ -141,4 +167,6 @@ public class PartyPeopleService {
         return dtos;
 
     }
+
+
 }

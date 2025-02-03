@@ -32,6 +32,8 @@ public class ReservationGetOneResponseDto {
 
     private final boolean isExist;
 
+    private final Long partyId;
+
     public ReservationGetOneResponseDto(Reservation reservation, List<ReturnMenuListDto> menuList, boolean isExist) {
         this.reservationId = reservation.getReservationId();
         this.reservationDate = reservation.getReservationDate().atTime(reservation.getReservationTime()); // 예약에 저장된 날짜와 시간을 조합하여 한번에 보여줌
@@ -45,11 +47,13 @@ public class ReservationGetOneResponseDto {
                     userMap.put("userId", partyPeople.getUser().getId());
                     userMap.put("userImage",partyPeople.getUser().getFile().getFileDetailList().stream()
                             .filter(fileDetail->fileDetail.getFileStatus().equals(FileStatus.REPRESENTATIVE)).map(FileDetail::getFileUrl).findFirst().orElse(null));
+                    userMap.put("partyRole", partyPeople.getPartyRole().toString());
                     return userMap;
                 })
                 .collect(Collectors.toList());
         this.storeId = reservation.getStore().getStoreId();
         this.menuList = menuList;
         this.isExist = isExist;
+        this.partyId = reservation.getParty().getPartyId();
     }
 }

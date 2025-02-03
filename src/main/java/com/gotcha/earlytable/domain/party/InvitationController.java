@@ -1,7 +1,9 @@
 package com.gotcha.earlytable.domain.party;
 
 import com.gotcha.earlytable.domain.party.dto.InvitationStatusDto;
+import com.gotcha.earlytable.domain.party.dto.ReceivedAllInvitationResponseDto;
 import com.gotcha.earlytable.domain.party.dto.ReceivedInvitationResponseDto;
+import com.gotcha.earlytable.domain.party.dto.ReceivedWaitingInvitationResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -22,17 +24,33 @@ public class InvitationController {
     }
 
     /**
-     *  초대발생 API
+     *  초대발생 API (reservation)
      * @param userId
      * @param reservationId
      * @param userDetails
      * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @PostMapping("/invitations/users/{userId}")
-    public ResponseEntity<String> inviteUser(@PathVariable Long userId, @RequestParam Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @PostMapping("/invitations/reservation/users/{userId}")
+    public ResponseEntity<String> inviteUserFromReservation(@PathVariable Long userId, @RequestParam Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        invitationService.inviteUser(userId,reservationId, userDetails.getUser());
+        invitationService.inviteUserFromReservation(userId,reservationId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("초대가 발송 되었습니다.");
+    }
+
+    /**
+     *  초대발생 API (waiting)
+     * @param userId
+     * @param waitingId
+     * @param userDetails
+     * @return ResponseEntity<String>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @PostMapping("/invitations/waiting/users/{userId}")
+    public ResponseEntity<String> inviteUserFromWaiting(@PathVariable Long userId, @RequestParam Long waitingId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        invitationService.inviteUserFromWaiting(userId,waitingId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.CREATED).body("초대가 발송 되었습니다.");
     }
@@ -45,9 +63,9 @@ public class InvitationController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("receive/invitations")
-    public ResponseEntity<List<ReceivedInvitationResponseDto>> getAllReceiveInvitations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<ReceivedAllInvitationResponseDto>> getAllReceiveInvitations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        List<ReceivedInvitationResponseDto> responseDtoList = invitationService.getAllReceiveInvitations(userDetails.getUser());
+        List<ReceivedAllInvitationResponseDto> responseDtoList = invitationService.getAllReceiveInvitations(userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
 
