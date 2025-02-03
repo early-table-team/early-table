@@ -83,7 +83,7 @@ public class PartyPeopleService {
 
 
         // 탈퇴하면 파티피플에서 제외
-        partyPeopleRepository.deleteByUser(user);
+        partyPeopleRepository.deleteByUserAndPartyPartyId(user, partyId);
     }
 
     /**

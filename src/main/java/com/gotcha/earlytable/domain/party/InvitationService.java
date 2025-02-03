@@ -225,6 +225,11 @@ public class InvitationService {
         String message = user.getNickName() + "님이 초대를 " + status.getValue() + "하셨습니다.";
         sseEmitterService.send(invitation.getSendUser(), message, NotificationType.PARTY);
 
+        if (invitation.getParty().getReservation() != null) {
+            return ReceivedInvitationResponseDto.toDtoForReservation(invitation);
+        } else if (invitation.getParty().getWaiting() != null) {
+            return ReceivedInvitationResponseDto.toDtoForWaiting(invitation);
+        }
         return ReceivedInvitationResponseDto.toDto(invitation);
     }
 

@@ -45,6 +45,29 @@ public class ReceivedInvitationResponseDto {
         return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
     }
 
+    public static ReceivedInvitationResponseDto toDtoForReservation(Invitation invitation) {
+        Long invitationId = invitation.getInvitationId();
+        String storeName = invitation.getParty().getReservation().getStore().getStoreName();
+        Long sendUserId = invitation.getSendUser().getId();
+        LocalDateTime reservationTime = invitation.getParty().getReservation().getReservationDate()
+                .atTime(invitation.getParty().getReservation().getReservationTime());
+        Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
+        InvitationStatus status = invitation.getInvitationStatus();
+
+        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
+    }
+
+    public static ReceivedInvitationResponseDto toDtoForWaiting(Invitation invitation) {
+        Long invitationId = invitation.getInvitationId();
+        String storeName = invitation.getParty().getWaiting().getStore().getStoreName();
+        Long sendUserId = invitation.getSendUser().getId();
+        LocalDateTime reservationTime = invitation.getParty().getWaiting().getCreatedAt();
+        Integer personnelCount = invitation.getParty().getWaiting().getPersonnelCount();
+        InvitationStatus status = invitation.getInvitationStatus();
+
+        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
+    }
+
 
 
 }
