@@ -15,7 +15,7 @@ import java.util.Set;
 public class SseEmitterService {
 
     // SSE 이벤트 타임아웃 시간
-    private static final Long DEFAULT_TIMEOUT = 600000L;
+    private static final Long DEFAULT_TIMEOUT = 60000000L;
     private static final String NOTIFICATION_PREFIX = "notification:user:";
 
 
