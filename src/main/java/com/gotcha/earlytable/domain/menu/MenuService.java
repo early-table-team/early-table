@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.menu;
 
 import com.gotcha.earlytable.domain.file.FileDetailService;
+import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
 
@@ -26,14 +27,16 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final StoreRepository storeRepository;
     private final FileService fileService;
+    private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
 
     public MenuService(MenuRepository menuRepository, StoreRepository storeRepository,
-                       FileService fileService, FileDetailService fileDetailService) {
+                       FileService fileService, FileRepository fileRepository, FileDetailService fileDetailService) {
 
         this.menuRepository = menuRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
+        this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
     }
 
@@ -149,7 +152,6 @@ public class MenuService {
      */
     @Transactional
     public void deleteMenu(Long storeId, Long menuId, Long userId) {
-        
         // TODO : 가게 메뉴 맞는지 확인하기
         Store store = storeRepository.findById(storeId).orElseThrow();
         boolean isMenu = store.getMenuList().stream().anyMatch(menu -> menu.getMenuId().equals(menuId));
@@ -164,8 +166,12 @@ public class MenuService {
         if(!menu.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
+
+        //삭제 전에 store의 menuList에서도 제거
+        store.getMenuList().remove(menu);
         
-        menuRepository.deleteById(menuId);
+        //menuRepository.deleteById(menuId);
+        menuRepository.delete(menu);
     }
 
     /**
