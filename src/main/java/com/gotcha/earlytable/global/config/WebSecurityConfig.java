@@ -67,8 +67,8 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 허용할 origin을 설정
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:63342", "http://localhost:3000")); // 클라이언트의 주소
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE")); // 허용할 HTTP 메서드
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000", "https://www.earlytable.kr")); // 클라이언트의 주소
+        configuration.setAllowedMethods(List.of("*")); // 허용할 HTTP 메서드
         configuration.setAllowedHeaders(List.of("*")); // 모든 헤더를 허용
         configuration.setAllowCredentials(true); // 자격 증명(쿠키, 인증 헤더 등)을 허용
 

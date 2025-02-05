@@ -2,7 +2,7 @@ name: docker multi-stage build
 
 on:
   push:
-    branches: [ test/deploy ] # 어디에 push 되었을 때 실행 될 지 지정
+    branches: [ test/deployV2 ] # 어디에 push 되었을 때 실행 될 지 지정
 
   # https://github.com/marketplace/actions/build-and-push-docker-images
 
@@ -35,6 +35,7 @@ jobs:
           file: ./docker/Dockerfile
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_TAG_NAME }}:latest
+
   # Ec2 에 배포
   deploy-to-ec2:
     needs: docker-build-and-push
@@ -54,19 +55,15 @@ jobs:
               sudo docker stop $CONTAINER_ID
               sudo docker rm $CONTAINER_ID
             fi
-
+            
+            # 모든 컨테이너를 강제로 제거
+            sudo docker rm -f $(sudo docker ps -aq)
+            
             # 새 이미지 Pull 및 실행
             sudo docker pull ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_TAG_NAME }}:latest
 
             # 컨테이너 실행
-            sudo docker run -d -p 8080:8080 \
-                -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-                -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                -e DB_URL=${{ secrets.DB_URL }} \
-                -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
-                -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
-                -e S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }} \
-                -e S3_REGION=${{ secrets.S3_REGION }} \
-                -e DDL_AUTO=${{ secrets.DDL_AUTO }} \
-                -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-                ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_TAG_NAME }}:latest
+            cd ~
+            
+            sudo docker-compose up -d
+            sudo docker image prune -f
