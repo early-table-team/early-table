@@ -134,6 +134,37 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
+    /**
+     *  가게 오너 입장에서 예약 단건 조회 API
+     * @param reservationId
+     * @param userDetails
+     * @return  ResponseEntity<OwnerReservationResponseDto>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("/owner/reservations/{reservationId}")
+    public ResponseEntity<OwnerReservationResponseDto> getReservationDetail(@PathVariable Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        OwnerReservationResponseDto resDto = reservationService.getReservationDetail(reservationId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body(resDto);
+    }
+
+    /**
+     * 가게 오너가 예약 상태 변경 API
+     * @param reservationId
+     * @param userDetails
+     * @return ResponseEntity<OwnerReservationResponseDto>
+     */
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @PatchMapping("/owner/reservations/{reservationId}")
+    public ResponseEntity<String> updateReservationStatus(@PathVariable Long reservationId,
+                                                                               @RequestBody ReservationUpdateStatusRequestDto requestDto,
+                                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        reservationService.updateReservationStatus(reservationId, requestDto, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body("예약 상태를 변경하였습니다.");
+    }
+
 
 
 }
