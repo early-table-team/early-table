@@ -1,8 +1,10 @@
 package com.gotcha.earlytable.domain.store.storeReservationType;
 
+import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.store.StoreRepository;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeCreateRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.entity.StoreReservationType;
@@ -124,5 +126,19 @@ public class StoreReservationTypeService {
         storeReservationTypeRepository
                 .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.get().getStoreReservationTypeId(),
                         requestDto.getReservationType());
+    }
+
+    /**
+     * 가게 예약 타입 전체 조회
+     * @param storeId
+     * @param user
+     * @return
+     */
+    public List<StoreReservationTypeResponseDto> getStoreReservationType(Long storeId, User user) {
+        storeRepository.findByIdOrElseThrow(storeId);
+
+        List<StoreReservationType> reservationTypes = storeReservationTypeRepository.findAllByStoreStoreId(storeId);
+
+        return reservationTypes.stream().map(StoreReservationTypeResponseDto::toDto).toList();
     }
 }
