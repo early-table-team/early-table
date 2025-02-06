@@ -35,6 +35,8 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     //junit
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core:4.0.0'
     //Bcrypt
     implementation 'at.favre.lib:bcrypt:0.10.2'
     //QueryDSL
@@ -65,6 +67,7 @@ dependencies {
     testImplementation 'com.h2database:h2:2.1.214'  // 최신 버전으로 수정 가능
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
 
 }
 

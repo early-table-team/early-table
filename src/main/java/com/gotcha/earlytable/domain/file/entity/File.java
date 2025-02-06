@@ -26,4 +26,8 @@ public class File extends BaseEntity {
 
     }
 
+    // 테스트 용
+    public void setId(long l) {
+        fileId = l;
+    }
 }

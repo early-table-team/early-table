@@ -75,126 +75,160 @@ public class ReservationService {
      * @param user
      * @return ReservationCreateResponseDto
      */
-    @Transactional
     public ReservationCreateResponseDto createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
-        // TOdo : 해당 가게가 존재하는가?
-        Store store = storeRepository.findByIdWithLock(storeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        // 해당 가게가 존재하는가?
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // TODO : 가게 예약 타입이 예약이 맞는가?
-        boolean dontReservation = store.getStoreReservationTypeList().stream()
-                .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.RESERVATION);
+        // 락 설정
+        RLock lock = redissonClient.getLock("reservationLock:" + storeId);
+        boolean locked = false;
 
-        if (dontReservation) {
-            throw new CustomException(ErrorCode.UNAVAILABLE_RESERVATION_TYPE);
-        }
+        try {
+            int retryCount = 100;
+            int waitTime = 100; // 초기 100ms 대기
+            int maxWaitTime = 2000; // 최대 대기 시간 (1000ms)
 
-        // TODO : 자릿수 맥스값보다 많은 인원이 신청한경우
-        Integer maxSeat = store.getStoreTableList().stream()
-                .map(StoreTable::getTableMaxNumber)
-                .max(Integer::compareTo).orElse(null);
-        if (maxSeat == null || maxSeat < requestDto.getPersonnelCount()) {
-            throw new CustomException(ErrorCode.NO_SEAT);
-        }
+            while (retryCount-- > 0) {
+                locked = lock.tryLock(waitTime, TimeUnit.MILLISECONDS);
+                if (locked) {
+                    break;
+                }
+                Thread.sleep(waitTime);
+                waitTime = Math.min(waitTime * 2, maxWaitTime); // Exponential Backoff, 최대값 제한
+            }
+            if (!locked) {
+                throw new CustomException(ErrorCode.LOCK_TIMEOUT);
+            }
+            log.info("Lock acquired for storeId: {}", storeId);
 
-        // TODO : 임시휴무날짜는 아닌가?
-        boolean holiday = store.getStoreRestList().stream().anyMatch(storeRest -> storeRest.getStoreOffDay() == requestDto.getReservationDate().toLocalDate());
-        if (holiday) {
-            throw new CustomException(ErrorCode.STORE_HOLIDAY);
-        }
+            return transactionTemplate.execute(status -> {
 
-        // TODO : 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
-        String dayOff = requestDto.getReservationDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN); //월, 화, 수 .. 이런식
-        // 정기 휴무일을 체크 -> 받아온 값의 요일과 동일한 요일의 status값이 closed인지 체크
+                // 가게 예약 타입이 예약이 맞는가?
+                boolean dontReservation = store.getStoreReservationTypeList().stream()
+                        .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.RESERVATION);
 
-        boolean isDayData = store.getStoreHourList().stream().noneMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff));
-        if (isDayData) {
-            throw new CustomException(ErrorCode.NOT_FOUND_DAY);
-        }
+                if (dontReservation) {
+                    throw new CustomException(ErrorCode.UNAVAILABLE_RESERVATION_TYPE);
+                }
 
-        boolean regularHoliday = store.getStoreHourList().stream().anyMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
-        if (regularHoliday) {
-            throw new CustomException(ErrorCode.STORE_HOLIDAY);
-        }
+                // 자릿수 맥스값보다 많은 인원이 신청한 경우
+                Integer maxSeat = store.getStoreTableList().stream()
+                        .map(StoreTable::getTableMaxNumber)
+                        .max(Integer::compareTo).orElse(null);
+                if (maxSeat == null || maxSeat < requestDto.getPersonnelCount()) {
+                    throw new CustomException(ErrorCode.NO_SEAT);
+                }
 
-        boolean canMake = store.getStoreTimeSlotList().stream().anyMatch(storeTimeSlot -> storeTimeSlot.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()));
-        if (!canMake) {
-            throw new CustomException(ErrorCode.RESERVATION_TIME_ERROR);
-        }
+                // 임시휴무 날짜는 아닌가?
+                boolean holiday = store.getStoreRestList().stream().anyMatch(storeRest -> storeRest.getStoreOffDay() == requestDto.getReservationDate().toLocalDate());
+                if (holiday) {
+                    throw new CustomException(ErrorCode.STORE_HOLIDAY);
+                }
 
-        // TODO : 받아온 메뉴 리스트가 해당 가게 안에 모두 있는가?
-        List<HashMap<String, Long>> menuList = requestDto.getMenuList();
+                // 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
+                String dayOff = requestDto.getReservationDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN); //월, 화, 수 .. 이런식
+                boolean isDayData = store.getStoreHourList().stream().noneMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff));
+                if (isDayData) {
+                    throw new CustomException(ErrorCode.NOT_FOUND_DAY);
+                }
 
-        List<Long> menuIds = menuList.stream()
-                .map(menu -> menu.get("menuId"))
-                .toList();
+                boolean regularHoliday = store.getStoreHourList().stream().anyMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
+                if (regularHoliday) {
+                    throw new CustomException(ErrorCode.STORE_HOLIDAY);
+                }
 
-        List<Long> menuCounts = menuList.stream()
-                .map(menu -> menu.get("menuCount"))
-                .toList();
-        boolean existMenu = menuIds.stream()
-                .allMatch(menuId -> store.getMenuList().stream()
-                        .anyMatch(storeMenu -> storeMenu.getMenuId().equals(menuId)));
-        if (!existMenu) {
-            throw new CustomException(ErrorCode.NOT_FOUND_MENU);
-        }
+                boolean canMake = store.getStoreTimeSlotList().stream().anyMatch(storeTimeSlot -> storeTimeSlot.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()));
+                if (!canMake) {
+                    throw new CustomException(ErrorCode.RESERVATION_TIME_ERROR);
+                }
 
-        // TODO : 인원수에 해당하는 자리가 남아 있는가?  -> 예약 불가 : 전화 문의하기
-        Integer requestCount = requestDto.getPersonnelCount();
-        Integer requestTableSize = requestCount;
-        // 테이블 사이즈가 예약 인원수와 같은 예약의 숫자를 일단 저장
-        Integer tablesize = Math.toIntExact(store.getReservationList().stream().filter(reservation ->
-                reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
-                        reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
-                        reservation.getTableSize() == requestDto.getPersonnelCount() &&
-                        !reservation.getReservationStatus().equals(ReservationStatus.CANCELED)).count()
-        );
+                // 받아온 메뉴 리스트가 해당 가게 안에 모두 있는가?
+                List<HashMap<String, Long>> menuList = requestDto.getMenuList();
+                List<Long> menuIds = menuList.stream()
+                        .map(menu -> menu.get("menuId"))
+                        .toList();
 
-        Integer tablesizeLarge = Math.toIntExact(
-                store.getReservationList().stream()
-                        .filter(reservation ->
-                                reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
-                                        reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
-                                        reservation.getTableSize() == requestCount + 1 &&
-                                        !reservation.getReservationStatus().equals(ReservationStatus.CANCELED))
-                        .count()
-        );
+                List<Long> menuCounts = menuList.stream()
+                        .map(menu -> menu.get("menuCount"))
+                        .toList();
 
-        // 인원수에 맞는 테이블로 예약 가능한지 확인하기, 안된다면 +1까지 검토
-        boolean canSeat = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount) && storeTable.getTableCount() - tablesize >= 1);
+                boolean existMenu = menuIds.stream()
+                        .allMatch(menuId -> store.getMenuList().stream()
+                                .anyMatch(storeMenu -> storeMenu.getMenuId().equals(menuId)));
+                if (!existMenu) {
+                    throw new CustomException(ErrorCode.NOT_FOUND_MENU);
+                }
 
-        boolean canSeat2 = store.getStoreTableList().stream()
-                .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount + 1) && storeTable.getTableCount() - tablesizeLarge >= 1);
-        if (!canSeat) {
-            if (canSeat2) {
-                requestTableSize = requestTableSize + 1; // 3인으로 왔는데 3인이 없는경우 4인을 검사해서 4인이 있다? -> 4인테이블로 예약하기 위해 4인을 잠깐 저장
-            } else {
-                throw new CustomException(ErrorCode.NO_SEAT);
+                // 인원수에 해당하는 자리가 남아 있는가?
+                Integer requestCount = requestDto.getPersonnelCount();
+                Integer requestTableSize = requestCount;
+
+                Integer tablesize = Math.toIntExact(store.getReservationList().stream().filter(reservation ->
+                        reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
+                                reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
+                                reservation.getTableSize() == requestDto.getPersonnelCount() &&
+                                !reservation.getReservationStatus().equals(ReservationStatus.CANCELED)).count()
+                );
+
+                Integer tablesizeLarge = Math.toIntExact(
+                        store.getReservationList().stream()
+                                .filter(reservation ->
+                                        reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
+                                                reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
+                                                reservation.getTableSize() == requestCount + 1 &&
+                                                !reservation.getReservationStatus().equals(ReservationStatus.CANCELED))
+                                .count()
+                );
+
+                boolean canSeat = store.getStoreTableList().stream()
+                        .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount) && storeTable.getTableCount() - tablesize >= 1);
+
+                boolean canSeat2 = store.getStoreTableList().stream()
+                        .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount + 1) && storeTable.getTableCount() - tablesizeLarge >= 1);
+
+                if (!canSeat) {
+                    if (canSeat2) {
+                        requestTableSize = requestTableSize + 1; // 3인으로 왔는데 3인이 없는 경우 4인을 검사해서 4인이 있다면 4인 테이블로 예약
+                    } else {
+                        throw new CustomException(ErrorCode.NO_SEAT);
+                    }
+                }
+
+                // 결제 부분
+
+                // 예약 생성
+                Party party = partyRepository.save(new Party());
+                Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party, requestTableSize);
+                reservationRepository.save(reservation);
+                PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
+                partyPeopleRepository.save(partyPeople);
+
+                List<ReturnMenuListDto> returnMenuListDtos = new ArrayList<>();
+                for (int i = 0; i < menuIds.size(); i++) {
+                    if (menuCounts.get(i) <= 0) {
+                        continue;
+                    }
+                    Menu menuItem = menuRepository.findById(menuIds.get(i)).orElse(null);
+                    ReservationMenu reservationMenu = new ReservationMenu(menuItem, reservation, menuCounts.get(i));
+                    reservationMenuRepository.save(reservationMenu);
+                    ReturnMenuListDto returnMenuListDto = new ReturnMenuListDto(Objects.requireNonNull(menuItem).getMenuId(), menuCounts.get(i), menuItem.getMenuName());
+                    returnMenuListDtos.add(returnMenuListDto);
+                }
+
+                return new ReservationCreateResponseDto(user.getId(), reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
+                        , requestDto.getReservationDate().toLocalTime(), requestCount, returnMenuListDtos);
+            });
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CustomException(ErrorCode.LOCK_TIMEOUT);
+        } finally {
+            if (locked) {
+                lock.unlock();
             }
         }
-
-        // TODO : OK 그럼 예약 생성해줄게
-        Party party = partyRepository.save(new Party());
-        Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party, requestTableSize);
-        reservationRepository.save(reservation);
-        PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
-        partyPeopleRepository.save(partyPeople);
-        List<ReturnMenuListDto> returnMenuListDtos = new ArrayList<>();
-        for (int i = 0; i < menuIds.size(); i++) {
-            if (menuCounts.get(i) <= 0) {
-                continue;
-            }
-            Menu menuItem = menuRepository.findById(menuIds.get(i)).orElse(null);
-            ReservationMenu reservationMenu = new ReservationMenu(menuItem, reservation, menuCounts.get(i));
-            reservationMenuRepository.save(reservationMenu);
-            ReturnMenuListDto returnMenuListDto = new ReturnMenuListDto(Objects.requireNonNull(menuItem).getMenuId(), menuCounts.get(i), menuItem.getMenuName());
-            returnMenuListDtos.add(returnMenuListDto);
-        }
-
-        return new ReservationCreateResponseDto(user.getId(), reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
-                , requestDto.getReservationDate().toLocalTime(), requestCount, returnMenuListDtos);
     }
+
+
 
 
     /**

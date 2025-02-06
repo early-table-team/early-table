@@ -33,4 +33,5 @@ public interface StoreRepository extends JpaRepository<Store, Long>, StoreReposi
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Store s WHERE s.storeId = :storeId")
     Optional<Store> findByIdWithLock(Long storeId);
+
 }
