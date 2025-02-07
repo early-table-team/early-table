@@ -2,6 +2,7 @@ package com.gotcha.earlytable.domain.store.storeReservationType;
 
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeCreateRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeDeleteRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreReservationTypeUpdateRequestDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/stores/{storeId}/reservations/type")
@@ -78,4 +81,14 @@ public class StoreReservationTypeController {
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @GetMapping
+    public ResponseEntity<List<StoreReservationTypeResponseDto>> getStoreReservationType(@PathVariable Long storeId,
+                                                                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<StoreReservationTypeResponseDto> storeReservationTypeResponseDtoList = storeReservationTypeService.getStoreReservationType(storeId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body(storeReservationTypeResponseDtoList);
+    }
+
+
 }

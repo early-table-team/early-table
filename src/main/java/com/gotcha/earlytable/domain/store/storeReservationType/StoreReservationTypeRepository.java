@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,8 @@ public interface StoreReservationTypeRepository extends JpaRepository<StoreReser
     Optional<StoreReservationType> findByStoreStoreId(Long storeId);
 
     StoreReservationType findByStoreAndReservationType(Store store, @NotNull ReservationType reservationType);
+
+
+    List<StoreReservationType> findAllByStoreStoreId(Long storeId);
+
 }

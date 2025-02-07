@@ -111,4 +111,14 @@ public class WaitingSettingController {
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("stores/{storeId}/waiting/settings")
+    public ResponseEntity<WaitingSettingResponseDto> getWaitingSettingByStoreId(@PathVariable Long storeId) {
+
+        WaitingSettingResponseDto responseDto = waitingSettingService.getWaitingSettingByStoreId(storeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
 }

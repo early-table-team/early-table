@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.store;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gotcha.earlytable.domain.allergy.AllergyCategoryRepository;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
@@ -10,7 +11,10 @@ import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.*;
+import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
+import com.gotcha.earlytable.domain.store.entity.StoreTable;
+import com.gotcha.earlytable.domain.store.entity.StoreTimeSlot;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
 import com.gotcha.earlytable.domain.store.storeHour.StoreHourRepository;
 import com.gotcha.earlytable.domain.store.storeRest.StoreRestRepository;
@@ -22,16 +26,25 @@ import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class StoreService {
 
@@ -44,12 +57,14 @@ public class StoreService {
     private final StoreKeywordRepository storeKeywordRepository;
     private final StoreRestRepository storeRestRepository;
     private final StoreHourRepository storeHourRepository;
+    private final RedissonClient redissonClient;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
                         AllergyCategoryRepository allergyCategoryRepository, ReservationRepository reservationRepository,
-                        StoreKeywordRepository storeKeywordRepository, StoreRestRepository storeRestRepository, StoreHourRepository storeHourRepository) {
+                        StoreKeywordRepository storeKeywordRepository, StoreRestRepository storeRestRepository,
+                        StoreHourRepository storeHourRepository, RedissonClient redissonClient) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
@@ -60,6 +75,7 @@ public class StoreService {
         this.storeKeywordRepository = storeKeywordRepository;
         this.storeRestRepository = storeRestRepository;
         this.storeHourRepository = storeHourRepository;
+        this.redissonClient = redissonClient;
     }
 
     /**
@@ -83,7 +99,7 @@ public class StoreService {
         File file = fileRepository.save(new File());
 
         // 이미지 파일들 저장
-        if (requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
+        if(requestDto.getStoreImageList() != null && !requestDto.getStoreImageList().get(0).isEmpty()) {
             // 프로필 이미지 파일 저장
             fileDetailService.createImageFiles(requestDto.getStoreImageList(), file);
         }
@@ -148,7 +164,7 @@ public class StoreService {
         storeRepository.save(store);
 
         // 이미지 수정
-        if (requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
+        if(requestDto.getFileUrlList() != null && !requestDto.getFileUrlList().isEmpty()) {
 
             fileDetailService.updateFileDetail(requestDto.getNewStoreImageList(), requestDto.getFileUrlList(), store.getFile());
         }
@@ -169,7 +185,7 @@ public class StoreService {
         Store store = storeRepository.findByIdOrElseThrow(pendingStore.getStoreId());
 
         // 이미지가 변경되었는지 확인
-        if (!store.getFile().getFileId().equals(pendingStore.getFileId())) {
+        if(!store.getFile().getFileId().equals(pendingStore.getFileId())) {
             // 파일 삭제
             fileRepository.deleteById(store.getFile().getFileId());
         }
@@ -262,6 +278,9 @@ public class StoreService {
 
     }
 
+
+    private final ObjectMapper objectMapper = new ObjectMapper(); // ObjectMapper
+
     /**
      * 가게 조건 검색 메서드
      *
@@ -269,8 +288,50 @@ public class StoreService {
      * @return
      */
     public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto) {
+        String cacheKey = "store_search:" + getCacheKey(requestDto);
 
-        return storeRepository.searchStoreQuery(requestDto);
+        // RBucket을 JsonJacksonCodec과 함께 사용
+        RBucket<String> cachedResult = redissonClient.getBucket(cacheKey, JsonJacksonCodec.INSTANCE);
+
+        Instant start = Instant.now(); // 시작 시간 기록
+
+        // 캐시된 결과가 있으면 반환
+        String resultJson = cachedResult.get();
+        List<StoreSearchResponseDto> result = null;
+        if (resultJson != null && !resultJson.isEmpty()) {
+            try {
+                result = objectMapper.readValue(resultJson, objectMapper.getTypeFactory().constructCollectionType(List.class, StoreSearchResponseDto.class));
+            } catch (Exception e) {
+                log.error("Error deserializing cached result", e);
+            }
+        }
+
+        if (result == null || result.isEmpty()) {
+            // 캐시된 결과가 없으면 DB에서 조회 후 캐시에 저장
+            result = storeRepository.searchStoreQuery(requestDto);
+
+            try {
+                String resultJsonToCache = objectMapper.writeValueAsString(result); // List to JSON
+                cachedResult.set(resultJsonToCache, 10, TimeUnit.MINUTES); // 캐시 만료 시간은 10분으로 설정
+            } catch (Exception e) {
+                log.error("Error serializing result to cache", e);
+            }
+        }
+
+        Instant end = Instant.now(); // 종료 시간 기록
+        long elapsedTime = Duration.between(start, end).toMillis(); // 실행 시간(ms)
+
+        log.info("searchStoreQuery 실행 시간: {} ms, 결과 개수: {}", elapsedTime, result.size());
+
+        return result;
+    }
+
+    // 캐시 키를 위한 핵심 파라미터들만 조합하는 메소드
+    private String getCacheKey(StoreSearchRequestDto requestDto) {
+        return requestDto.getSearchWord() + ":" +
+                requestDto.getRegionTop() + ":" +
+                requestDto.getRegionBottom() + ":" +
+                requestDto.getStoreCategory(); // 예시: 중요한 파라미터만 조합
     }
 
     /**
@@ -317,6 +378,8 @@ public class StoreService {
         }
 
 
+
+
         return new FiltersResponseDto(regionMap, categoryList, allergyMap);
     }
 
@@ -325,7 +388,6 @@ public class StoreService {
      *
      * @param storeId
      * @param date
-     * @param personnelCount
      * @return
      */
     public List<StoreReservationTotalDto> getStoreReservationTotal(Long storeId, LocalDate date, Integer personnelCount) {
@@ -371,8 +433,7 @@ public class StoreService {
     }
 
     /**
-     * 키워드로 가게 검색
-     *
+     *  키워드로 가게 검색
      * @param keyword
      * @return
      */
@@ -384,12 +445,22 @@ public class StoreService {
 
         // 해당 가게들로 DTO를 생성 후 반환
         List<StoreSearchResponseDto> dtos = new ArrayList<>();
-        for (StoreKeyword storeKeywordDto : storeKeyword) {
+        for(StoreKeyword storeKeywordDto : storeKeyword) {
             StoreSearchResponseDto dto = new StoreSearchResponseDto(storeKeywordDto.getStore());
             dtos.add(dto);
         }
 
         return dtos;
+
+    }
+
+    public List<StoreListResponseDto> getWaitingAbleStores(Long id) {
+        List<StoreListResponseDto> responseDtos = new ArrayList<>();
+        List<Store> storeList = storeRepository.findAllByUserId(id);
+
+        return storeList.stream().filter(store -> store.getStoreReservationTypeList().stream()
+                .anyMatch(storeReservationType -> storeReservationType.getReservationType().equals(ReservationType.ONSITE)))
+                .map(StoreListResponseDto::toDto).toList();
 
     }
 

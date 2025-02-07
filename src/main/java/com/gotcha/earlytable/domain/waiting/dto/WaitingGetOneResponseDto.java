@@ -23,6 +23,7 @@ public class WaitingGetOneResponseDto {
     private List<HashMap<String, Object>>  partyPeople = new ArrayList<>();
     private final String phone;
     private final boolean isExist;
+    private final Long partyId;
 
     public WaitingGetOneResponseDto(Waiting waiting, boolean isExist) {
         this.waitingId = waiting.getWaitingId();
@@ -34,6 +35,7 @@ public class WaitingGetOneResponseDto {
         this.phone = waiting.getPhone();
         this.storeId = waiting.getStore().getStoreId();
         this.isExist = isExist;
+        this.partyId = waiting.getParty().getPartyId();
 
         if (waiting.getParty() != null) {
             this.partyPeople = waiting.getParty().getPartyPeople().stream()
@@ -43,6 +45,7 @@ public class WaitingGetOneResponseDto {
                         userMap.put("userId", partyPeople.getUser().getId());
                         userMap.put("userImage",partyPeople.getUser().getFile().getFileDetailList().stream()
                                 .filter(fileDetail->fileDetail.getFileStatus().equals(FileStatus.REPRESENTATIVE)).map(FileDetail::getFileUrl).findFirst().orElse(null));
+                        userMap.put("partyRole", partyPeople.getPartyRole().toString());
                         return userMap;
                     })
                     .collect(Collectors.toList());

@@ -33,6 +33,5 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
         return findByInvitationId(invitationId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND));
     }
 
-
-
+    Invitation findByPartyPartyIdAndReceiveUser(Long partyId, User user);
 }

@@ -20,17 +20,32 @@ public class PartyPeopleController {
         this.partyPeopleService = partyPeopleService;
     }
 
+//    /**
+//     *  파티탈퇴 API
+//     * @param invitationId
+//     * @param userDetails
+//     * @return ResponseEntity<String>
+//     */
+//    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+//    @DeleteMapping("receive/invitations/{invitationId}")
+//    public ResponseEntity<String> leaveInvitation(@PathVariable Long invitationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//
+//        partyPeopleService.leaveInvitation(invitationId, userDetails.getUser());
+//
+//        return ResponseEntity.status(HttpStatus.OK).body("떠나기가 완료되었습니다.");
+//    }
+
     /**
      *  파티탈퇴 API
-     * @param invitationId
+     * @param partyId
      * @param userDetails
      * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @DeleteMapping("receive/invitations/{invitationId}")
-    public ResponseEntity<String> leaveInvitation(@PathVariable Long invitationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @DeleteMapping("receive/invitations/{partyId}")
+    public ResponseEntity<String> leaveInvitation2(@PathVariable Long partyId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        partyPeopleService.leaveInvitation(invitationId, userDetails.getUser());
+        partyPeopleService.leaveInvitation2(partyId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("떠나기가 완료되었습니다.");
     }
