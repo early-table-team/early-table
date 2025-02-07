@@ -1,6 +1,7 @@
 package com.gotcha.earlytable.domain.menu;
 
 import com.gotcha.earlytable.domain.file.FileDetailService;
+import com.gotcha.earlytable.domain.file.FileRepository;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
 
@@ -26,14 +27,16 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final StoreRepository storeRepository;
     private final FileService fileService;
+    private final FileRepository fileRepository;
     private final FileDetailService fileDetailService;
 
     public MenuService(MenuRepository menuRepository, StoreRepository storeRepository,
-                       FileService fileService, FileDetailService fileDetailService) {
+                       FileService fileService, FileRepository fileRepository, FileDetailService fileDetailService) {
 
         this.menuRepository = menuRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
+        this.fileRepository = fileRepository;
         this.fileDetailService = fileDetailService;
     }
 
@@ -88,29 +91,43 @@ public class MenuService {
         Menu menu = menuRepository.findByIdOrElseThrow(menuId);
 
         // 가게 주인인지 확인
-        if(!menu.getStore().getUser().getId().equals(userId)) {
+        if (!menu.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
 
-        //메뉴 수정 및 저장
+        // 메뉴 수정 및 저장
         menu.updateMenu(requestDto);
         Menu savedMenu = menuRepository.save(menu);
 
-        String imageUrl = menu.getFile().getFileDetailList().stream()
-                .findAny().map(FileDetail::getFileUrl).orElse(null);
+        String imageUrl = null;
 
-        if(requestDto.getImage() != null && !requestDto.getImage().isEmpty()) {
+        if (requestDto.getImage() != null && !requestDto.getImage().isEmpty()) {
 
-            // 기존 이미지 제거
-            menu.getFile().getFileDetailList().stream()
-                    .findAny().ifPresent(fileDetail -> fileDetailService.deleteImageFile(fileDetail.getFileUrl()));
+            // 기존 이미지 파일 제거
+            File file = menu.getFile();
+            if (file != null) {
+                // 기존 이미지 파일 삭제
+                file.getFileDetailList().forEach(fileDetail -> {
+                    // 파일 URL로 S3에서 이미지 삭제
+                    fileDetailService.deleteImageFile(fileDetail.getFileUrl());
+                });
 
-            // 새로 생성
-            imageUrl = fileDetailService.createImageFile(requestDto.getImage(), menu.getFile());
+                // 기존 파일 삭제 후 fileDetailList 초기화
+                file.getFileDetailList().clear();
+            }
+
+            // 새로 생성된 이미지 URL
+            imageUrl = fileDetailService.createImageFile(requestDto.getImage(), file);
+        } else {
+            // 기존 이미지 URL 사용
+            imageUrl = menu.getFile().getFileDetailList().stream()
+                    .findAny().map(FileDetail::getFileUrl).orElse(null);
         }
 
         return MenuResponseDto.toDto(savedMenu, imageUrl);
     }
+
+
 
     /**
      * 메뉴 전체 조회 서비스 메서드
@@ -122,11 +139,19 @@ public class MenuService {
     }
 
     /**
+     * 메뉴 단건 조회 서비스 메서드
+     */
+    public MenuResponseDto getMenu(Long menuId) {
+        Menu menu = menuRepository.findByIdOrElseThrow(menuId);
+
+        return MenuResponseDto.toDto(menu);
+    }
+
+    /**
      * 메뉴 삭제 서비스 메서드
      */
     @Transactional
     public void deleteMenu(Long storeId, Long menuId, Long userId) {
-        
         // TODO : 가게 메뉴 맞는지 확인하기
         Store store = storeRepository.findById(storeId).orElseThrow();
         boolean isMenu = store.getMenuList().stream().anyMatch(menu -> menu.getMenuId().equals(menuId));
@@ -141,8 +166,12 @@ public class MenuService {
         if(!menu.getStore().getUser().getId().equals(userId)) {
             throw new UnauthorizedException(ErrorCode.NO_STORE_OWNER);
         }
+
+        //삭제 전에 store의 menuList에서도 제거
+        store.getMenuList().remove(menu);
         
-        menuRepository.deleteById(menuId);
+        //menuRepository.deleteById(menuId);
+        menuRepository.delete(menu);
     }
 
     /**

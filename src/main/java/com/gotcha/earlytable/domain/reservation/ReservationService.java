@@ -9,6 +9,8 @@ import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.reservation.dto.*;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.reservation.entity.ReservationMenu;
+import com.gotcha.earlytable.domain.review.ReviewRepository;
+import com.gotcha.earlytable.domain.review.enums.ReviewTarget;
 import com.gotcha.earlytable.domain.store.*;
 import com.gotcha.earlytable.domain.store.entity.*;
 import com.gotcha.earlytable.domain.store.enums.DayStatus;
@@ -20,7 +22,7 @@ import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RBlockingQueue;
+import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
 import org.redisson.api.RQueue;
 import org.redisson.api.RedissonClient;
@@ -48,11 +50,12 @@ public class ReservationService {
     private final PartyPeopleRepository partyPeopleRepository;
     private final RedissonClient redissonClient;
     private final TransactionTemplate transactionTemplate;
+    private final ReviewRepository reviewRepository;
 
     public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository,
                               MenuRepository menuRepository, PartyRepository partyRepository,
                               ReservationMenuRepository reservationMenuRepository,
-                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate) {
+                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate, ReviewRepository reviewRepository) {
         this.reservationRepository = reservationRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
@@ -61,6 +64,7 @@ public class ReservationService {
         this.partyPeopleRepository = partyPeopleRepository;
         this.redissonClient = redissonClient;
         this.transactionTemplate = transactionTemplate;
+        this.reviewRepository = reviewRepository;
     }
 
     /**
@@ -72,46 +76,34 @@ public class ReservationService {
      * @return ReservationCreateResponseDto
      */
     public ReservationCreateResponseDto createReservation(Long storeId, ReservationCreateRequestDto requestDto, User user) {
-        // TOdo : 해당 가게가 존재하는가?
+        // 해당 가게가 존재하는가?
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
-        // 큐 네임 설정 , 가게 아이디사용
-        String queueName = "reservationQueue:" + storeId;
-
-        // redisson 큐와 락 설정
-        RQueue<Long> queue = redissonClient.getQueue(queueName);
+        // 락 설정
         RLock lock = redissonClient.getLock("reservationLock:" + storeId);
         boolean locked = false;
 
-
-        Long myTurn = System.currentTimeMillis(); // 고유 값으로 현재 시간 사용
-        queue.add(myTurn);
         try {
-            while (true) {
-                Long currentTurn = queue.peek(); // 큐의 첫 번째 값을 확인
-                if (currentTurn != null && currentTurn.equals(myTurn)) {
-                    break; // 내 차례가 되면 처리 진행
+            int retryCount = 100;
+            int waitTime = 100; // 초기 100ms 대기
+            int maxWaitTime = 2000; // 최대 대기 시간 (1000ms)
+
+            while (retryCount-- > 0) {
+                locked = lock.tryLock(waitTime, TimeUnit.MILLISECONDS);
+                if (locked) {
+                    break;
                 }
-
-                Thread.sleep(100); // 짧은 대기
+                Thread.sleep(waitTime);
+                waitTime = Math.min(waitTime * 2, maxWaitTime); // Exponential Backoff, 최대값 제한
             }
-
-            queue.poll();
-
-            try {
-                locked = lock.tryLock(1000, 1000, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CustomException(ErrorCode.LOCK_TIMEOUT);
-            }
-
             if (!locked) {
                 throw new CustomException(ErrorCode.LOCK_TIMEOUT);
             }
             log.info("Lock acquired for storeId: {}", storeId);
+
             return transactionTemplate.execute(status -> {
 
-                // TODO : 가게 예약 타입이 예약이 맞는가?
+                // 가게 예약 타입이 예약이 맞는가?
                 boolean dontReservation = store.getStoreReservationTypeList().stream()
                         .noneMatch(storeReservationType -> storeReservationType.getReservationType() == ReservationType.RESERVATION);
 
@@ -119,7 +111,7 @@ public class ReservationService {
                     throw new CustomException(ErrorCode.UNAVAILABLE_RESERVATION_TYPE);
                 }
 
-                // TODO : 자릿수 맥스값보다 많은 인원이 신청한경우
+                // 자릿수 맥스값보다 많은 인원이 신청한 경우
                 Integer maxSeat = store.getStoreTableList().stream()
                         .map(StoreTable::getTableMaxNumber)
                         .max(Integer::compareTo).orElse(null);
@@ -127,21 +119,18 @@ public class ReservationService {
                     throw new CustomException(ErrorCode.NO_SEAT);
                 }
 
-                // TODO : 임시휴무날짜는 아닌가?
+                // 임시휴무 날짜는 아닌가?
                 boolean holiday = store.getStoreRestList().stream().anyMatch(storeRest -> storeRest.getStoreOffDay() == requestDto.getReservationDate().toLocalDate());
                 if (holiday) {
                     throw new CustomException(ErrorCode.STORE_HOLIDAY);
                 }
 
-                // TODO : 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
+                // 해당 요일의 영업시간 및 영엉삽태가 충족하는가?
                 String dayOff = requestDto.getReservationDate().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN); //월, 화, 수 .. 이런식
-                // 정기 휴무일을 체크 -> 받아온 값의 요일과 동일한 요일의 status값이 closed인지 체크
-
                 boolean isDayData = store.getStoreHourList().stream().noneMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff));
                 if (isDayData) {
                     throw new CustomException(ErrorCode.NOT_FOUND_DAY);
                 }
-
 
                 boolean regularHoliday = store.getStoreHourList().stream().anyMatch(storeHour -> storeHour.getDayOfWeek().getDayOfWeekName().equals(dayOff) && storeHour.getDayStatus().equals(DayStatus.CLOSED));
                 if (regularHoliday) {
@@ -153,9 +142,8 @@ public class ReservationService {
                     throw new CustomException(ErrorCode.RESERVATION_TIME_ERROR);
                 }
 
-                // TODO : 받아온 메뉴 리스트가 해당 가게 안에 모두 있는가?
+                // 받아온 메뉴 리스트가 해당 가게 안에 모두 있는가?
                 List<HashMap<String, Long>> menuList = requestDto.getMenuList();
-
                 List<Long> menuIds = menuList.stream()
                         .map(menu -> menu.get("menuId"))
                         .toList();
@@ -163,6 +151,7 @@ public class ReservationService {
                 List<Long> menuCounts = menuList.stream()
                         .map(menu -> menu.get("menuCount"))
                         .toList();
+
                 boolean existMenu = menuIds.stream()
                         .allMatch(menuId -> store.getMenuList().stream()
                                 .anyMatch(storeMenu -> storeMenu.getMenuId().equals(menuId)));
@@ -170,11 +159,10 @@ public class ReservationService {
                     throw new CustomException(ErrorCode.NOT_FOUND_MENU);
                 }
 
-                // TODO : 인원수에 해당하는 자리가 남아 있는가?  -> 예약 불가 : 전화 문의하기
-                // 인원수를 세는게 아니라 인원수를 가지고 와서 해당 인원수로 등록된 예약만큼 빼기
+                // 인원수에 해당하는 자리가 남아 있는가?
                 Integer requestCount = requestDto.getPersonnelCount();
                 Integer requestTableSize = requestCount;
-                // 테이블 사이즈가 예약 인원수와 같은 예약의 숫자를 일단 저장
+
                 Integer tablesize = Math.toIntExact(store.getReservationList().stream().filter(reservation ->
                         reservation.getReservationDate().equals(requestDto.getReservationDate().toLocalDate()) &&
                                 reservation.getReservationTime().equals(requestDto.getReservationDate().toLocalTime()) &&
@@ -192,29 +180,29 @@ public class ReservationService {
                                 .count()
                 );
 
-                // 인원수에 맞는 테이블로 예약 가능한지 확인하기, 안된다면 +1까지 검토
                 boolean canSeat = store.getStoreTableList().stream()
                         .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount) && storeTable.getTableCount() - tablesize >= 1);
 
                 boolean canSeat2 = store.getStoreTableList().stream()
                         .anyMatch(storeTable -> storeTable.getTableMaxNumber().equals(requestCount + 1) && storeTable.getTableCount() - tablesizeLarge >= 1);
+
                 if (!canSeat) {
                     if (canSeat2) {
-                        requestTableSize = requestTableSize + 1; // 3인으로 왔는데 3인이 없는경우 4인을 검사해서 4인이 있다? -> 4인테이블로 예약하기 위해 4인을 잠깐 저장
+                        requestTableSize = requestTableSize + 1; // 3인으로 왔는데 3인이 없는 경우 4인을 검사해서 4인이 있다면 4인 테이블로 예약
                     } else {
                         throw new CustomException(ErrorCode.NO_SEAT);
                     }
                 }
 
-                // TODO : 결제 부분
+                // 결제 부분
 
-
-                // TODO : OK 그럼 예약 생성해줄게
+                // 예약 생성
                 Party party = partyRepository.save(new Party());
                 Reservation reservation = new Reservation(requestDto.getReservationDate().toLocalDate(), requestDto.getReservationDate().toLocalTime(), requestCount, store, party, requestTableSize);
                 reservationRepository.save(reservation);
                 PartyPeople partyPeople = new PartyPeople(party, user, PartyRole.REPRESENTATIVE);
                 partyPeopleRepository.save(partyPeople);
+
                 List<ReturnMenuListDto> returnMenuListDtos = new ArrayList<>();
                 for (int i = 0; i < menuIds.size(); i++) {
                     if (menuCounts.get(i) <= 0) {
@@ -227,19 +215,21 @@ public class ReservationService {
                     returnMenuListDtos.add(returnMenuListDto);
                 }
 
-
                 return new ReservationCreateResponseDto(user.getId(), reservation.getReservationId(), requestDto.getReservationDate().toLocalDate()
                         , requestDto.getReservationDate().toLocalTime(), requestCount, returnMenuListDtos);
             });
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CustomException(ErrorCode.LOCK_TIMEOUT);
-        }finally{
+        } finally {
             if (locked) {
                 lock.unlock();
             }
         }
     }
+
+
+
 
     /**
      * 예약 전체 조회 메서드
@@ -284,8 +274,10 @@ public class ReservationService {
                     menuList.add(menus);
                 });
 
+        boolean isExist = reviewRepository.existsByUserIdAndTargetIdAndReviewTarget(user.getId(), reservationId, ReviewTarget.RESERVATION);
 
-        return new ReservationGetOneResponseDto(reservation, user, menuList);
+
+        return new ReservationGetOneResponseDto(reservation, menuList, isExist);
     }
 
     /**
@@ -354,7 +346,10 @@ public class ReservationService {
             });
         }
 
-        return new ReservationGetOneResponseDto(reservation, user, returnMenuLists);
+        boolean isExist =
+                reviewRepository.existsByUserIdAndTargetIdAndReviewTarget(user.getId(), reservationId, ReviewTarget.RESERVATION);
+
+        return new ReservationGetOneResponseDto(reservation, returnMenuLists, isExist);
     }
 
 
@@ -399,6 +394,22 @@ public class ReservationService {
         return responseDtos;
     }
 
+    /**
+     * 가게별 인원수 100명 체크 메서드
+     * @param storeId
+     * @return
+     */
+    public boolean tryReserve(Long storeId) {
+        String key = "reservation_limit:" + storeId;
+        RAtomicLong reservationCount = redissonClient.getAtomicLong(key);
 
+        long currentCount = reservationCount.incrementAndGet();
 
+        if (currentCount > 100) {
+            reservationCount.decrementAndGet(); // 롤백
+            return false;
+        }
+
+        return true;
+    }
 }

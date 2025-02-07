@@ -5,10 +5,12 @@ import lombok.Getter;
 @Getter
 public class WaitingNumberResponseDto {
 
+    private final Long waitingId;
     private final Long waitingNumber;
     private final String waitingTime;
 
-    public WaitingNumberResponseDto(Long waitingNumber, Integer waitingTime) {
+    public WaitingNumberResponseDto(Long waitingId, Long waitingNumber, Integer waitingTime) {
+        this.waitingId = waitingId;
         this.waitingNumber = waitingNumber;
         if (waitingTime <= 5) {
             this.waitingTime = "곧 입장 가능합니다.";

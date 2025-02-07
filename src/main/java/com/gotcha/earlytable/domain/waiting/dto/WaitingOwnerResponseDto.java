@@ -13,6 +13,7 @@ public class WaitingOwnerResponseDto {
     private WaitingType waitingType;
     private List<Object> waitingList;
 
+
     public WaitingOwnerResponseDto(List<Waiting> waitingList, WaitingType waitingType, String detail) {
         this.waitingCount = waitingList.size();
         this.waitingType = waitingType;

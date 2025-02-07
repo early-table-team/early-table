@@ -35,7 +35,9 @@ public class OtherUserResponseDto {
         return new OtherUserResponseDto(
                 user.getId(),
                 user.getNickName(),
-                user.getEmail(), user.getPhone().substring(0, user.getPhone().length() - 4) + "****",
+                user.getEmail(),
+                user.getPhone().substring(0, 4) + "****-"+
+                        user.getPhone().substring(user.getPhone().length() - 4, user.getPhone().length()),
                 user.getAuth(),
                 imageUrl,
                 relationship

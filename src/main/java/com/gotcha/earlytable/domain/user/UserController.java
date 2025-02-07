@@ -18,6 +18,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -25,12 +29,19 @@ public class UserController {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final JwtProvider jwtProvider;
+    private final SearchService searchService;
 
-    public UserController(UserService userService, RefreshTokenService refreshTokenService, JwtProvider jwtProvider) {
+    public UserController(UserService userService, RefreshTokenService refreshTokenService, JwtProvider jwtProvider, SearchService searchService) {
 
         this.userService = userService;
         this.refreshTokenService = refreshTokenService;
         this.jwtProvider = jwtProvider;
+        this.searchService = searchService;
+    }
+
+    @GetMapping("/healthy")
+    public ResponseEntity<String> healthy() {
+        return new ResponseEntity<>("Healthy", HttpStatus.OK);
     }
 
     /**
@@ -102,7 +113,7 @@ public class UserController {
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken,
-                                          HttpServletResponse response) {
+                                                   HttpServletResponse response) {
         if (refreshToken == null || !jwtProvider.validToken(refreshToken)) {
             return null;
         }
@@ -142,9 +153,23 @@ public class UserController {
      */
     @GetMapping("/{userId}")
     public ResponseEntity<OtherUserResponseDto> getOtherUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                        @PathVariable Long userId) {
+                                                             @PathVariable Long userId) {
 
         OtherUserResponseDto responseDto = userService.getOtherUser(userDetails.getUser(), userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    /**
+     * 타인 유저 검색 조회 API
+     * (OWNER, ADMIN 검색결과 제외)
+     * @param userSearchRequestDto
+     * @return ResponseEntity<List<UserSearchResponseDto>>
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSearchResponseDto>> searchUser(@ModelAttribute UserSearchRequestDto userSearchRequestDto) {
+
+        List<UserSearchResponseDto> responseDto = userService.searchUser(userSearchRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -195,6 +220,37 @@ public class UserController {
         userService.deleteUser(requestDto, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("회원 탈퇴가 완료되었습니다.");
+    }
+
+    /**
+     * 마이페이지 내 예약 현황 카운트 API
+     * @param userDetails
+     * @return UserReservationCountResponseDto
+     */
+    @GetMapping("/count")
+    public ResponseEntity<UserReservationCountResponseDto> getUserReservationCount(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UserReservationCountResponseDto userReservationCountResponseDto = userService.getUserReservationCount(userDetails.getUser().getId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(userReservationCountResponseDto);
+    }
+
+    @GetMapping("/search/init")
+    public Map<String, Object> getInit() {
+        Map<String, Object> response = new HashMap<>();
+
+        // 상위지역 및 하위지역 데이터 추가
+        response.put("regions", searchService.getRegions());
+
+        // StoreCategory 데이터 추가
+        response.put("storeCategories", searchService.getStoreCategories());
+
+        // AllergyCategory 데이터 추가
+        response.put("allergyCategories", searchService.getStoreCategories());
+
+        // AllergyStuff 데이터 추가
+        response.put("allergyStuff", searchService.getAllergyCategoriesAndStuff());
+
+        return response;
     }
 
 

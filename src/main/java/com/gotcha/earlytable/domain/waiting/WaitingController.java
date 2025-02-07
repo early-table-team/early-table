@@ -6,6 +6,7 @@ import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
+import com.gotcha.earlytable.global.enums.WaitingType;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -84,19 +85,18 @@ public class WaitingController {
      *
      * @param userDetails
      * @param storeId
-     * @param requestDto
+     * @param waitingType
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/stores/{storeId}/waiting/now")
-    public ResponseEntity<WaitingOwnerResponseDto> getOwnerNowWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                       @PathVariable Long storeId,
-                                                                       @Valid @RequestBody WaitingSimpleOwnerRequestDto requestDto) {
-
+    public ResponseEntity<WaitingOwnerTimeResponseDto> getOwnerNowWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails
+            , @PathVariable Long storeId, @RequestParam WaitingType waitingType ) {
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        WaitingOwnerResponseDto responseDto = waitingService.getOwnerNowWaitingList(user, storeId, requestDto);
+        // WaitingOwnerResponseDto 생성
+        WaitingOwnerTimeResponseDto responseDto = waitingService.getOwnerNowWaitingList(user, storeId, waitingType);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

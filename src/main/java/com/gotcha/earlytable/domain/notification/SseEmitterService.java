@@ -15,7 +15,7 @@ import java.util.Set;
 public class SseEmitterService {
 
     // SSE 이벤트 타임아웃 시간
-    private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
+    private static final Long DEFAULT_TIMEOUT = 600000L;
     private static final String NOTIFICATION_PREFIX = "notification:user:";
 
 
@@ -39,6 +39,7 @@ public class SseEmitterService {
     /**
      * 클라이언트의 이벤트 구독을 허용하는 메서드
      */
+    @Transactional
     public SseEmitter subscribe(Long userId) {
         // sse의 유효 시간이 만료되면, 클라이언트에서 다시 서버로 이벤트 구독을 시도한다.
         SseEmitter sseEmitter = sseEmitterRepository.save(userId, new SseEmitter(DEFAULT_TIMEOUT));
@@ -69,7 +70,6 @@ public class SseEmitterService {
         for (Notification notification : notifications) {
             sendToClient(userId, notification.getContent(), notification.getType());
             notification.read();
-            notificationRepository.save(notification);
         }
 
         // 캐시 비우기

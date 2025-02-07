@@ -76,8 +76,8 @@ public class ReviewController {
      * @return List<ReviewResponseDto>
      */
     @GetMapping("/stores/{storeId}/reviews")
-    public ResponseEntity<List<ReviewResponseDto>> getStoreReviews(@PathVariable Long storeId) {
-        List<ReviewResponseDto> storeReviewsResponseDtoList = reviewService.getStoreReviews(storeId);
+    public ResponseEntity<List<StoreReviewResponseDto>> getStoreReviews(@PathVariable Long storeId) {
+        List<StoreReviewResponseDto> storeReviewsResponseDtoList = reviewService.getStoreReviews(storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(storeReviewsResponseDtoList);
     }
