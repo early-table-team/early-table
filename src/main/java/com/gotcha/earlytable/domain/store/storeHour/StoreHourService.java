@@ -14,6 +14,9 @@ import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 public class StoreHourService {
@@ -88,4 +91,16 @@ public class StoreHourService {
 
         return StoreHourResponseDto.toDto(savedStoreHour);
     }
+
+    public List<StoreHourResponseDto> getStoreHour(Long storeId, User user) {
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+
+        List<StoreHour> storeHourList = storeHourRepository.findByStore(store);
+
+        return storeHourList.stream()
+                .map(StoreHourResponseDto::toDto) // StoreHour를 StoreHourResponseDto로 변환
+                .collect(Collectors.toList());
+
+    }
+
 }
