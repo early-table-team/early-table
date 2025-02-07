@@ -28,6 +28,8 @@ public class ReservationCreateResponseDto {
 
     private  String paymentUrl;
 
+    private String tid;
+
     public ReservationCreateResponseDto(Long userId, Long reservationId, LocalDate reservation, LocalTime reservationTime, Integer personnelCount, List<ReturnMenuListDto> menuList) {
         this.userId = userId;
         this.reservationId = reservationId;
@@ -57,4 +59,9 @@ public class ReservationCreateResponseDto {
     public void setPaymentUrl(String paymentRedirectUrl) {
         this.paymentUrl = paymentRedirectUrl;
     }
+
+    public void setTid(String tid) {
+        this.tid = tid;
+    }
+
 }
