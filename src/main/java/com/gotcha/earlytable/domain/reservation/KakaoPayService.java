@@ -55,9 +55,9 @@ public class KakaoPayService {
         params.put("total_amount", String.valueOf(total));
         params.put("vat_amount", "200");
         params.put("tax_free_amount", "0");
-        params.put("approval_url", "https://earlytable.kr/processing");
-        params.put("fail_url", "https://earlytable.kr/payment-fail");
-        params.put("cancel_url", "https://earlytable.kr/payment-cancel");
+        params.put("approval_url", "https://www.earlytable.kr/processing");
+        params.put("fail_url", "https://www.earlytable.kr/payment-fail");
+        params.put("cancel_url", "https://www.earlytable.kr/payment-cancel");
 
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(params, headers);
 
