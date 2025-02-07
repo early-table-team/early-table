@@ -313,22 +313,23 @@ public class WaitingService {
      *
      * @param user
      * @param storeId
-     * @param requestDto
+     * @param waitingType
+     * @param date
      * @return
      */
-    public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, @Valid WaitingOwnerRequestDto requestDto) {
+    public WaitingOwnerResponseDto getOwnerWaitingList(User user, Long storeId, WaitingType waitingType, LocalDate date) {
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         if (!store.getUser().getId().equals(user.getId())) {
             throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
         }
-        LocalDate targetDate = requestDto.getDate();
-        LocalDateTime startOfDay = targetDate.atStartOfDay(); // 시작 시간
-        LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
-        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatusNotAndCreatedAtBetween(store, requestDto.getWaitingType(), WaitingStatus.DELAY, startOfDay, endOfDay);
+
+        LocalDateTime startOfDay = date.atStartOfDay(); // 시작 시간
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        List<Waiting> waitingList = waitingRepository.findByStoreAndWaitingTypeAndWaitingStatusNotAndCreatedAtBetween(store, waitingType, WaitingStatus.DELAY, startOfDay, endOfDay);
 
 
-        return new WaitingOwnerResponseDto(waitingList, requestDto.getWaitingType(), "detail");
+        return new WaitingOwnerResponseDto(waitingList, waitingType, "detail");
     }
 
     /**

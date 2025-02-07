@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -106,19 +107,21 @@ public class WaitingController {
      *
      * @param userDetails
      * @param storeId
-     * @param requestDto
+     * @param waitingType
+     * @param date
      * @return
      */
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @GetMapping("/stores/{storeId}/waiting")
     public ResponseEntity<WaitingOwnerResponseDto> getOwnerWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                        @PathVariable Long storeId,
-                                                                       @Valid @RequestBody WaitingOwnerRequestDto requestDto) {
+                                                                       @RequestParam(value = "waitingType", defaultValue = "DINE_IN") WaitingType waitingType,
+                                                                       @RequestParam(value = "date") LocalDate date) {
 
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        WaitingOwnerResponseDto responseDto = waitingService.getOwnerWaitingList(user, storeId, requestDto);
+        WaitingOwnerResponseDto responseDto = waitingService.getOwnerWaitingList(user, storeId, waitingType, date);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
