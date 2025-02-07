@@ -6,10 +6,10 @@ import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.global.enums.ReservationStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.web.client.HttpStatusCodeException;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import com.gotcha.earlytable.domain.reservation.dto.KakaoPayRequestDto;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -55,9 +55,9 @@ public class KakaoPayService {
         params.put("total_amount", String.valueOf(total));
         params.put("vat_amount", "200");
         params.put("tax_free_amount", "0");
-        params.put("approval_url", "http://localhost:3000/processing");
-        params.put("fail_url", "http://localhost:3000/payment-fail");
-        params.put("cancel_url", "http://localhost:3000/payment-cancel");
+        params.put("approval_url", "https://earlytable.kr/processing");
+        params.put("fail_url", "https://earlytable.kr/payment-fail");
+        params.put("cancel_url", "https://earlytable.kr/payment-cancel");
 
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(params, headers);
 

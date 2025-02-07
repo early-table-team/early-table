@@ -39,7 +39,6 @@ public class SseEmitterService {
     /**
      * 클라이언트의 이벤트 구독을 허용하는 메서드
      */
-    @Transactional
     public SseEmitter subscribe(Long userId) {
         // sse의 유효 시간이 만료되면, 클라이언트에서 다시 서버로 이벤트 구독을 시도한다.
         SseEmitter sseEmitter = sseEmitterRepository.save(userId, new SseEmitter(DEFAULT_TIMEOUT));
