@@ -37,6 +37,10 @@ public class StoreSearchResponseDto {
         this.storeCategory = store.getStoreCategory().getCategoryName();
     }
 
+    public StoreSearchResponseDto() {
+
+    }
+
     public static StoreSearchResponseDto toDto(Store store) {
         return new StoreSearchResponseDto(store);
     }
