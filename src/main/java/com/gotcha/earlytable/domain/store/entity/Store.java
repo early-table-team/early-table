@@ -16,13 +16,19 @@ import com.gotcha.earlytable.global.enums.RegionBottom;
 import com.gotcha.earlytable.global.enums.RegionTop;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
-@Table(name = "store")
+@Table(name = "store", indexes = {
+        @Index(name = "idx_store_name", columnList = "storeName"),
+        @Index(name = "idx_region_top", columnList = "regionTop"),
+        @Index(name = "idx_region_bottom", columnList = "regionBottom"),
+        @Index(name = "idx_store_category", columnList = "storeCategory")
+})
 public class Store extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,7 +60,7 @@ public class Store extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RegionBottom regionBottom;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -62,6 +68,7 @@ public class Store extends BaseEntity {
     @JoinColumn(name = "file_id", nullable = false)
     private File file;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Menu> menuList = new ArrayList<>();
 
@@ -89,6 +96,7 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Reservation> reservationList = new ArrayList<>();
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Review> reviewList = new ArrayList<>();
 

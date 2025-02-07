@@ -2,7 +2,7 @@ name: docker multi-stage build
 
 on:
   push:
-    branches: [ test/deployV2 ] # 어디에 push 되었을 때 실행 될 지 지정
+    branches: [ develop ] # 어디에 push 되었을 때 실행 될 지 지정
 
   # https://github.com/marketplace/actions/build-and-push-docker-images
 

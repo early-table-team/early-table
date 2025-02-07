@@ -1,5 +1,6 @@
 package com.gotcha.earlytable.domain.store;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gotcha.earlytable.domain.allergy.AllergyCategoryRepository;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileRepository;
@@ -25,16 +26,25 @@ import com.gotcha.earlytable.global.enums.ReservationStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class StoreService {
 
@@ -47,12 +57,14 @@ public class StoreService {
     private final StoreKeywordRepository storeKeywordRepository;
     private final StoreRestRepository storeRestRepository;
     private final StoreHourRepository storeHourRepository;
+    private final RedissonClient redissonClient;
 
 
     public StoreService(StoreRepository storeRepository, UserRepository userRepository,
                         FileRepository fileRepository, FileDetailService fileDetailService,
                         AllergyCategoryRepository allergyCategoryRepository, ReservationRepository reservationRepository,
-                        StoreKeywordRepository storeKeywordRepository, StoreRestRepository storeRestRepository, StoreHourRepository storeHourRepository) {
+                        StoreKeywordRepository storeKeywordRepository, StoreRestRepository storeRestRepository,
+                        StoreHourRepository storeHourRepository, RedissonClient redissonClient) {
 
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
@@ -63,6 +75,7 @@ public class StoreService {
         this.storeKeywordRepository = storeKeywordRepository;
         this.storeRestRepository = storeRestRepository;
         this.storeHourRepository = storeHourRepository;
+        this.redissonClient = redissonClient;
     }
 
     /**
@@ -265,6 +278,9 @@ public class StoreService {
 
     }
 
+
+    private final ObjectMapper objectMapper = new ObjectMapper(); // ObjectMapper
+
     /**
      * 가게 조건 검색 메서드
      *
@@ -272,8 +288,50 @@ public class StoreService {
      * @return
      */
     public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto) {
+        String cacheKey = "store_search:" + getCacheKey(requestDto);
 
-        return storeRepository.searchStoreQuery(requestDto);
+        // RBucket을 JsonJacksonCodec과 함께 사용
+        RBucket<String> cachedResult = redissonClient.getBucket(cacheKey, JsonJacksonCodec.INSTANCE);
+
+        Instant start = Instant.now(); // 시작 시간 기록
+
+        // 캐시된 결과가 있으면 반환
+        String resultJson = cachedResult.get();
+        List<StoreSearchResponseDto> result = null;
+        if (resultJson != null && !resultJson.isEmpty()) {
+            try {
+                result = objectMapper.readValue(resultJson, objectMapper.getTypeFactory().constructCollectionType(List.class, StoreSearchResponseDto.class));
+            } catch (Exception e) {
+                log.error("Error deserializing cached result", e);
+            }
+        }
+
+        if (result == null || result.isEmpty()) {
+            // 캐시된 결과가 없으면 DB에서 조회 후 캐시에 저장
+            result = storeRepository.searchStoreQuery(requestDto);
+
+            try {
+                String resultJsonToCache = objectMapper.writeValueAsString(result); // List to JSON
+                cachedResult.set(resultJsonToCache, 10, TimeUnit.MINUTES); // 캐시 만료 시간은 10분으로 설정
+            } catch (Exception e) {
+                log.error("Error serializing result to cache", e);
+            }
+        }
+
+        Instant end = Instant.now(); // 종료 시간 기록
+        long elapsedTime = Duration.between(start, end).toMillis(); // 실행 시간(ms)
+
+        log.info("searchStoreQuery 실행 시간: {} ms, 결과 개수: {}", elapsedTime, result.size());
+
+        return result;
+    }
+
+    // 캐시 키를 위한 핵심 파라미터들만 조합하는 메소드
+    private String getCacheKey(StoreSearchRequestDto requestDto) {
+        return requestDto.getSearchWord() + ":" +
+                requestDto.getRegionTop() + ":" +
+                requestDto.getRegionBottom() + ":" +
+                requestDto.getStoreCategory(); // 예시: 중요한 파라미터만 조합
     }
 
     /**
