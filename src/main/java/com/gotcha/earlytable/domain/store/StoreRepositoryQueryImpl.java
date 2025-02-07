@@ -3,6 +3,7 @@ package com.gotcha.earlytable.domain.store;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreSearchRequestDto;
+import com.gotcha.earlytable.domain.store.dto.StoreSearchResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,7 +21,7 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
         this.queryFactory = queryFactory;
     }
 
-    public List<StoreListResponseDto> searchStoreQuery(StoreSearchRequestDto requestDto) {
+    public List<StoreSearchResponseDto> searchStoreQuery(StoreSearchRequestDto requestDto) {
 
         List<Store> storeList = queryFactory.selectFrom(store)
                 .leftJoin(store.menuList, menu).fetchJoin() // Store와 Menu 간의 조인
@@ -39,7 +40,7 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
 
 
         return storeList.stream()
-                .map(StoreListResponseDto::toDto)
+                .map(StoreSearchResponseDto::toDto)
                 .toList();
     }
 
@@ -79,30 +80,32 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
     }
 
     private BooleanExpression allergyStuffExclude(List<String> allergyStuff) {
-        if (allergyStuff == null) {
+        if (allergyStuff == null || allergyStuff.isEmpty()) {
             return null;
         }
 
         BooleanExpression condition = null;
         for (String allergyKey : allergyStuff) {
-            BooleanExpression currentCondition = menu.allergyList.any().allergyStuff
+            BooleanExpression currentCondition = store.menuList.any().allergyList.any().allergyStuff
                     .allergyStuff.contains(allergyKey).not();
             condition = (condition == null) ? currentCondition : condition.and(currentCondition);
+
         }
 
         return condition;
     }
 
     private BooleanExpression allergyCategoryExclude(List<String> allergyCategory) {
-        if (allergyCategory == null) {
+        if (allergyCategory == null || allergyCategory.isEmpty()) {
             return null;
         }
 
         BooleanExpression condition = null;
         for (String allergyKey : allergyCategory) {
-            BooleanExpression currentCondition = menu.allergyList.any().allergyStuff.allergyCategory
+            BooleanExpression currentCondition = store.menuList.any().allergyList.any().allergyStuff.allergyCategory
                     .allergyCategory.contains(allergyKey).not();
             condition = (condition == null) ? currentCondition : condition.and(currentCondition);
+
         }
 
         return condition;

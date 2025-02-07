@@ -42,7 +42,7 @@ public class Waiting extends BaseEntity {
     private RemoteStatus remoteStatus;
 
     @Column(nullable = false)
-    private Integer waitingNumber;
+    private Long waitingNumber;
 
     private String phone;
 
@@ -50,7 +50,7 @@ public class Waiting extends BaseEntity {
     }
 
     public Waiting(Store store, Party party, WaitingType waitingType, Integer personnelCount,
-                   WaitingStatus waitingStatus, RemoteStatus remoteStatus, Integer waitingNumber, String phone) {
+                   WaitingStatus waitingStatus, RemoteStatus remoteStatus, Long waitingNumber, String phone) {
         addStore(store);
         if (party != null) {
             addParty(party);
@@ -72,10 +72,6 @@ public class Waiting extends BaseEntity {
     private void addParty(Party party) {
         this.party = party;
         party.addWaiting(this);
-    }
-
-    public void updateWaitingNumber(Integer waitingNumber) {
-        this.waitingNumber = waitingNumber;
     }
 
     public void updateWaiting(WaitingStatus waitingStatus) {

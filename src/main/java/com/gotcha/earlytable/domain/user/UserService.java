@@ -5,16 +5,18 @@ import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
 import com.gotcha.earlytable.domain.file.entity.FileDetail;
 import com.gotcha.earlytable.domain.file.enums.FileStatus;
+import com.gotcha.earlytable.domain.friend.FriendRepository;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
+import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
-import com.gotcha.earlytable.global.util.AuthenticationScheme;
 import com.gotcha.earlytable.global.util.JwtProvider;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,8 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 
 @Service
@@ -35,17 +36,21 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final FriendRepository friendRepository;
+    private final RefreshTokenService refreshTokenService;
 
     public UserService(UserRepository userRepository, FileDetailService fileDetailService,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtProvider jwtProvider, FileService fileService) {
+                       JwtProvider jwtProvider, FileService fileService, FriendRepository friendRepository, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.fileDetailService = fileDetailService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.fileService = fileService;
+        this.friendRepository = friendRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     /**
@@ -78,7 +83,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         String imageUrl = null;
-        if (!requestDto.getProfileImage().isEmpty()) {
+        if (requestDto.getProfileImage() != null && !requestDto.getProfileImage().isEmpty()) {
             // 프로필 이미지 파일 저장
             imageUrl = fileDetailService.createImageFile(requestDto.getProfileImage(), file);
         }
@@ -92,7 +97,7 @@ public class UserService {
      * @param requestDto
      * @return JwtAuthResponse
      */
-    public JwtAuthResponse loginUser(UserLoginRequestDto requestDto) {
+    public String loginUser(UserLoginRequestDto requestDto) {
 
         User findUser = userRepository.findByEmailOrElseThrow(requestDto.getEmail());
 
@@ -111,10 +116,47 @@ public class UserService {
         // 시큐리티 컨텍스트 홀더에 인증 정보 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 토큰 생성
-        String accessToken = this.jwtProvider.generateToken(authentication);
 
-        return new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), accessToken);
+        return jwtProvider.generateAccessToken(requestDto.getEmail());
+    }
+
+    /**
+     * refresh Token 을 쿠키에 담기
+     *
+     * @return Cookie
+     */
+    public Cookie craeteCookie(String email) {
+
+        String cookieName = "refreshToken";
+        String cookieValue = jwtProvider.generateRefreshToken(email); // 쿠키벨류엔 글자제한이 이써, 벨류로 만들어담아준다.
+
+        // refreshToken db 저장
+        refreshTokenService.saveRefreshToken(email, cookieValue);
+
+        Cookie cookie = new Cookie(cookieName, cookieValue);
+        // 쿠키 속성 설정
+        cookie.setHttpOnly(true);  //httponly 옵션 설정
+        // cookie.setSecure(true); //https 옵션 설정
+        cookie.setPath("/"); // 모든 곳에서 쿠키열람이 가능하도록 설정
+        cookie.setMaxAge(60 * 60 * 24); //쿠키 만료시간 설정
+        return cookie;
+
+    }
+
+
+    /**
+     * refreshToken 확인 및 accessToken 재발급
+     *
+     * @param email
+     * @return accessToken
+     */
+    public String refresh(String email, String refreshToken) {
+
+        if(!refreshTokenService.validateRefreshToken(email, refreshToken)) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return jwtProvider.generateAccessToken(email);
     }
 
     /**
@@ -131,6 +173,36 @@ public class UserService {
                 .orElse(null);
 
         return UserResponseDto.toDto(user, imageUrl);
+    }
+
+    /**
+     * 유저 단건 조회(타인) 메서드
+     *
+     * @param user
+     * @return UserResponseDto
+     */
+    public OtherUserResponseDto getOtherUser(User user, Long otherUserId) {
+
+        String relationship = "other";
+
+        if (user.getId().equals(otherUserId)) {
+            relationship = "mine";
+        }
+
+        boolean isFriend = friendRepository.findBySendUserId(user.getId()).stream()
+                .anyMatch(friend -> friend.getReceivedUser().getId().equals(otherUserId));
+        if (isFriend) {
+            relationship = "friend";
+        }
+
+        User otherUser = userRepository.findByIdOrElseThrow(otherUserId);
+
+        String imageUrl = otherUser.getFile().getFileDetailList().stream()
+                .filter(file -> file.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
+                .map(FileDetail::getFileUrl)
+                .orElse(null);
+
+        return OtherUserResponseDto.toDto(otherUser, imageUrl, relationship);
     }
 
     /**
@@ -170,7 +242,7 @@ public class UserService {
         String imageUrl = user.getFile().getFileDetailList().stream()
                 .findAny().map(FileDetail::getFileUrl).orElse(null);
 
-        if (!requestDto.getProfileImage().isEmpty()) {
+        if (requestDto.getProfileImage() != null && !requestDto.getProfileImage().isEmpty()) {
 
             // 기존 이미지 제거
             user.getFile().getFileDetailList().stream()
@@ -194,9 +266,40 @@ public class UserService {
 
         // 패스워드 인코딩
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
+        // 기존 패스워드를 알고 있는 지 확인
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
+        // 새로운 패스워드가 기존과 동일한 지 확인
+        if (passwordEncoder.matches(requestDto.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST);
+        }
+
         // 정보 수정
         user.updateUserPW(encodedPassword);
 
         userRepository.save(user);
+    }
+
+    /**
+     * 마이페이지 내 유저 예약 현황 카운트 API
+     */
+    public UserReservationCountResponseDto getUserReservationCount(Long userId) {
+        long reservationCount = userRepository.countPendingReservationsByUserNative("PENDING", userId);
+        long waitingCount = userRepository.countPendingWaitingsByUserNative("PENDING", userId);
+
+
+        return new UserReservationCountResponseDto(reservationCount, waitingCount);
+    }
+
+    /**
+     * 타인 유저 검색 조회 API
+     * @param userSearchRequestDto
+     * @return UserSearchResponseDto
+     */
+    public List<UserSearchResponseDto> searchUser(UserSearchRequestDto userSearchRequestDto) {
+        return userRepository.searchUserQuery(userSearchRequestDto);
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class StoreHourController {
 
@@ -55,6 +57,16 @@ public class StoreHourController {
                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         StoreHourResponseDto responseDto = storeHourService.updateStoreHour(storeHourId, userDetails.getUser(), requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    @CheckUserAuth(requiredAuthorities = {Auth.ADMIN, Auth.OWNER})
+    @GetMapping("/stores/{storeId}/hours")
+    public ResponseEntity<List<StoreHourResponseDto>> getStoreHour(@PathVariable Long storeId,
+                                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        List<StoreHourResponseDto> responseDto = storeHourService.getStoreHour(storeId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

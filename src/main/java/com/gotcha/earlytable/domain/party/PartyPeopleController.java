@@ -1,15 +1,15 @@
 package com.gotcha.earlytable.domain.party;
 
+import com.gotcha.earlytable.domain.party.dto.PartyPeopleResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class PartyPeopleController {
@@ -20,17 +20,32 @@ public class PartyPeopleController {
         this.partyPeopleService = partyPeopleService;
     }
 
+//    /**
+//     *  파티탈퇴 API
+//     * @param invitationId
+//     * @param userDetails
+//     * @return ResponseEntity<String>
+//     */
+//    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+//    @DeleteMapping("receive/invitations/{invitationId}")
+//    public ResponseEntity<String> leaveInvitation(@PathVariable Long invitationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//
+//        partyPeopleService.leaveInvitation(invitationId, userDetails.getUser());
+//
+//        return ResponseEntity.status(HttpStatus.OK).body("떠나기가 완료되었습니다.");
+//    }
+
     /**
      *  파티탈퇴 API
-     * @param invitationId
+     * @param partyId
      * @param userDetails
      * @return ResponseEntity<String>
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
-    @DeleteMapping("receive/invitations/{invitationId}")
-    public ResponseEntity<String> leaveInvitation(@PathVariable Long invitationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @DeleteMapping("receive/invitations/{partyId}")
+    public ResponseEntity<String> leaveInvitation2(@PathVariable Long partyId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        partyPeopleService.leaveInvitation(invitationId, userDetails.getUser());
+        partyPeopleService.leaveInvitation2(partyId, userDetails.getUser());
 
         return ResponseEntity.status(HttpStatus.OK).body("떠나기가 완료되었습니다.");
     }
@@ -68,5 +83,14 @@ public class PartyPeopleController {
         return ResponseEntity.status(HttpStatus.OK).body("모두 내보내기가 완료되었습니다.");
     }
 
+    @CheckUserAuth(requiredAuthorities = {Auth.USER})
+    @GetMapping("party")
+    public ResponseEntity<List<PartyPeopleResponseDto>> getPartyPeople(@RequestParam Long partyId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        List<PartyPeopleResponseDto> dto = partyPeopleService.getPartyPeople(partyId, userDetails.getUser());
+
+        return ResponseEntity.status(HttpStatus.OK).body(dto);
+
+    }
 
 }

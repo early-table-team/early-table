@@ -4,6 +4,7 @@ import com.gotcha.earlytable.domain.keyword.dto.KeywordRequestDto;
 import com.gotcha.earlytable.domain.keyword.dto.KeywordResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.enums.Auth;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class KeywordController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PostMapping
-    public ResponseEntity<KeywordResponseDto> createKeyword(@RequestBody KeywordRequestDto keywordRequestDto) {
+    public ResponseEntity<KeywordResponseDto> createKeyword(@Valid @RequestBody KeywordRequestDto keywordRequestDto) {
 
         KeywordResponseDto responseDto = keywordService.createKeyword(keywordRequestDto);
 
@@ -45,7 +46,7 @@ public class KeywordController {
     @CheckUserAuth(requiredAuthorities = {Auth.ADMIN})
     @PatchMapping("/{keywordId}")
     public ResponseEntity<KeywordResponseDto> updateKeyword(@PathVariable Long keywordId,
-                                                            @RequestBody KeywordRequestDto keywordRequestDto) {
+                                                            @Valid @RequestBody KeywordRequestDto keywordRequestDto) {
 
         KeywordResponseDto responseDto = keywordService.updateKeyword(keywordId, keywordRequestDto);
 
@@ -93,4 +94,6 @@ public class KeywordController {
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+
 }

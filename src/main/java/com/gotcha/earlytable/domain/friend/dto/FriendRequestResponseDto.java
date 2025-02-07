@@ -6,14 +6,16 @@ import lombok.Getter;
 
 @Getter
 public class FriendRequestResponseDto {
-    private Long friendRequestId;
-    private Long sendUserId;
-    private Long receivedUserId;
-    private InvitationStatus invitationStatus;
+    private final Long friendRequestId;
+    private final Long sendUserId;
+    private final String sendUserNickname;
+    private final Long receivedUserId;
+    private final InvitationStatus invitationStatus;
 
-    public FriendRequestResponseDto(Long friendRequestId, Long sendUserId, Long receivedUserId, InvitationStatus invitationStatus) {
+    public FriendRequestResponseDto(Long friendRequestId, Long sendUserId, String sendUserNickname, Long receivedUserId, InvitationStatus invitationStatus) {
         this.friendRequestId = friendRequestId;
         this.sendUserId = sendUserId;
+        this.sendUserNickname = sendUserNickname;
         this.receivedUserId = receivedUserId;
         this.invitationStatus = invitationStatus;
     }
@@ -22,6 +24,7 @@ public class FriendRequestResponseDto {
         return new FriendRequestResponseDto(
         friendRequest.getFriendRequestId(),
         friendRequest.getSendUser().getId(),
+        friendRequest.getSendUser().getNickName(),
         friendRequest.getReceivedUser().getId(),
         friendRequest.getInvitationStatus()
         );

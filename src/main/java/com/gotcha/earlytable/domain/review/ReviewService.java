@@ -3,6 +3,8 @@ package com.gotcha.earlytable.domain.review;
 import com.gotcha.earlytable.domain.file.FileDetailService;
 import com.gotcha.earlytable.domain.file.FileService;
 import com.gotcha.earlytable.domain.file.entity.File;
+import com.gotcha.earlytable.domain.notification.FcmService;
+import com.gotcha.earlytable.domain.notification.SseEmitterService;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.domain.review.dto.ReviewRequestDto;
@@ -16,7 +18,10 @@ import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.WaitingRepository;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
+import com.gotcha.earlytable.global.enums.NotificationType;
 import com.gotcha.earlytable.global.enums.PartyRole;
+import com.gotcha.earlytable.global.enums.ReservationStatus;
+import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.*;
 import org.springframework.stereotype.Service;
@@ -33,14 +38,20 @@ public class ReviewService {
     private final FileDetailService fileDetailService;
     private final ReservationRepository reservationRepository;
     private final WaitingRepository waitingRepository;
+    private final SseEmitterService sseEmitterService;
+    private final FcmService fcmService;
 
-    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService, FileDetailService fileDetailService, ReservationRepository reservationRepository, WaitingRepository waitingRepository) {
+    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository, FileService fileService,
+                         FileDetailService fileDetailService, ReservationRepository reservationRepository,
+                         WaitingRepository waitingRepository, SseEmitterService sseEmitterService1, FcmService fcmService) {
         this.reviewRepository = reviewRepository;
         this.storeRepository = storeRepository;
         this.fileService = fileService;
         this.fileDetailService = fileDetailService;
         this.reservationRepository = reservationRepository;
         this.waitingRepository = waitingRepository;
+        this.sseEmitterService = sseEmitterService1;
+        this.fcmService = fcmService;
     }
 
 
@@ -62,6 +73,10 @@ public class ReviewService {
             case RESERVATION:
                 Reservation reservation = reservationRepository.findByIdOrElseThrow(reviewRequestDto.getTargetId());
 
+                if(reservation.getReservationStatus() != ReservationStatus.COMPLETED) {
+                    throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+                }
+
                 // 예약 대표자가 본인인지 확인
                 boolean isMineForReservation = reservation.getParty().getPartyPeople().stream()
                         .filter(partyPeople -> partyPeople.getPartyRole().equals(PartyRole.REPRESENTATIVE))
@@ -73,6 +88,10 @@ public class ReviewService {
 
             case WAITING:
                 Waiting waiting = waitingRepository.findByIdOrElseThrow(reviewRequestDto.getTargetId());
+
+                if(waiting.getWaitingStatus() != WaitingStatus.COMPLETED) {
+                    throw new ForbiddenException(ErrorCode.FORBIDDEN_PERMISSION);
+                }
 
                 // 웨이팅 대표자가 본인인지 확인
                 boolean isMineForWaiting = waiting.getParty().getPartyPeople().stream()
@@ -109,6 +128,11 @@ public class ReviewService {
         // 저장
         Review savedReview = reviewRepository.save(review);
 
+        // 알림 전송
+        String message = store.getStoreName() +"의 가게에 리뷰가 달렸습니다.";
+        sseEmitterService.send(store.getUser(), message, NotificationType.REVIEW);
+        fcmService.sendNotificationByToken("리뷰 등록", message, "", store.getUser());
+
         return ReviewResponseDto.toDto(savedReview);
     }
 
@@ -141,11 +165,13 @@ public class ReviewService {
     /**
      * 가게 전체 리뷰 조회 서비스 메서드
      */
-    public List<ReviewResponseDto> getStoreReviews(Long storeId) {
+    public List<StoreReviewResponseDto> getStoreReviews(Long storeId) {
 
-        List<Review> reviews = reviewRepository.findAllByStoreStoreId(storeId);
+        storeRepository.findByIdOrElseThrow(storeId);
 
-        return reviews.stream().map(ReviewResponseDto::toDto).toList();
+        List<Review> reviews = reviewRepository.findAllByStoreStoreIdAndReviewStatus(storeId,ReviewStatus.NORMAL);
+
+        return reviews.stream().map(StoreReviewResponseDto::toDto).toList();
     }
 
     /**
@@ -153,7 +179,7 @@ public class ReviewService {
      */
     public List<ReviewResponseDto> getMyReviews(User user) {
 
-        List<Review> reviews = reviewRepository.findAllByUserId(user.getId());
+        List<Review> reviews = reviewRepository.findAllByUserIdAndReviewStatus(user.getId(),ReviewStatus.NORMAL);
 
         return reviews.stream().map(ReviewResponseDto::toDto).toList();
     }
@@ -163,7 +189,9 @@ public class ReviewService {
      */
     public ReviewTotalResponseDto getStoreReviewTotal(Long storeId) {
 
-        Map<String, Number> result = reviewRepository.findStatisticsByStoreId(storeId);
+        storeRepository.findByIdOrElseThrow(storeId);
+
+        Map<String, Number> result = reviewRepository.findStatisticsByStoreId(storeId, ReviewStatus.NORMAL);
 
         // 리뷰가 존재하지 않으면
         for(Number number : result.values()) {

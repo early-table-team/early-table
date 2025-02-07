@@ -2,7 +2,6 @@ package com.gotcha.earlytable.domain.waitingsetting;
 
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.waitingsetting.entity.WaitingSetting;
-import com.gotcha.earlytable.domain.waitingsetting.enums.WaitingSettingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +21,7 @@ public interface WaitingSettingRepository extends JpaRepository<WaitingSetting, 
     WaitingSetting findByStore(Store store);
 
     List<WaitingSetting> findAllByWaitingSettingStatus(WaitingSettingStatus waitingSettingStatus);
+
+    boolean existsByStore(Store store);
+
 }

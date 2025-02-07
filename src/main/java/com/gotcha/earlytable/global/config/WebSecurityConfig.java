@@ -18,6 +18,11 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity // SecurityFilterChain 빈 설정을 위해 필요.
@@ -46,7 +51,7 @@ public class WebSecurityConfig {
     /**
      * 화이트 리스트.
      */
-    private static final String[] WHITE_LIST = {"/users/register", "/users/login", "/error", "/stores/{storeId}/waiting/offline"};
+    private static final String[] WHITE_LIST = { "/users/healthy","/users/register", "/users/login", "/users/refresh", "/error", "/stores/*/waiting/offline", "/stores/*/view/**"};
 
     public WebSecurityConfig(JwtAuthFilter jwtAuthFilter,
                              AuthenticationProvider authenticationProvider,
@@ -58,6 +63,21 @@ public class WebSecurityConfig {
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // 허용할 origin을 설정
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000", "https://www.earlytable.kr", "https://api.earlytable.kr","https://t1.kakaocdn.net")); // 클라이언트의 주소
+        configuration.setAllowedMethods(List.of("*")); // 허용할 HTTP 메서드
+        configuration.setAllowedHeaders(List.of("*")); // 모든 헤더를 허용
+        configuration.setAllowCredentials(true); // 자격 증명(쿠키, 인증 헤더 등)을 허용
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // 모든 경로에 대해 CORS 설정 적용
+
+        return source;
+    }
+
     /**
      * security 필터.
      *
@@ -66,7 +86,7 @@ public class WebSecurityConfig {
      */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(AbstractHttpConfigurer::disable)
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 활성화 및 설정 적용
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(WHITE_LIST).permitAll()
@@ -108,7 +128,10 @@ public class WebSecurityConfig {
      */
     @Bean
     public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_OWNER\nROLE_ADMIN > ROLE_USER");
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        String hierarchy = "ROLE_ADMIN > ROLE_OWNER\nROLE_ADMIN > ROLE_USER";
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
     }
 
     /**

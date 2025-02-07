@@ -5,8 +5,12 @@ import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class MenuResponseDto {
+
+    private final Long menuId;
 
     private final String menuName;
 
@@ -18,23 +22,34 @@ public class MenuResponseDto {
 
     private final String menuImageUrl;
 
-    public MenuResponseDto(String menuName, String menuContents, Integer menuPrice,
-                           MenuStatus menuStatus, String menuImageUrl) {
+    private final List<String> allergyCategory;
 
+    private final List<String> allergyStuff;
+
+    public MenuResponseDto(Long menuId, String menuName, String menuContents, Integer menuPrice, MenuStatus menuStatus,
+                           String menuImageUrl, List<String> allergyCategory, List<String> allergyStuff) {
+        this.menuId = menuId;
         this.menuName = menuName;
         this.menuContents = menuContents;
         this.menuPrice = menuPrice;
         this.menuStatus = menuStatus;
         this.menuImageUrl = menuImageUrl;
+        this.allergyCategory = allergyCategory;
+        this.allergyStuff = allergyStuff;
     }
 
     public static MenuResponseDto toDto(Menu menu, String menuImageUrl) {
         return new MenuResponseDto(
+                menu.getMenuId(),
                 menu.getMenuName(),
                 menu.getMenuContents(),
                 menu.getMenuPrice(),
                 menu.getMenuStatus(),
-                menuImageUrl
+                menuImageUrl,
+                menu.getAllergyList().stream()
+                        .map(allergy -> allergy.getAllergyStuff().getAllergyStuff()).toList(),
+                menu.getAllergyList().stream()
+                        .map((allergy -> allergy.getAllergyStuff().getAllergyCategory().getAllergyCategory())).toList()
         );
     }
 
@@ -44,11 +59,17 @@ public class MenuResponseDto {
                 .findAny().map(FileDetail::getFileUrl).orElse(null);
 
         return new MenuResponseDto(
+                menu.getMenuId(),
                 menu.getMenuName(),
                 menu.getMenuContents(),
                 menu.getMenuPrice(),
                 menu.getMenuStatus(),
-                imageUrl
-        );
+                imageUrl,
+                menu.getAllergyList().stream()
+                        .map(allergy -> allergy.getAllergyStuff().getAllergyStuff()).toList(),
+                menu.getAllergyList().stream()
+                        .map((allergy -> allergy.getAllergyStuff().getAllergyCategory().getAllergyCategory())).toList()
+                );
     }
+
 }

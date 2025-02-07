@@ -6,10 +6,13 @@ import com.gotcha.earlytable.global.dto.CommonResponseBody;
 import com.gotcha.earlytable.global.error.exception.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -49,12 +52,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     protected ResponseEntity<CommonResponseBody<String>> handleMethodValidationExceptions(
             HandlerMethodValidationException e) {
-        String message = e.getParameterValidationResults().get(0).getResolvableErrors().get(0)
-                .getDefaultMessage();
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>(message));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요." + e.getMessage()));
     }
 
     /**
@@ -66,11 +67,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonResponseBody<String>> handleValidationExceptions(
             MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>(message));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요." + e.getMessage()));
     }
 
     /**
@@ -238,8 +238,42 @@ public class GlobalExceptionHandler {
      * @param e 예외 인스턴스
      * @return {@code ResponseEntity<CommonResponseBody<Void>>}
      */
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    protected ResponseEntity<CommonResponseBody<Void>> handleHttpMessageNotWritableExceptions(HttpMessageNotWritableException e,
+                                                                                              HttpServletRequest request) {
+
+        // 요청 헤더에서 Content-Type이 text/event-stream인지 확인
+        if ("text/event-stream".equals(request.getHeader("Accept"))) {
+            // SSE 스트림을 종료하기 위한 별도 로직
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_EVENT_STREAM)
+                    .body(new CommonResponseBody<>("SSE stream error"));
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(new CommonResponseBody<>(e.getMessage()));
+    }
+
+        /**
+         * 그외의 예외 처리.
+         *
+         * @param e 예외 인스턴스
+         * @return {@code ResponseEntity<CommonResponseBody<Void>>}
+         */
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e) {
+    protected ResponseEntity<CommonResponseBody<Void>> handleOtherExceptions(Exception e, HttpServletRequest request) {
+
+        // 요청 헤더에서 Content-Type이 text/event-stream인지 확인
+        if ("text/event-stream".equals(request.getHeader("Accept"))) {
+            // SSE 스트림을 종료하기 위한 별도 로직
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_EVENT_STREAM)
+                    .body(new CommonResponseBody<>("SSE stream error"));
+        }
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new CommonResponseBody<>(e.getMessage()));

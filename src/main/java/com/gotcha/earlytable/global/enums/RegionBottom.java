@@ -268,4 +268,8 @@ public enum RegionBottom {
         this.regionTop = regionTop;
         this.regionBottomName = regionBottomName;
     }
+
+    public String getName() {
+        return name();
+    }
 }

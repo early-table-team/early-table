@@ -48,7 +48,7 @@ public class StoreKeywordService {
         // 가게 키워드 리스트 생성
         for(Store store  : storeList) {
             // 존재하면 패스
-            if(storeKeywordRepository.existsByStore(store)){
+            if(storeKeywordRepository.existsByKeywordAndStore(keyword, store)){
                 continue;
             }
             StoreKeyword storeKeyword = new StoreKeyword(store, keyword);

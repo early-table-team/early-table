@@ -2,7 +2,6 @@ package com.gotcha.earlytable.domain.waitingsetting;
 
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingRequestDto;
 import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingResponseDto;
-import com.gotcha.earlytable.domain.waitingsetting.dto.WaitingSettingUpdateStatusResponseDto;
 import com.gotcha.earlytable.global.annotation.CheckUserAuth;
 import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
@@ -53,7 +52,7 @@ public class WaitingSettingController {
     @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
     @PutMapping("/waiting/settings/{waitingSettingId}")
     public ResponseEntity<WaitingSettingResponseDto> updateWaitingSetting(@PathVariable Long waitingSettingId,
-                                                                          @RequestBody WaitingSettingRequestDto requestDto,
+                                                                          @Valid @RequestBody WaitingSettingUpdateRequestDto requestDto,
                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         WaitingSettingResponseDto responseDto = waitingSettingService.updateWaitingSetting(waitingSettingId,
@@ -108,5 +107,15 @@ public class WaitingSettingController {
         waitingSettingService.deleteSettingService(waitingSettingId, userDetails.getUser().getId());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+
+    @CheckUserAuth(requiredAuthorities = {Auth.OWNER})
+    @GetMapping("stores/{storeId}/waiting/settings")
+    public ResponseEntity<WaitingSettingResponseDto> getWaitingSettingByStoreId(@PathVariable Long storeId) {
+
+        WaitingSettingResponseDto responseDto = waitingSettingService.getWaitingSettingByStoreId(storeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }

@@ -26,7 +26,7 @@ public class AllergyCategory extends BaseEntity {
     }
 
     public void update(AllergyCategoryRequestDto allergyCategoryRequestDto) {
-        if(allergyCategoryRequestDto.getAllergyCategory() != null) {
+        if(allergyCategoryRequestDto.getAllergyCategory() != null && !allergyCategoryRequestDto.getAllergyCategory().isEmpty()) {
             this.allergyCategory = allergyCategoryRequestDto.getAllergyCategory();
         }
     }

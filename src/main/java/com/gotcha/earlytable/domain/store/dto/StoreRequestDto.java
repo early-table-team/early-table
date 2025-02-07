@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +23,7 @@ public class StoreRequestDto {
     private final String storeName;
 
     @NotBlank
+    @Pattern(regexp = "^\\d{2,3}-\\d{4}-\\d{4}$", message = "유효한 전화 번호를 입력하세요.")
     private final String storeTel;
 
     @NotBlank
@@ -30,11 +32,11 @@ public class StoreRequestDto {
     @NotBlank
     private final String storeContents;
 
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     private final RegionTop regionTop;
 
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     private final RegionBottom regionBottom;
 
