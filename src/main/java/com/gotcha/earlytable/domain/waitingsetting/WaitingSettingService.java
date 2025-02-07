@@ -160,4 +160,13 @@ public class WaitingSettingService {
 
         return WaitingSettingUpdateStatusResponseDto.toDto(waitingSetting);
     }
+
+    public WaitingSettingResponseDto getWaitingSettingByStoreId(Long storeId) {
+
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
+        WaitingSetting waitingSetting = waitingSettingRepository.findByStore(store);
+
+        return WaitingSettingResponseDto.toDto(waitingSetting);
+    }
+
 }
