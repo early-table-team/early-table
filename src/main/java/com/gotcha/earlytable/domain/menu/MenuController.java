@@ -71,6 +71,18 @@ public class MenuController {
     }
 
     /**
+     * 메뉴 단건 조회 API
+     * @param menuId
+     * @return MenuResponseDto
+     */
+    @GetMapping("/{menuId}")
+    public ResponseEntity<MenuResponseDto> getMenu(@PathVariable Long storeId,@PathVariable Long menuId) {
+        MenuResponseDto menuResponseDto = menuService.getMenu(menuId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(menuResponseDto);
+    }
+
+    /**
      * 메뉴 삭제 API
      * @param menuId
      * @return String
