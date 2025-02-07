@@ -38,6 +38,8 @@ jobs:
 
 
 
+
+
   # Ec2 에 배포
   deploy-to-ec2:
     needs: docker-build-and-push
