@@ -9,7 +9,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class ReceivedInvitationResponseDto {
+public class ReceivedAllInvitationResponseDto {
 
     private final Long invitationId;
 
@@ -23,17 +23,20 @@ public class ReceivedInvitationResponseDto {
 
     private final InvitationStatus status;
 
-    public ReceivedInvitationResponseDto(Long invitationId, String storeName, Long sendUserId, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status) {
+    private final String source;
+
+    public ReceivedAllInvitationResponseDto(Long invitationId, String storeName, Long sendUserId, LocalDateTime reservationTime, Integer personnelCount, InvitationStatus status, String source) {
         this.invitationId = invitationId;
         this.storeName = storeName;
         this.sendUserId = sendUserId;
         this.reservationTime = reservationTime;
         this.personnelCount = personnelCount;
         this.status = status;
+        this.source = source;
     }
 
 
-    public static ReceivedInvitationResponseDto toDto(Invitation invitation) {
+    public static ReceivedAllInvitationResponseDto toDto(Invitation invitation) {
         Long invitationId = invitation.getInvitationId();
         String storeName = invitation.getParty().getReservation().getStore().getStoreName();
         Long sendUserId = invitation.getSendUser().getId();
@@ -41,11 +44,12 @@ public class ReceivedInvitationResponseDto {
                 .atTime(invitation.getParty().getReservation().getReservationTime());
         Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
         InvitationStatus status = invitation.getInvitationStatus();
+        String source = "";
 
-        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
+        return new ReceivedAllInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status, source);
     }
 
-    public static ReceivedInvitationResponseDto toDtoForReservation(Invitation invitation) {
+    public static ReceivedAllInvitationResponseDto toDtoForReservation(Invitation invitation) {
         Long invitationId = invitation.getInvitationId();
         String storeName = invitation.getParty().getReservation().getStore().getStoreName();
         Long sendUserId = invitation.getSendUser().getId();
@@ -53,21 +57,21 @@ public class ReceivedInvitationResponseDto {
                 .atTime(invitation.getParty().getReservation().getReservationTime());
         Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
         InvitationStatus status = invitation.getInvitationStatus();
+        String source = "Reservation";
 
-        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
+        return new ReceivedAllInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status, source);
     }
 
-    public static ReceivedInvitationResponseDto toDtoForWaiting(Invitation invitation) {
+    public static ReceivedAllInvitationResponseDto toDtoForWaiting(Invitation invitation) {
         Long invitationId = invitation.getInvitationId();
         String storeName = invitation.getParty().getWaiting().getStore().getStoreName();
         Long sendUserId = invitation.getSendUser().getId();
         LocalDateTime reservationTime = invitation.getParty().getWaiting().getCreatedAt();
         Integer personnelCount = invitation.getParty().getWaiting().getPersonnelCount();
         InvitationStatus status = invitation.getInvitationStatus();
+        String source = "Waiting";
 
-        return new ReceivedInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status);
+        return new ReceivedAllInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status, source);
     }
-
-
 
 }
