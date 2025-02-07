@@ -9,6 +9,7 @@ import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.enums.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "user")
+@BatchSize(size = 100)
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

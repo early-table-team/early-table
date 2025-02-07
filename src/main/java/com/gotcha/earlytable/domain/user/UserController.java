@@ -39,6 +39,11 @@ public class UserController {
         this.searchService = searchService;
     }
 
+    @GetMapping("/healthy")
+    public ResponseEntity<String> healthy() {
+        return new ResponseEntity<>("Healthy", HttpStatus.OK);
+    }
+
     /**
      * 회원가입 API
      *
