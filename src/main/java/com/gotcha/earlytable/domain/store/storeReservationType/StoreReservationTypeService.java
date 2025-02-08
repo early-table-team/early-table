@@ -110,22 +110,22 @@ public class StoreReservationTypeService {
     @Transactional
     public void deleteStoreReservationType(Long storeId, User user, StoreReservationTypeDeleteRequestDto requestDto) {
 
-        Optional<StoreReservationType> storeReservationType = storeReservationTypeRepository.findByStoreStoreId(storeId);
+        Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         // 존재하지 않으면 예외처리
-        if (storeReservationType.isEmpty()) {
+        if (!storeReservationTypeRepository.existsByStoreStoreIdAndReservationType(storeId,requestDto.getReservationType())) {
             throw new NotFoundException(ErrorCode.NOT_FOUND);
         }
 
+        StoreReservationType storeReservationType = storeReservationTypeRepository.findByStoreAndReservationType(store, requestDto.getReservationType());
+
         // 본인 가게인지 확인
-        if (user.getAuth().equals(Auth.OWNER) && !storeReservationType.get().getStore().getUser().getId().equals(user.getId())) {
+        if (user.getAuth().equals(Auth.OWNER) && !storeReservationType.getStore().getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         // 삭제
-        storeReservationTypeRepository
-                .deleteByStoreReservationTypeIdAndReservationType(storeReservationType.get().getStoreReservationTypeId(),
-                        requestDto.getReservationType());
+        storeReservationTypeRepository.delete(storeReservationType);
     }
 
     /**
