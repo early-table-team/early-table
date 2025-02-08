@@ -104,11 +104,11 @@ public class WaitingSequenceService {
 
         String leftKey = "waiting:store:" + waiting.getStore().getStoreId() + ":" + waiting.getWaitingType() + ":left";
 
-        RMap<Long, Long> waitingLeftMap = redissonClient.getMap(leftKey);
+        RMap<Long, Integer> waitingLeftMap = redissonClient.getMap(leftKey);
 
-        Long left = waitingLeftMap.get(waiting.getWaitingId());
+        Integer left = waitingLeftMap.get(waiting.getWaitingId());
 
-        timeQueue.add((int) (takenTime / left), waiting.getWaitingId()); // 소요시간 / 등록 시 대기 팀 수 = 1팀 당 소요시간 , 웨이팅 아이디
+        timeQueue.add((long) (takenTime / left), waiting.getWaitingId()); // 소요시간 / 등록 시 대기 팀 수 = 1팀 당 소요시간 , 웨이팅 아이디
 
         if (timeQueue.size() > 150) {
             timeQueue.remove(0);
