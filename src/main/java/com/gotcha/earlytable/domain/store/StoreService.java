@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -287,8 +287,9 @@ public class StoreService {
      * @param requestDto
      * @return
      */
-    public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto) {
-        String cacheKey = "store_search:" + getCacheKey(requestDto);
+    public List<StoreSearchResponseDto> searchStore(StoreSearchRequestDto requestDto, Pageable pageable) {
+        String cacheKey = "store_search:" + getCacheKey(requestDto) + ":page=" + pageable.getPageNumber();
+
 
         // RBucket을 JsonJacksonCodec과 함께 사용
         RBucket<String> cachedResult = redissonClient.getBucket(cacheKey, JsonJacksonCodec.INSTANCE);
@@ -308,7 +309,7 @@ public class StoreService {
 
         if (result == null || result.isEmpty()) {
             // 캐시된 결과가 없으면 DB에서 조회 후 캐시에 저장
-            result = storeRepository.searchStoreQuery(requestDto);
+            result = storeRepository.searchStoreQuery(requestDto, pageable);
 
             try {
                 String resultJsonToCache = objectMapper.writeValueAsString(result); // List to JSON
