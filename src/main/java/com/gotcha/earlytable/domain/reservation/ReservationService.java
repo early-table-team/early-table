@@ -412,4 +412,37 @@ public class ReservationService {
 
         return true;
     }
+
+    /**
+     * 오너 입장에서 예약 단건 조회 API
+     * @param reservationId
+     * @param user
+     * @return
+     */
+    public OwnerReservationResponseDto getReservationDetail(Long reservationId, User user) {
+
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+
+        List<ReturnMenuListDto> menuList = new ArrayList<>();
+        reservation.getReservationMenuList()
+                .forEach(ml -> {
+                    ReturnMenuListDto menus = new ReturnMenuListDto(ml.getMenu().getMenuId(), ml.getMenuCount(), ml.getMenu().getMenuName());
+                    menuList.add(menus);
+                });
+
+        return new OwnerReservationResponseDto(reservation);
+    }
+
+    /**
+     * 가게 오너가 예약 상태 변경 API
+     * @param reservationId
+     * @param user
+     * @return OwnerReservationResponseDto
+     */
+    public void updateReservationStatus(Long reservationId, ReservationUpdateStatusRequestDto requestDto, User user) {
+        Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+
+        reservation.modifyStatus(requestDto.getReservationStatus());
+        reservationRepository.save(reservation);
+    }
 }
