@@ -39,7 +39,7 @@ public class FcmService {
             fcmRepository.save(fcmToken);
         } else {
             //update
-            FcmToken fcmToken = fcmRepository.findByIdOrElseThrow(user.getId());
+            FcmToken fcmToken = fcmRepository.findByUserId(user.getId());
             fcmToken.update(tokenSaveRequestDto.getToken());
             fcmRepository.save(fcmToken);
         }
