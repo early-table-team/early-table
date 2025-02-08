@@ -25,6 +25,7 @@ public class FCMInitializer {
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
 
+
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
             }
