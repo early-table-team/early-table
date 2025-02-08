@@ -4,34 +4,35 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.C;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+
+import java.io.FileInputStream;
 import java.io.IOException;
 
 @Component
-@Slf4j
 public class FCMInitializer {
 
-    @Value("${FIREBASE_CONFIG_PATH}")
-    private String firebaseConfigPath;
-
-    @PostConstruct //빈 객체가 생성되고 의존성 주입이 완료된 후에 초기화가 실행될 수 있도록 @PostConstructor 설정
+    @PostConstruct
     public void initialize() {
         try {
-            GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream());
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(googleCredentials)
-                    .build();
-            if(FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                log.info("Firebase application has been initialized");
+            String firebaseConfigPath = System.getenv("FIREBASE_CONFIG_PATH");
+            if (firebaseConfigPath == null || firebaseConfigPath.isEmpty()) {
+                throw new RuntimeException("FIREBASE_CONFIG_PATH 환경 변수가 설정되지 않았습니다.");
             }
-        } catch (IOException e){
-            log.error(e.getMessage());
+
+            FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+
+
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+            }
+
+            System.out.println("🔥 Firebase가 성공적으로 초기화되었습니다.");
+        } catch (IOException e) {
+            throw new RuntimeException("Firebase 설정 파일을 로드하는 중 오류 발생: " + e.getMessage(), e);
         }
     }
 }

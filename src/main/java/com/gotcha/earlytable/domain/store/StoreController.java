@@ -6,6 +6,8 @@ import com.gotcha.earlytable.global.config.auth.UserDetailsImpl;
 import com.gotcha.earlytable.global.enums.Auth;
 import jakarta.validation.Valid;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -138,11 +140,13 @@ public class StoreController {
      * @param requestDto
      * @return
      */
-    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/search")
-    public ResponseEntity<List<StoreSearchResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto) {
+    public ResponseEntity<List<StoreSearchResponseDto>> searchStore(@ModelAttribute StoreSearchRequestDto requestDto,
+                                                                    @RequestParam(defaultValue = "1") int page,
+                                                                    @RequestParam(defaultValue = "20") int size) {
 
-        List<StoreSearchResponseDto> responseDtoList = storeService.searchStore(requestDto);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<StoreSearchResponseDto> responseDtoList = storeService.searchStore(requestDto, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }
 

@@ -1,12 +1,12 @@
 package com.gotcha.earlytable.domain.store;
 
 import com.gotcha.earlytable.domain.menu.MenuStatus;
-import com.gotcha.earlytable.domain.store.dto.StoreListResponseDto;
 import com.gotcha.earlytable.domain.store.dto.StoreSearchRequestDto;
 import com.gotcha.earlytable.domain.store.dto.StoreSearchResponseDto;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
         this.queryFactory = queryFactory;
     }
 
-    public List<StoreSearchResponseDto> searchStoreQuery(StoreSearchRequestDto requestDto) {
+    public List<StoreSearchResponseDto> searchStoreQuery(StoreSearchRequestDto requestDto, Pageable pageable) {
 
         List<Store> storeList = queryFactory.selectFrom(store)
                 .leftJoin(store.menuList, menu).fetchJoin() // Store와 Menu 간의 조인
@@ -36,6 +36,8 @@ public class StoreRepositoryQueryImpl implements StoreRepositoryQuery {
                         allergyStuffExclude(requestDto.getAllergyStuff()) // 알러지 하위 조건
                 )
                 .distinct()
+                .offset(pageable.getOffset()) // 페이지 시작점
+                .limit(pageable.getPageSize()) // 페이지 크기 설정
                 .fetch();
 
 
