@@ -30,6 +30,7 @@ public class FCMInitializer {
                     .setCredentials(googleCredentials)
                     .build();
 
+
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
                 log.info("Firebase application has been initialized");
