@@ -115,6 +115,8 @@ public class ReservationController {
     @DeleteMapping("/reservations/{reservationId}")
     public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
+
+
         reservationService.cancelReservation(reservationId, userDetails.getUser());
 
         //취소는 NO_CONTENT 반환

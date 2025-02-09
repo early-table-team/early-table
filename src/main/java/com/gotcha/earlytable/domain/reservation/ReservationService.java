@@ -49,11 +49,14 @@ public class ReservationService {
     private final RedissonClient redissonClient;
     private final TransactionTemplate transactionTemplate;
     private final ReviewRepository reviewRepository;
+    private final KakaoPayService kakaoPayService;
+
 
     public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository,
                               MenuRepository menuRepository, PartyRepository partyRepository,
                               ReservationMenuRepository reservationMenuRepository,
-                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate, ReviewRepository reviewRepository) {
+                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate,
+                              ReviewRepository reviewRepository, KakaoPayService kakaoPayService) {
         this.reservationRepository = reservationRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
@@ -63,6 +66,7 @@ public class ReservationService {
         this.redissonClient = redissonClient;
         this.transactionTemplate = transactionTemplate;
         this.reviewRepository = reviewRepository;
+        this.kakaoPayService = kakaoPayService;
     }
 
     /**
@@ -359,6 +363,8 @@ public class ReservationService {
     public void cancelReservation(Long reservationId, User user) {
 
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        kakaoPayService.cancelPayment(String.valueOf(reservationId));
+
         // 예약에 등록된 유저가 아닌경우
         User userData = reservation.getParty().getPartyPeople().stream().map(PartyPeople::getUser).filter(partyPeopleUser -> partyPeopleUser.getId().equals(user.getId())).findFirst().orElse(null);
         if (userData == null) {
