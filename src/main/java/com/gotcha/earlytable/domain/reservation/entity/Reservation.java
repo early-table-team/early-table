@@ -40,6 +40,12 @@ public class Reservation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ReservationStatus reservationStatus;
 
+    @Column
+    private String tid;
+
+    @Column
+    private Long amount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
@@ -60,7 +66,7 @@ public class Reservation extends BaseEntity {
         this.personnelCount = personnelCount;
         this.store = store;
         addParty(party);
-        this.reservationStatus = ReservationStatus.PENDING;
+        this.reservationStatus = ReservationStatus.BEFORE;
         this.tableSize = tableSize;
     }
 
@@ -71,6 +77,14 @@ public class Reservation extends BaseEntity {
 
     public void modifyStatus(ReservationStatus newStatus) {
         this.reservationStatus = newStatus;
+    }
+
+    public void setTid(String tid){
+        this.tid = tid;
+    }
+
+    public void setAmount(Long amount){
+        this.amount = amount;
     }
 
 }
