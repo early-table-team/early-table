@@ -70,7 +70,7 @@ public class UserController {
         String accessToken = userService.loginUser(requestDto);
 
         response.addHeader("Authorization", accessToken);
-        response.addCookie(userService.craeteCookie(requestDto.getEmail()));
+        response.setHeader("Set-Cookie", userService.createCookie(requestDto.getEmail()));
 
 
         return ResponseEntity.status(HttpStatus.OK).body(new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), accessToken));
@@ -123,7 +123,7 @@ public class UserController {
 
         if(newAccessToken != null) {
             response.addHeader("Authorization", newAccessToken);
-            response.addCookie(userService.craeteCookie(email));
+            response.setHeader("Set-Cookie", userService.createCookie(email));
             return ResponseEntity.ok(new JwtAuthResponse(AuthenticationScheme.BEARER.getName(), newAccessToken));
         }
 
