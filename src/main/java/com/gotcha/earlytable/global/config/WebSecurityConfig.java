@@ -70,7 +70,7 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000",
                 "https://www.earlytable.kr", "https://earlytable.kr",
                 "https://api.earlytable.kr", "https://www.api.earlytable.kr", "https://t1.kakaocdn.net",
-                "https://earlytable.store", "https://www.earlytable.store")); // 클라이언트의 주소
+                "https://earlytable.store", "https://www.earlytable.store", "https://d3reh3newouhni.cloudfront.net/")); // 클라이언트의 주소
         configuration.setAllowedMethods(List.of("*")); // 허용할 HTTP 메서드
         configuration.setAllowedHeaders(List.of("*")); // 모든 헤더를 허용
         configuration.setAllowCredentials(true); // 자격 증명(쿠키, 인증 헤더 등)을 허용
