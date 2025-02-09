@@ -31,9 +31,9 @@ public class InterestStoreController {
     @PostMapping("/{storeId}")
     public ResponseEntity<String> registerStore(@PathVariable Long storeId, @AuthenticationPrincipal UserDetailsImpl userDetails){
 
-        interestStoreService.registerStore(storeId, userDetails.getUser());
+        String message = interestStoreService.registerStore(storeId, userDetails.getUser());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("관심가게로 등록되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
     /**

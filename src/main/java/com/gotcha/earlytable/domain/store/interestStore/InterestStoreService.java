@@ -48,16 +48,22 @@ public class InterestStoreService {
      * @param user
      */
     @Transactional
-    public void registerStore(Long storeId, User user){
+    public String registerStore(Long storeId, User user){
 
         //storeId에 해당하는 가게를 찾을 수 없는 경우 NOT FOUND
         Store store = storeRepository.findByIdOrElseThrow(storeId);
 
         boolean isStore = interestStoreRepository.existsByStoreAndUser(store, user);
-        if(isStore){throw new CustomException(ErrorCode.DUPLICATE_VALUE);}
+        if(isStore) {
+            interestStoreRepository.deleteByStore(store);
+
+            return "관심가게에서 삭제되었습니다.";
+        }
 
         InterestStore interestStore = new InterestStore(user, store);
         interestStoreRepository.save(interestStore);
+
+        return "관심가게로 등록되었습니다.";
     }
 
     /**
