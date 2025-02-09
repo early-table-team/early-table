@@ -67,7 +67,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 허용할 origin을 설정
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000",
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000", "http://218.232.53.132",
                 "https://www.earlytable.kr", "https://earlytable.kr",
                 "https://api.earlytable.kr", "https://www.api.earlytable.kr", "https://t1.kakaocdn.net",
                 "https://earlytable.store", "https://www.earlytable.store", "https://d3reh3newouhni.cloudfront.net/")); // 클라이언트의 주소
