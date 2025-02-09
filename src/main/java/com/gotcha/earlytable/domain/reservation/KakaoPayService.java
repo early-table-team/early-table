@@ -1,7 +1,6 @@
 package com.gotcha.earlytable.domain.reservation;
 import com.gotcha.earlytable.domain.menu.MenuRepository;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
-import com.gotcha.earlytable.domain.party.entity.PartyPeople;
 import com.gotcha.earlytable.domain.reservation.dto.ReservationCreateResponseDto;
 import com.gotcha.earlytable.domain.reservation.entity.Reservation;
 import com.gotcha.earlytable.global.enums.PartyRole;
@@ -57,9 +56,9 @@ public class KakaoPayService {
         requestBody.put("total_amount", total); // 결제 금액  -> 어차피 뱃은 별도로 들어감 금액 / 11
         requestBody.put("tax_free_amount", 100); // 비과세 금액
         requestBody.put("vat_amount",100);
-        requestBody.put("approval_url", "http://www.earlytable.kr/processing"); // 결제 승인 URL
+        requestBody.put("approval_url", "https://www.earlytable.kr/processing"); // 결제 승인 URL
         requestBody.put("fail_url", "https://www.earlytable.kr/payment-fail"); // 결제 실패 URL
-        requestBody.put("cancel_url", "http://www.earlytable.kr/home"); // 결제 취소 URL
+        requestBody.put("cancel_url", "https://www.earlytable.kr/home"); // 결제 취소 URL
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 
