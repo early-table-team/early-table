@@ -17,7 +17,7 @@ public class ReservationGetAllResponseDto {
     private final String datetime;
 
     public ReservationGetAllResponseDto(Reservation reservation) {
-        this.storeId = reservation.getReservationId();
+        this.storeId = reservation.getStore().getStoreId();
         this.reservationId = reservation.getReservationId();
         this.storeName = reservation.getStore().getStoreName();
         this.reservationStatus = reservation.getReservationStatus().getValue();
