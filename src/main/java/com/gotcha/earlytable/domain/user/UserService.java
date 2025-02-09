@@ -9,14 +9,11 @@ import com.gotcha.earlytable.domain.friend.FriendRepository;
 import com.gotcha.earlytable.domain.user.dto.*;
 import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.config.PasswordEncoder;
-import com.gotcha.earlytable.global.enums.ReservationStatus;
-import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.ConflictException;
 import com.gotcha.earlytable.global.error.exception.UnauthorizedException;
 import com.gotcha.earlytable.global.util.JwtProvider;
-import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -125,7 +122,7 @@ public class UserService {
      *
      * @return Cookie
      */
-    public Cookie craeteCookie(String email) {
+    public String createCookie(String email) {
 
         String cookieName = "refreshToken";
         String cookieValue = jwtProvider.generateRefreshToken(email); // 쿠키벨류엔 글자제한이 이써, 벨류로 만들어담아준다.
@@ -133,13 +130,11 @@ public class UserService {
         // refreshToken db 저장
         refreshTokenService.saveRefreshToken(email, cookieValue);
 
-        Cookie cookie = new Cookie(cookieName, cookieValue);
-        // 쿠키 속성 설정
-        cookie.setHttpOnly(true);  //httponly 옵션 설정
-        // cookie.setSecure(true); //https 옵션 설정
-        cookie.setPath("/"); // 모든 곳에서 쿠키열람이 가능하도록 설정
-        cookie.setMaxAge(60 * 60 * 24); //쿠키 만료시간 설정
-        return cookie;
+        // Set-Cookie 헤더를 직접 추가 (SameSite=None; Secure 포함)
+        return String.format(
+                "%s=%s; Path=/; HttpOnly; Secure; Max-Age=%d; SameSite=None",
+                cookieName, cookieValue, 60 * 60 * 24
+        );
 
     }
 

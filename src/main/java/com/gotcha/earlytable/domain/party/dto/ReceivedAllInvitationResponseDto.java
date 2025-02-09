@@ -2,7 +2,6 @@ package com.gotcha.earlytable.domain.party.dto;
 
 
 import com.gotcha.earlytable.domain.party.entity.Invitation;
-import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.global.enums.InvitationStatus;
 import lombok.Getter;
 
@@ -57,7 +56,7 @@ public class ReceivedAllInvitationResponseDto {
                 .atTime(invitation.getParty().getReservation().getReservationTime());
         Integer personnelCount = invitation.getParty().getReservation().getPersonnelCount();
         InvitationStatus status = invitation.getInvitationStatus();
-        String source = "Reservation";
+        String source = "예약";
 
         return new ReceivedAllInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status, source);
     }
@@ -69,7 +68,7 @@ public class ReceivedAllInvitationResponseDto {
         LocalDateTime reservationTime = invitation.getParty().getWaiting().getCreatedAt();
         Integer personnelCount = invitation.getParty().getWaiting().getPersonnelCount();
         InvitationStatus status = invitation.getInvitationStatus();
-        String source = "Waiting";
+        String source = "웨이팅";
 
         return new ReceivedAllInvitationResponseDto(invitationId, storeName, sendUserId, reservationTime, personnelCount, status, source);
     }

@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요." + e.getMessage()));
+                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요."));
     }
 
     /**
@@ -68,9 +68,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonResponseBody<String>> handleValidationExceptions(
             MethodArgumentNotValidException e) {
 
+        String errorMessage = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new CommonResponseBody<>("잘못된 값을 입력하셨습니다. 다시 입력해주세요." + e.getMessage()));
+                .body(new CommonResponseBody<>(errorMessage));
     }
 
     /**

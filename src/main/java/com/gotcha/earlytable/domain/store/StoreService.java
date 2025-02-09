@@ -11,6 +11,7 @@ import com.gotcha.earlytable.domain.pendingstore.entity.PendingStore;
 import com.gotcha.earlytable.domain.reservation.ReservationRepository;
 import com.gotcha.earlytable.domain.store.dto.*;
 import com.gotcha.earlytable.domain.store.entity.*;
+import com.gotcha.earlytable.domain.store.enums.DayStatus;
 import com.gotcha.earlytable.domain.store.enums.ReservationType;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.entity.StoreTable;
@@ -491,6 +492,9 @@ public class StoreService {
 
         List<StoreHour> storeHourList = storeHourRepository.findByStore(store);
         for (StoreHour storeHour : storeHourList) {
+            if(storeHour.getDayStatus().equals(DayStatus.CLOSED)){
+                continue;
+            }
             switch (storeHour.getDayOfWeek()) {
                 case SUN -> restWeekdayList.remove(Integer.valueOf(0)); // 0 제거
                 case MON -> restWeekdayList.remove(Integer.valueOf(1)); // 1 제거
