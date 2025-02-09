@@ -177,16 +177,8 @@ public class WaitingService {
     @Transactional
     public List<WaitingResponseDto> getWaitingList(User user, Pageable pageable) {
 
-        // 로그인 된 사용자로 PartyPeople 리스트 조회
-        Page<PartyPeople> partyPeopleList = partyPeopleRepository.findByUser(user, pageable);
-
-        // PartyPeople 리스트에서 Waiting 추출
-        List<Waiting> waitingList = partyPeopleList.stream()
-                .map(PartyPeople::getParty)        // Party 추출
-                .map(Party::getWaiting)           // Party에서 Waiting 추출
-                .filter(Objects::nonNull)         // null 값 제외
-                .filter(waiting -> waiting.getWaitingStatus() != WaitingStatus.DELAY) // waitingStatus가 "delay"인 항목 제외
-                .toList();
+        Page<Waiting> waitingList
+                = waitingRepository.findByPartyPartyPeopleUserAndWaitingStatusNotOrderByCreatedAtDesc(user, pageable, WaitingStatus.DELAY);
 
         return waitingList.stream()
                 .map(WaitingResponseDto::new)

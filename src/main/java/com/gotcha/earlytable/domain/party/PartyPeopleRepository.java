@@ -13,8 +13,6 @@ import java.util.List;
 @Repository
 public interface PartyPeopleRepository extends JpaRepository<PartyPeople, Long> {
 
-    Page<PartyPeople> findByUser(User user, Pageable pageable);
-
     void deleteByUser(User user);
 
     void deleteByUserId(Long userId);
