@@ -17,4 +17,5 @@ public interface InterestStoreRepository extends JpaRepository<InterestStore, Lo
 
     boolean existsByStoreAndUser(Store store, User user);
 
+    void deleteByStore(Store store);
 }
