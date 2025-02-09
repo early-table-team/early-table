@@ -24,10 +24,8 @@ import com.gotcha.earlytable.global.error.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
-import org.redisson.api.RQueue;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -237,9 +235,8 @@ public class ReservationService {
      * @param user
      * @return
      */
-    public List<ReservationGetAllResponseDto> getAllReservations(User user, int page, int size) {
+    public List<ReservationGetAllResponseDto> getAllReservations(User user, Pageable pageable) {
 
-        Pageable pageable = PageRequest.of(page, size);
         Page<Reservation> reservationPage = reservationRepository.findByUser(user, pageable);
 
         List<ReservationGetAllResponseDto> resDto = new ArrayList<>();
