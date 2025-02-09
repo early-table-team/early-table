@@ -180,7 +180,6 @@ public class WaitingService {
         Page<Waiting> waitingList
                 = waitingRepository.findByPartyPartyPeopleUserAndWaitingStatusNotOrderByCreatedAtDesc(user, pageable, WaitingStatus.DELAY);
 
-
         return waitingList.stream()
                 .map(WaitingResponseDto::new)
                 .collect(Collectors.toList());
