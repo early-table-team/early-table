@@ -22,7 +22,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 
-    Page<Reservation> findByPartyPartyPeopleUserOrderByReservationDateDesc(User user, Pageable pageable);
+    Page<Reservation> findByPartyPartyPeopleUserAndReservationStatusNotOrderByReservationDateDesc(User user, ReservationStatus reservationStatus, Pageable pageable);
 
     int countByReservationDateAndReservationTimeAndTableSizeAndReservationStatusNot(LocalDate date, LocalTime reservationTime, int tableMaxNumber, ReservationStatus reservationStatus);
 

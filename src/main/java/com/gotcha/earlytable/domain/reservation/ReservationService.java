@@ -241,7 +241,7 @@ public class ReservationService {
      */
     public List<ReservationGetAllResponseDto> getAllReservations(User user, Pageable pageable) {
 
-        Page<Reservation> reservationPage = reservationRepository.findByPartyPartyPeopleUserOrderByReservationDateDesc(user, pageable);
+        Page<Reservation> reservationPage = reservationRepository.findByPartyPartyPeopleUserAndReservationStatusNotOrderByReservationDateDesc(user, ReservationStatus.BEFORE, pageable);
 
         List<ReservationGetAllResponseDto> resDto = new ArrayList<>();
         reservationPage.forEach(reservation -> {
