@@ -147,7 +147,7 @@ public class WaitingSequenceService {
         int time;
 
         if (timeQueue.size() < 10) {
-            time = 15;
+            time = 7;
         } else {
             for (Long num : timeQueue) {
                 sum += num.intValue();

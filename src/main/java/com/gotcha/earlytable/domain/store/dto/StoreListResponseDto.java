@@ -1,15 +1,18 @@
 package com.gotcha.earlytable.domain.store.dto;
 
 import com.gotcha.earlytable.domain.file.entity.FileDetail;
-import com.gotcha.earlytable.domain.file.enums.FileStatus;
 import com.gotcha.earlytable.domain.menu.MenuStatus;
 import com.gotcha.earlytable.domain.menu.entity.Menu;
 import com.gotcha.earlytable.domain.store.entity.Store;
 import com.gotcha.earlytable.domain.store.enums.StoreCategory;
 import com.gotcha.earlytable.domain.store.enums.StoreStatus;
+import com.gotcha.earlytable.global.enums.RegionBottom;
+import com.gotcha.earlytable.global.enums.RegionTop;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public class StoreListResponseDto {
@@ -36,12 +39,17 @@ public class StoreListResponseDto {
 
     private final StoreStatus storeStatus;
 
-    private final String storeImageUrl;
+    private final Map<Integer, String> storeImageUrlMap;
+
+    private final RegionTop regionTop;
+
+    private final RegionBottom regionBottom;
+
 
     public StoreListResponseDto(Long storeId, String storeName, String storeTel, String storeContent,
                                 String storeAddress, StoreCategory storeCategory, String ownerName,
                                 LocalDateTime createdAt, LocalDateTime modifiedAt,
-                                StoreStatus storeStatus, String presentMenu, String storeImageUrl) {
+                                StoreStatus storeStatus, String presentMenu, Map<Integer, String> storeImageUrlMap, RegionTop regionTop, RegionBottom regionBottom) {
 
         this.storeId = storeId;
         this.storeName = storeName;
@@ -54,11 +62,19 @@ public class StoreListResponseDto {
         this.modifiedAt = modifiedAt;
         this.storeStatus = storeStatus;
         this.presentMenu = presentMenu;
-        this.storeImageUrl = storeImageUrl;
+        this.storeImageUrlMap = storeImageUrlMap;
+        this.regionTop = regionTop;
+        this.regionBottom = regionBottom;
     }
 
 
     public static StoreListResponseDto toDto(Store store) {
+
+        Map<Integer, String> imageFileUrlMap = new HashMap<>();
+        for(FileDetail fileDetail : store.getFile().getFileDetailList()){
+            imageFileUrlMap.put(fileDetail.getFileSeq(), fileDetail.getFileUrl());
+        }
+
         return new StoreListResponseDto(
                 store.getStoreId(), store.getStoreName(),
                 store.getStoreTel(), store.getStoreContents(),
@@ -71,9 +87,10 @@ public class StoreListResponseDto {
                         .filter(menu -> menu.getMenuStatus().equals(MenuStatus.RECOMMENDED)).findFirst()
                         .map(Menu::getMenuName).orElse(null),
                 // 이미지 url
-                store.getFile().getFileDetailList().stream()
-                        .filter(fileDetail -> fileDetail.getFileStatus().equals(FileStatus.REPRESENTATIVE)).findFirst()
-                        .map(FileDetail::getFileUrl).orElse(null)
+                imageFileUrlMap,
+                store.getRegionTop(),
+                store.getRegionBottom()
+
         );
     }
 }
