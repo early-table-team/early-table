@@ -8,6 +8,8 @@ import com.gotcha.earlytable.global.enums.Auth;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.enums.WaitingType;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -71,12 +73,13 @@ public class WaitingController {
      */
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/waiting")
-    public ResponseEntity<List<WaitingResponseDto>> getWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<WaitingResponseDto>> getWaitingList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                   @PageableDefault Pageable pageable) {
 
         // 로그인된 유저 정보 가져오기
         User user = userDetails.getUser();
 
-        List<WaitingResponseDto> responseDtoList = waitingService.getWaitingList(user);
+        List<WaitingResponseDto> responseDtoList = waitingService.getWaitingList(user, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtoList);
     }

@@ -1,11 +1,14 @@
 package com.gotcha.earlytable.domain.waiting;
 
 import com.gotcha.earlytable.domain.store.entity.Store;
+import com.gotcha.earlytable.domain.user.entity.User;
 import com.gotcha.earlytable.domain.waiting.entity.Waiting;
 import com.gotcha.earlytable.global.enums.WaitingStatus;
 import com.gotcha.earlytable.global.enums.WaitingType;
 import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.NotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +21,8 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
     default Waiting findByIdOrElseThrow(Long id){
         return findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
+
+    Page<Waiting> findByPartyPartyPeopleUserAndWaitingStatusNotOrderByCreatedAtDesc(User user, Pageable pageable, WaitingStatus waitingStatus);
 
     List<Waiting> findByStoreAndWaitingTypeAndWaitingStatus(Store store, WaitingType waitingType, WaitingStatus waitingStatus);
 

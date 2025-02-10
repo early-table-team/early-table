@@ -11,8 +11,6 @@ import java.util.List;
 @Repository
 public interface PartyPeopleRepository extends JpaRepository<PartyPeople, Long> {
 
-    List<PartyPeople> findByUser(User user);
-
     void deleteByUser(User user);
 
     void deleteByUserId(Long userId);

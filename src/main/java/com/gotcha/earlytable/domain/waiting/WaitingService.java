@@ -23,7 +23,8 @@ import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.BadRequestException;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import com.gotcha.earlytable.global.error.exception.ForbiddenException;
-import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -174,18 +175,10 @@ public class WaitingService {
      * @return List<WaitingListResponseDto>
      */
     @Transactional
-    public List<WaitingResponseDto> getWaitingList(User user) {
+    public List<WaitingResponseDto> getWaitingList(User user, Pageable pageable) {
 
-        // 로그인 된 사용자로 PartyPeople 리스트 조회
-        List<PartyPeople> partyPeopleList = partyPeopleRepository.findByUser(user);
-
-        // PartyPeople 리스트에서 Waiting 추출
-        List<Waiting> waitingList = partyPeopleList.stream()
-                .map(PartyPeople::getParty)        // Party 추출
-                .map(Party::getWaiting)           // Party에서 Waiting 추출
-                .filter(Objects::nonNull)         // null 값 제외
-                .filter(waiting -> waiting.getWaitingStatus() != WaitingStatus.DELAY) // waitingStatus가 "delay"인 항목 제외
-                .toList();
+        Page<Waiting> waitingList
+                = waitingRepository.findByPartyPartyPeopleUserAndWaitingStatusNotOrderByCreatedAtDesc(user, pageable, WaitingStatus.DELAY);
 
         return waitingList.stream()
                 .map(WaitingResponseDto::new)

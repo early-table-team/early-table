@@ -8,7 +8,8 @@ import com.gotcha.earlytable.global.error.ErrorCode;
 import com.gotcha.earlytable.global.error.exception.CustomException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RAtomicLong;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -65,10 +66,9 @@ public class ReservationController {
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @GetMapping("/reservations")
     public ResponseEntity<List<ReservationGetAllResponseDto>> getAllReservations(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                                 @RequestParam(value = "size", defaultValue = "5") int size ) {
+                                                                                 @PageableDefault Pageable pageable) {
 
-        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser(),page, size);
+        List<ReservationGetAllResponseDto> resDto = reservationService.getAllReservations(userDetails.getUser(), pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(resDto);
     }
@@ -114,6 +114,8 @@ public class ReservationController {
     @CheckUserAuth(requiredAuthorities = {Auth.USER})
     @DeleteMapping("/reservations/{reservationId}")
     public ResponseEntity<String> cancelReservation(@PathVariable Long reservationId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+
 
         reservationService.cancelReservation(reservationId, userDetails.getUser());
 

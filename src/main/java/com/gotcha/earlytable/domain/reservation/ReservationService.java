@@ -24,10 +24,8 @@ import com.gotcha.earlytable.global.error.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
-import org.redisson.api.RQueue;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,11 +49,14 @@ public class ReservationService {
     private final RedissonClient redissonClient;
     private final TransactionTemplate transactionTemplate;
     private final ReviewRepository reviewRepository;
+    private final KakaoPayService kakaoPayService;
+
 
     public ReservationService(ReservationRepository reservationRepository, StoreRepository storeRepository,
                               MenuRepository menuRepository, PartyRepository partyRepository,
                               ReservationMenuRepository reservationMenuRepository,
-                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate, ReviewRepository reviewRepository) {
+                              PartyPeopleRepository partyPeopleRepository, RedissonClient redissonClient, TransactionTemplate transactionTemplate,
+                              ReviewRepository reviewRepository, KakaoPayService kakaoPayService) {
         this.reservationRepository = reservationRepository;
         this.storeRepository = storeRepository;
         this.menuRepository = menuRepository;
@@ -65,6 +66,7 @@ public class ReservationService {
         this.redissonClient = redissonClient;
         this.transactionTemplate = transactionTemplate;
         this.reviewRepository = reviewRepository;
+        this.kakaoPayService = kakaoPayService;
     }
 
     /**
@@ -237,10 +239,9 @@ public class ReservationService {
      * @param user
      * @return
      */
-    public List<ReservationGetAllResponseDto> getAllReservations(User user, int page, int size) {
+    public List<ReservationGetAllResponseDto> getAllReservations(User user, Pageable pageable) {
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Reservation> reservationPage = reservationRepository.findByUser(user, pageable);
+        Page<Reservation> reservationPage = reservationRepository.findByPartyPartyPeopleUserAndReservationStatusNotOrderByReservationDateDesc(user, ReservationStatus.BEFORE, pageable);
 
         List<ReservationGetAllResponseDto> resDto = new ArrayList<>();
         reservationPage.forEach(reservation -> {
@@ -362,6 +363,8 @@ public class ReservationService {
     public void cancelReservation(Long reservationId, User user) {
 
         Reservation reservation = reservationRepository.findByIdOrElseThrow(reservationId);
+        kakaoPayService.cancelPayment(String.valueOf(reservationId));
+
         // 예약에 등록된 유저가 아닌경우
         User userData = reservation.getParty().getPartyPeople().stream().map(PartyPeople::getUser).filter(partyPeopleUser -> partyPeopleUser.getId().equals(user.getId())).findFirst().orElse(null);
         if (userData == null) {
